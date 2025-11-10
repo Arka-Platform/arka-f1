@@ -1,0 +1,92 @@
+.logoLink {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.logoLink:hover {
+  opacity: 0.8;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logoContainer.small {
+  width: 40px;
+  height: 40px;
+}
+
+.logoContainer.medium {
+  width: 60px;
+  height: 60px;
+}
+
+.logoContainer.large {
+  width: 80px;
+  height: 80px;
+}
+
+.logoIcon {
+  width: 100%;
+  height: 100%;
+}
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.brandName {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--color-black);
+  line-height: 1;
+}
+
+.tagline {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--color-gray-dark);
+  line-height: 1;
+}
+
+.logoContainer.small ~ .logoText .brandName {
+  font-size: 1.25rem;
+}
+
+.logoContainer.small ~ .logoText .tagline {
+  font-size: 0.625rem;
+}
+
+.logoContainer.large ~ .logoText .brandName {
+  font-size: 2.25rem;
+}
+
+.logoContainer.large ~ .logoText .tagline {
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .logoContainer.medium {
+    width: 50px;
+    height: 50px;
+  }
+
+  .brandName {
+    font-size: 1.5rem;
+  }
+
+  .tagline {
+    font-size: 0.6875rem;
+  }
+}
+
+

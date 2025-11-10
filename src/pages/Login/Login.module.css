@@ -1,0 +1,114 @@
+.login {
+  width: 100%;
+  min-height: calc(100vh - 200px);
+  padding: 4rem 2rem;
+  background-color: var(--color-gray-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.loginCard {
+  background-color: var(--color-white);
+  padding: 3rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 0.5rem 0;
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--color-gray-dark);
+  margin: 0 0 2rem 0;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.forgotPassword {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -0.5rem;
+}
+
+.forgotLink {
+  font-size: 0.875rem;
+  color: var(--color-black);
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.forgotLink:hover {
+  opacity: 0.7;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 0.5rem 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--color-gray-medium);
+}
+
+.divider span {
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  color: var(--color-gray-dark);
+}
+
+.signupText {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-gray-dark);
+  margin: 0;
+}
+
+.signupLink {
+  color: var(--color-black);
+  font-weight: 500;
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.signupLink:hover {
+  opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  .login {
+    padding: 2rem 1rem;
+  }
+
+  .loginCard {
+    padding: 2rem 1.5rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+}
+
+

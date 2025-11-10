@@ -1,0 +1,157 @@
+.joinBookCycle {
+  padding: 6rem 4rem;
+  background-color: var(--color-white);
+}
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 3rem;
+  text-align: left;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+}
+
+.chevron {
+  color: var(--color-black);
+  transition: transform 0.3s ease;
+}
+
+.chevronExpanded {
+  transform: rotate(180deg);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+.option {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.optionIllustrationWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.optionIllustration {
+  width: 100%;
+  height: auto;
+  color: var(--color-black);
+}
+
+.optionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.optionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+}
+
+.optionDescription {
+  font-size: 1rem;
+  color: var(--color-gray-dark);
+  line-height: 1.6;
+}
+
+.optionButton {
+  align-self: flex-start;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  font-family: inherit;
+  margin-top: 0.5rem;
+}
+
+.optionButton:hover {
+  opacity: 0.8;
+}
+
+.optionButton:active {
+  opacity: 0.7;
+}
+
+@media (min-width: 1400px) {
+  .joinBookCycle {
+    padding: 8rem 6rem;
+  }
+
+  .sectionTitle {
+    font-size: 3rem;
+  }
+
+  .options {
+    gap: 5rem;
+  }
+
+  .option {
+    grid-template-columns: 320px 1fr;
+    gap: 5rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .option {
+    grid-template-columns: 150px 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .joinBookCycle {
+    padding: 2rem 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+
+  .option {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .optionIllustrationWrapper {
+    order: -1;
+  }
+
+  .optionContent {
+    align-items: center;
+  }
+
+  .optionButton {
+    align-self: center;
+  }
+}
+

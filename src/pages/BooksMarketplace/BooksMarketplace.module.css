@@ -1,0 +1,106 @@
+.marketplace {
+  width: 100%;
+  background-color: var(--color-white);
+}
+
+.searchSection {
+  padding: 2rem 4rem;
+  background-color: var(--color-gray-light);
+  border-bottom: 1px solid var(--color-gray-medium);
+}
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.searchBar {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.filters {
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.listingsSection,
+.reviewsSection,
+.recommendedSection {
+  padding: 4rem 4rem;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin-bottom: 2rem;
+}
+
+.booksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.reviewsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.reviewCard {
+  background-color: var(--color-gray-light);
+  padding: 2rem;
+  border-radius: 12px;
+}
+
+.reviewText {
+  font-size: 1rem;
+  color: var(--color-black);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.reviewAuthor {
+  font-size: 0.875rem;
+  color: var(--color-gray-dark);
+  font-weight: 500;
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .searchBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+
+  .booksGrid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .searchSection,
+  .listingsSection,
+  .reviewsSection,
+  .recommendedSection {
+    padding: 2rem 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.75rem;
+  }
+
+  .booksGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+

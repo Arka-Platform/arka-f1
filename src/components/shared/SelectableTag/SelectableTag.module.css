@@ -1,0 +1,85 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background-color: var(--color-white);
+  border: 2px solid var(--color-gray-medium);
+  border-radius: 24px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-black);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  min-height: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.tag:hover:not(:disabled) {
+  border-color: var(--color-black);
+  background-color: var(--color-gray-light);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tag:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tag.selected {
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tag.selected:hover:not(:disabled) {
+  background-color: #333333;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.tag.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checkIcon {
+  flex-shrink: 0;
+  animation: checkIn 0.2s ease;
+}
+
+@keyframes checkIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Focus styles for accessibility */
+.tag:focus-visible {
+  outline: 2px solid var(--color-black);
+  outline-offset: 2px;
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .tag {
+    min-height: 48px;
+    padding: 0.875rem 1.5rem;
+  }
+
+  .tag:active {
+    transform: scale(0.98);
+  }
+}
+
+

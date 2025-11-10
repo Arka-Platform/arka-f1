@@ -1,0 +1,157 @@
+.hero {
+  padding: 6rem 4rem;
+  background-color: var(--color-white);
+}
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 5rem;
+  align-items: center;
+}
+
+.illustrationLeft,
+.illustrationRight {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.illustrationSvg {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  color: var(--color-black);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: stretch;
+  width: 100%;
+}
+
+.heading {
+  font-size: 3.5rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-black);
+  line-height: 1.2;
+}
+
+.searchForm {
+  display: flex;
+  width: 100%;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--color-gray-medium);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  background-color: var(--color-gray-light);
+  color: var(--color-black);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-black);
+  background-color: var(--color-white);
+}
+
+.searchInput::placeholder {
+  color: var(--color-gray-dark);
+}
+
+.searchIconButton {
+  padding: 1rem;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+}
+
+.searchIconButton:hover {
+  opacity: 0.8;
+}
+
+.findButton {
+  padding: 1rem 2rem;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s ease;
+}
+
+.findButton:hover {
+  opacity: 0.8;
+}
+
+.findButton:active {
+  opacity: 0.7;
+}
+
+@media (min-width: 1400px) {
+  .hero {
+    padding: 8rem 6rem;
+  }
+
+  .heading {
+    font-size: 4rem;
+  }
+
+}
+
+@media (max-width: 1024px) {
+  .container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .illustrationLeft,
+  .illustrationRight {
+    order: -1;
+  }
+
+  .illustrationSvg {
+    max-width: 150px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 2rem 1rem;
+  }
+
+  .heading {
+    font-size: 1.75rem;
+  }
+
+  .searchForm {
+    flex-direction: column;
+  }
+
+  .searchInput,
+  .searchIconButton,
+  .findButton {
+    width: 100%;
+  }
+}
+

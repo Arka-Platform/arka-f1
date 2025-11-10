@@ -1,0 +1,174 @@
+.home {
+  width: 100%;
+  background-color: var(--color-white);
+}
+
+.hero {
+  padding: 6rem 4rem;
+  background-color: var(--color-gray-light);
+}
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.heroContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.heroIllustration {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.illustrationSvg {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  color: var(--color-black);
+}
+
+.heroText {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.heroDescription {
+  font-size: 1.25rem;
+  color: var(--color-gray-dark);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.serviceSection {
+  padding: 6rem 4rem;
+  background-color: var(--color-gray-light);
+}
+
+.serviceContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.serviceContentReversed {
+  direction: rtl;
+}
+
+.serviceContentReversed > * {
+  direction: ltr;
+}
+
+.serviceText {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.serviceTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0;
+}
+
+.serviceDescription {
+  font-size: 1.125rem;
+  color: var(--color-gray-dark);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.serviceIllustration {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.testimonialsSection {
+  padding: 6rem 4rem;
+  background-color: var(--color-gray-light);
+}
+
+.testimonialsTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 3rem 0;
+}
+
+.testimonialsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.testimonialCard {
+  background-color: var(--color-white);
+  padding: 2rem;
+  border-radius: 12px;
+}
+
+.testimonialText {
+  font-size: 1rem;
+  color: var(--color-black);
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.testimonialAuthor {
+  font-size: 0.875rem;
+  color: var(--color-gray-dark);
+  font-weight: 500;
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .heroContent,
+  .serviceContent {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .serviceContentReversed {
+    direction: ltr;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero,
+  .serviceSection,
+  .testimonialsSection {
+    padding: 3rem 1rem;
+  }
+
+  .heroTitle {
+    font-size: 2rem;
+  }
+
+  .serviceTitle,
+  .testimonialsTitle {
+    font-size: 1.75rem;
+  }
+
+  .testimonialsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+

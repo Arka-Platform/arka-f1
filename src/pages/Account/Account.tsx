@@ -1,0 +1,284 @@
+import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import Input from '../../components/shared/Input/Input'
+import Textarea from '../../components/shared/Textarea/Textarea'
+import Select from '../../components/shared/Select/Select'
+import Button from '../../components/shared/Button/Button'
+import styles from './Account.module.css'
+
+const Account: React.FC = () => {
+  const [searchParams] = useSearchParams()
+  const [activeTab, setActiveTab] = useState<'profile' | 'settings' | 'orderPreferences'>('profile')
+
+  // Set active tab from URL query parameter
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && ['profile', 'settings', 'orderPreferences'].includes(tab)) {
+      setActiveTab(tab as typeof activeTab)
+    }
+  }, [searchParams])
+  const [profileData, setProfileData] = useState({
+    firstName: 'Alex',
+    lastName: 'Smith',
+    email: 'alexsmith@email.com',
+    phone: '(+123) 456 789 000',
+    address: '123 Green Street, Eco City, EC 12345',
+    bio: 'Book lover and sustainability enthusiast.',
+  })
+
+  const [settings, setSettings] = useState({
+    emailNotifications: true,
+    smsNotifications: false,
+    newsletter: true,
+  })
+
+  const [orderPreferences, setOrderPreferences] = useState({
+    defaultPickupTime: 'asap',
+    defaultPaymentMethod: 'credit',
+    defaultAddress: '123 Green Street, Eco City, EC 12345',
+    savePaymentInfo: false,
+  })
+
+  const handleProfileChange = (field: string, value: string) => {
+    setProfileData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleSettingsChange = (field: string, value: boolean) => {
+    setSettings((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleSaveProfile = () => {
+    console.log('Profile saved:', profileData)
+    // Show success message
+  }
+
+  const handleSaveSettings = () => {
+    console.log('Settings saved:', settings)
+    // Show success message
+  }
+
+  return (
+    <div className={styles.account}>
+      <div className={styles.container}>
+        <h1 className={styles.pageTitle}>My Account</h1>
+
+        <div className={styles.content}>
+          {/* Sidebar */}
+          <aside className={styles.sidebar}>
+            <div className={styles.profileCard}>
+              <div className={styles.avatar}>
+                <svg viewBox="0 0 100 100" className={styles.avatarSvg}>
+                  <circle cx="50" cy="50" r="40" fill="currentColor" opacity="0.3" />
+                  <circle cx="50" cy="35" r="15" fill="currentColor" opacity="0.5" />
+                  <rect x="30" y="60" width="40" height="30" fill="currentColor" opacity="0.5" />
+                </svg>
+              </div>
+              <h2 className={styles.profileName}>
+                {profileData.firstName} {profileData.lastName}
+              </h2>
+              <p className={styles.profileEmail}>{profileData.email}</p>
+            </div>
+
+            <nav className={styles.nav}>
+              <button
+                className={`${styles.navButton} ${activeTab === 'profile' ? styles.active : ''}`}
+                onClick={() => setActiveTab('profile')}
+              >
+                Profile
+              </button>
+              <button
+                className={`${styles.navButton} ${activeTab === 'settings' ? styles.active : ''}`}
+                onClick={() => setActiveTab('settings')}
+              >
+                Settings
+              </button>
+              <button
+                className={`${styles.navButton} ${activeTab === 'orderPreferences' ? styles.active : ''}`}
+                onClick={() => setActiveTab('orderPreferences')}
+              >
+                Order Preferences
+              </button>
+            </nav>
+          </aside>
+
+          {/* Main Content */}
+          <main className={styles.mainContent}>
+            {activeTab === 'profile' && (
+              <div className={styles.tabContent}>
+                <h2 className={styles.tabTitle}>Profile Information</h2>
+                <form className={styles.form}>
+                  <div className={styles.row}>
+                    <Input
+                      label="First Name"
+                      value={profileData.firstName}
+                      onChange={(e) => handleProfileChange('firstName', e.target.value)}
+                      fullWidth
+                    />
+                    <Input
+                      label="Last Name"
+                      value={profileData.lastName}
+                      onChange={(e) => handleProfileChange('lastName', e.target.value)}
+                      fullWidth
+                    />
+                  </div>
+                  <Input
+                    label="Email"
+                    type="email"
+                    value={profileData.email}
+                    onChange={(e) => handleProfileChange('email', e.target.value)}
+                    fullWidth
+                  />
+                  <Input
+                    label="Phone"
+                    value={profileData.phone}
+                    onChange={(e) => handleProfileChange('phone', e.target.value)}
+                    fullWidth
+                  />
+                  <Input
+                    label="Address"
+                    value={profileData.address}
+                    onChange={(e) => handleProfileChange('address', e.target.value)}
+                    fullWidth
+                  />
+                  <Textarea
+                    label="Bio"
+                    value={profileData.bio}
+                    onChange={(e) => handleProfileChange('bio', e.target.value)}
+                    fullWidth
+                  />
+                  <Button type="button" variant="primary" onClick={handleSaveProfile}>
+                    Save Changes
+                  </Button>
+                </form>
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <div className={styles.tabContent}>
+                <h2 className={styles.tabTitle}>Account Settings</h2>
+                <div className={styles.settingsList}>
+                  <div className={styles.settingItem}>
+                    <div className={styles.settingInfo}>
+                      <h3 className={styles.settingTitle}>Email Notifications</h3>
+                      <p className={styles.settingDescription}>
+                        Receive email updates about your orders and account activity
+                      </p>
+                    </div>
+                    <label className={styles.toggle}>
+                      <input
+                        type="checkbox"
+                        checked={settings.emailNotifications}
+                        onChange={(e) => handleSettingsChange('emailNotifications', e.target.checked)}
+                      />
+                      <span className={styles.toggleSlider} />
+                    </label>
+                  </div>
+
+                  <div className={styles.settingItem}>
+                    <div className={styles.settingInfo}>
+                      <h3 className={styles.settingTitle}>SMS Notifications</h3>
+                      <p className={styles.settingDescription}>
+                        Receive SMS updates about your orders
+                      </p>
+                    </div>
+                    <label className={styles.toggle}>
+                      <input
+                        type="checkbox"
+                        checked={settings.smsNotifications}
+                        onChange={(e) => handleSettingsChange('smsNotifications', e.target.checked)}
+                      />
+                      <span className={styles.toggleSlider} />
+                    </label>
+                  </div>
+
+                  <div className={styles.settingItem}>
+                    <div className={styles.settingInfo}>
+                      <h3 className={styles.settingTitle}>Newsletter</h3>
+                      <p className={styles.settingDescription}>
+                        Subscribe to our newsletter for updates and promotions
+                      </p>
+                    </div>
+                    <label className={styles.toggle}>
+                      <input
+                        type="checkbox"
+                        checked={settings.newsletter}
+                        onChange={(e) => handleSettingsChange('newsletter', e.target.checked)}
+                      />
+                      <span className={styles.toggleSlider} />
+                    </label>
+                  </div>
+                </div>
+                <Button type="button" variant="primary" onClick={handleSaveSettings}>
+                  Save Settings
+                </Button>
+              </div>
+            )}
+
+            {activeTab === 'orderPreferences' && (
+              <div className={styles.tabContent}>
+                <h2 className={styles.tabTitle}>Order Preferences</h2>
+                <p className={styles.tabDescription}>
+                  Set your default preferences for placing orders. These will be pre-filled when you create a new order.
+                </p>
+                <form className={styles.form}>
+                  <Input
+                    label="Default Address"
+                    value={orderPreferences.defaultAddress}
+                    onChange={(e) => setOrderPreferences((prev) => ({ ...prev, defaultAddress: e.target.value }))}
+                    fullWidth
+                  />
+                  <Select
+                    label="Default Pickup Time"
+                    options={[
+                      { value: 'asap', label: 'As soon as possible' },
+                      { value: 'morning', label: 'Morning (9 AM - 12 PM)' },
+                      { value: 'afternoon', label: 'Afternoon (12 PM - 5 PM)' },
+                      { value: 'evening', label: 'Evening (5 PM - 8 PM)' },
+                    ]}
+                    value={orderPreferences.defaultPickupTime}
+                    onChange={(e) => setOrderPreferences((prev) => ({ ...prev, defaultPickupTime: e.target.value }))}
+                    fullWidth
+                  />
+                  <Select
+                    label="Default Payment Method"
+                    options={[
+                      { value: 'credit', label: 'Credit Card' },
+                      { value: 'debit', label: 'Debit Card' },
+                      { value: 'paypal', label: 'PayPal' },
+                      { value: 'cash', label: 'Cash on Delivery' },
+                    ]}
+                    value={orderPreferences.defaultPaymentMethod}
+                    onChange={(e) => setOrderPreferences((prev) => ({ ...prev, defaultPaymentMethod: e.target.value }))}
+                    fullWidth
+                  />
+                  <div className={styles.settingItem}>
+                    <div className={styles.settingInfo}>
+                      <h3 className={styles.settingTitle}>Save Payment Information</h3>
+                      <p className={styles.settingDescription}>
+                        Securely save your payment methods for faster checkout
+                      </p>
+                    </div>
+                    <label className={styles.toggle}>
+                      <input
+                        type="checkbox"
+                        checked={orderPreferences.savePaymentInfo}
+                        onChange={(e) => setOrderPreferences((prev) => ({ ...prev, savePaymentInfo: e.target.checked }))}
+                      />
+                      <span className={styles.toggleSlider} />
+                    </label>
+                  </div>
+                  <Button type="button" variant="primary" onClick={() => console.log('Order preferences saved:', orderPreferences)}>
+                    Save Preferences
+                  </Button>
+                </form>
+              </div>
+            )}
+          </main>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Account
+

@@ -1,0 +1,142 @@
+.orderHistory {
+  width: 100%;
+  padding: 4rem 4rem;
+  background-color: var(--color-white);
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.pageTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 0.5rem 0;
+}
+
+.pageDescription {
+  font-size: 1rem;
+  color: var(--color-gray-dark);
+  margin: 0 0 3rem 0;
+}
+
+.ordersList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.orderCard {
+  background-color: var(--color-gray-light);
+  padding: 2rem;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.orderHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.orderId {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 0.5rem 0;
+}
+
+.orderDate {
+  font-size: 0.875rem;
+  color: var(--color-gray-dark);
+  margin: 0;
+}
+
+.orderStatus {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.orderStatus.completed {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.orderStatus.intransit {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.orderStatus.processing {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.orderDetails {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  color: var(--color-black);
+}
+
+.orderTotal {
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: var(--color-gray-light);
+  border-radius: 12px;
+}
+
+.emptyIcon {
+  color: var(--color-gray-dark);
+  margin: 0 auto 1.5rem;
+  opacity: 0.5;
+}
+
+.emptyTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 0.5rem 0;
+}
+
+.emptyDescription {
+  font-size: 1rem;
+  color: var(--color-gray-dark);
+  margin: 0 0 2rem 0;
+}
+
+@media (max-width: 768px) {
+  .orderHistory {
+    padding: 2rem 1rem;
+  }
+
+  .pageTitle {
+    font-size: 2rem;
+  }
+
+  .orderCard {
+    padding: 1.5rem;
+  }
+
+  .orderHeader {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+

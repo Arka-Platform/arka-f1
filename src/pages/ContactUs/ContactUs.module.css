@@ -1,0 +1,141 @@
+.contactUs {
+  width: 100%;
+  background-color: var(--color-gray-light);
+}
+
+.contactSection {
+  padding: 4rem 4rem;
+}
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.contactGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+}
+
+.formContainer,
+.infoContainer {
+  background-color: var(--color-white);
+  padding: 3rem;
+  border-radius: 12px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 2rem 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.infoList {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.infoLabel {
+  font-size: 1rem;
+  color: var(--color-black);
+}
+
+.infoText {
+  font-size: 1rem;
+  color: var(--color-gray-dark);
+  margin: 0;
+}
+
+.infoLink {
+  font-size: 1rem;
+  color: var(--color-black);
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.infoLink:hover {
+  opacity: 0.7;
+}
+
+.faqSection {
+  padding: 4rem 4rem;
+  background-color: var(--color-gray-light);
+}
+
+.faqTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 2rem 0;
+}
+
+.faqGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.faqCard {
+  background-color: var(--color-white);
+  padding: 2rem;
+  border-radius: 12px;
+}
+
+.faqQuestion {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 1rem 0;
+}
+
+.faqAnswer {
+  font-size: 1rem;
+  color: var(--color-gray-dark);
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .contactGrid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .contactSection,
+  .faqSection {
+    padding: 2rem 1rem;
+  }
+
+  .formContainer,
+  .infoContainer {
+    padding: 2rem 1.5rem;
+  }
+
+  .title,
+  .faqTitle {
+    font-size: 1.75rem;
+  }
+
+  .faqGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
