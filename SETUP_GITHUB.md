@@ -1,9 +1,10 @@
 # GitHub Repository Setup Guide
 
-## Step 1: Create GitHub Repository
+## Step 1: Create GitHub Repository in Arka-Platform Organization
 
-1. Go to https://github.com/new
-2. Repository name: `arka-platform-git`
+1. Go to https://github.com/organizations/Arka-Platform/repositories/new
+   - Or go to https://github.com/new and select "Arka-Platform" as the owner
+2. Repository name: Choose your repository name (e.g., `arka-platform`, `arka-f1`, etc.)
 3. Description: "Arka Platform - Book Marketplace with Frontend, Backend, and Infrastructure"
 4. Visibility: Choose Public or Private
 5. **DO NOT** initialize with README, .gitignore, or license (we already have these)
@@ -11,20 +12,18 @@
 
 ## Step 2: Add Remote and Push
 
-After creating the repository, run these commands:
+After creating the repository, set up the remote and push:
 
 ```bash
 cd /Users/sharvani/Desktop/arka-f1
 
-# Add remote (replace YOUR_USERNAME with your GitHub username)
-git remote add origin https://github.com/YOUR_USERNAME/arka-platform-git.git
+# Use the setup script (it will prompt for repository name)
+./setup-github-repo.sh --push
 
-# Or if using SSH:
-# git remote add origin git@github.com:YOUR_USERNAME/arka-platform-git.git
-
-# Push to GitHub
-git branch -M main
-git push -u origin main
+# Or manually (replace REPO_NAME with your actual repository name):
+# git remote add origin https://github.com/Arka-Platform/REPO_NAME.git
+# git branch -M main
+# git push -u origin main
 ```
 
 ## Step 3: Configure GitHub Actions Secrets
@@ -44,7 +43,8 @@ git push -u origin main
    ```
 
 2. **Add Secrets to GitHub:**
-   - Go to: `https://github.com/YOUR_USERNAME/arka-platform-git/settings/secrets/actions`
+   - Go to: `https://github.com/Arka-Platform/YOUR_REPO_NAME/settings/secrets/actions`
+   - Replace `YOUR_REPO_NAME` with your actual repository name
    - Click "New repository secret"
    - Add:
      - Name: `AWS_ACCESS_KEY_ID`
@@ -142,4 +142,3 @@ The GitHub Actions workflow (`deploy-to-ecr-simple.yml`) will:
 3. ✅ Test workflow
 4. ✅ Deploy infrastructure with Terraform using ECR image
 5. 🔄 Set up automated deployments (optional)
-
