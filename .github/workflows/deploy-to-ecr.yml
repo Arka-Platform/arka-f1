@@ -3,6 +3,7 @@ name: Build and Push to ECR
 on:
   push:
     branches:
+      - dev
       - main
       - master
     paths:
@@ -11,6 +12,7 @@ on:
       - 'Dockerfile'
   pull_request:
     branches:
+      - dev
       - main
       - master
   workflow_dispatch:
