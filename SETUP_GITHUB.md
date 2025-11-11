@@ -64,7 +64,8 @@ git push -u origin main
    ```
 
 2. Check Actions tab:
-   - Go to: `https://github.com/YOUR_USERNAME/arka-platform-git/actions`
+   - Go to: `https://github.com/Arka-Platform/YOUR_REPO_NAME/actions`
+   - Replace `YOUR_REPO_NAME` with your actual repository name
    - You should see the workflow running
    - Wait for it to complete (builds Docker image and pushes to ECR)
 
