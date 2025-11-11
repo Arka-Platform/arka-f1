@@ -42,16 +42,19 @@ cd /Users/sharvani/Desktop/arka-f1
    aws iam create-access-key --user-name github-actions-ecr
    ```
 
-2. **Add Secrets to GitHub:**
+2. **Add Variables to GitHub:**
    - Go to: `https://github.com/Arka-Platform/YOUR_REPO_NAME/settings/secrets/actions`
    - Replace `YOUR_REPO_NAME` with your actual repository name
-   - Click "New repository secret"
+   - Click on the "Variables" tab (not "Secrets")
+   - Click "New repository variable"
    - Add:
      - Name: `AWS_ACCESS_KEY_ID`
      - Value: Your access key ID
    - Add another:
      - Name: `AWS_SECRET_ACCESS_KEY`
      - Value: Your secret access key
+   
+   **Note:** The workflow uses variables (`vars`) instead of secrets. Variables are visible in logs (masked), while secrets are completely hidden.
 
 ## Step 4: Test GitHub Actions
 
