@@ -8,10 +8,13 @@ pnpm-debug.log*
 
 # Dependency directories
 node_modules/
+**/node_modules/
 
 # Build output
 /dist/
+**/dist/
 /build/
+**/target/
 
 # Vite
 .vite/
@@ -26,6 +29,8 @@ node_modules/
 # Env files
 .env
 .env.*.local
+frontend/.env
+frontend/.env.*
 
 # Coverage
 coverage/
@@ -37,4 +42,45 @@ coverage/
 .AppleDouble
 .LSOverride
 
+# Frontend specific
+frontend/node_modules/
+frontend/dist/
+
+# Backend specific
+arka-backend/app-bootstrap/src/main/resources/static/*
+!arka-backend/app-bootstrap/src/main/resources/static/.gitkeep
+arka-backend/target/
+arka-backend/.mvn/
+*.jar
+!**/src/main/**/*.jar
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+*.tfvars
+!terraform.tfvars.example
+.terraform.tfstate.lock.info
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Infrastructure
+arka-infra/.db-password
+arka-infra/.terraform/
+arka-infra/*.tfstate
+arka-infra/*.tfstate.backup
+
+# AWS
+.aws-sam/
+*.pem
+*.key
+
+# Docker
+.dockerignore
 
