@@ -1,49 +1,56 @@
 #!/bin/bash
 
 # Script to set up and push to GitHub repository
-# Repository name: arka-platform-git
 
 set -e
 
-REPO_NAME="arka-platform-git"
-GITHUB_USER=""
+GITHUB_ORG="Arka-Platform"
 
 echo "========================================="
 echo "GitHub Repository Setup"
 echo "========================================="
 echo ""
 
-# Get GitHub username
-if [ -z "$GITHUB_USER" ]; then
-    read -p "Enter your GitHub username: " GITHUB_USER
-fi
+# Get repository name
+read -p "Enter repository name: " REPO_NAME
 
-if [ -z "$GITHUB_USER" ]; then
-    echo "❌ GitHub username is required"
+if [ -z "$REPO_NAME" ]; then
+    echo "❌ Repository name is required"
     exit 1
 fi
 
-echo "Repository: $GITHUB_USER/$REPO_NAME"
+echo "Organization: $GITHUB_ORG"
+echo "Repository: $REPO_NAME"
+echo "Full path: $GITHUB_ORG/$REPO_NAME"
 echo ""
 
 # Check if remote already exists
 if git remote get-url origin &>/dev/null; then
-    echo "⚠️  Remote 'origin' already exists:"
-    git remote -v
-    echo ""
-    read -p "Do you want to update it? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        git remote set-url origin "https://github.com/$GITHUB_USER/$REPO_NAME.git"
-        echo "✅ Remote updated"
+    CURRENT_URL=$(git remote get-url origin)
+    EXPECTED_URL="https://github.com/$GITHUB_ORG/$REPO_NAME.git"
+    
+    if [ "$CURRENT_URL" != "$EXPECTED_URL" ]; then
+        echo "⚠️  Remote 'origin' currently points to:"
+        echo "   $CURRENT_URL"
+        echo ""
+        echo "Expected: $EXPECTED_URL"
+        echo ""
+        read -p "Do you want to update it? (y/n) " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            git remote set-url origin "$EXPECTED_URL"
+            echo "✅ Remote updated to $GITHUB_ORG/$REPO_NAME"
+        else
+            echo "Keeping existing remote"
+        fi
     else
-        echo "Keeping existing remote"
+        echo "✅ Remote already configured correctly"
     fi
 else
     # Add remote
     echo "Adding remote repository..."
-    git remote add origin "https://github.com/$GITHUB_USER/$REPO_NAME.git"
-    echo "✅ Remote added"
+    git remote add origin "https://github.com/$GITHUB_ORG/$REPO_NAME.git"
+    echo "✅ Remote added: $GITHUB_ORG/$REPO_NAME"
 fi
 
 echo ""
@@ -51,8 +58,9 @@ echo "========================================="
 echo "Next Steps:"
 echo "========================================="
 echo ""
-echo "1. Create the repository on GitHub:"
-echo "   Go to: https://github.com/new"
+echo "1. Create the repository in the Arka-Platform organization:"
+echo "   Go to: https://github.com/organizations/Arka-Platform/repositories/new"
+echo "   Or: https://github.com/new (select 'Arka-Platform' as owner)"
 echo "   Repository name: $REPO_NAME"
 echo "   Description: Arka Platform - Book Marketplace"
 echo "   Visibility: Choose Public or Private"
@@ -75,7 +83,7 @@ if [ "$1" == "--push" ]; then
     echo "✅ Code pushed to GitHub!"
     echo ""
     echo "Next: Configure GitHub Actions secrets:"
-    echo "1. Go to: https://github.com/$GITHUB_USER/$REPO_NAME/settings/secrets/actions"
+    echo "1. Go to: https://github.com/$GITHUB_ORG/$REPO_NAME/settings/secrets/actions"
     echo "2. Add secrets:"
     echo "   - AWS_ACCESS_KEY_ID"
     echo "   - AWS_SECRET_ACCESS_KEY"
