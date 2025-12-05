@@ -19,12 +19,14 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: arka-app
-  AWS_ACCOUNT_ID: 934189896155
+  ECR_REPOSITORY: arka-dev-app
+  AWS_ACCOUNT_ID: 600751737236
+  ECS_CLUSTER: arka-dev-cluster
+  ECS_SERVICE: arka-dev-service
 
 jobs:
   build-and-push:
-    name: Build Docker Image and Push to ECR
+    name: Build Docker Image, Push to ECR, and Update ECS
     runs-on: ubuntu-latest
 
     steps:
@@ -70,25 +72,40 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
+          # Verify we're in the right directory and Dockerfile exists
+          pwd
+          ls -la Dockerfile || (echo "❌ Dockerfile not found!" && exit 1)
+          
           # Build Docker image
-          echo "Building Docker image..."
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "📦 Building Docker image from $(pwd)..."
+          docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG -f Dockerfile .
+          docker tag $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
           
           # Push both tags
-          echo "Pushing image to ECR..."
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "📤 Pushing image to ECR..."
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
           
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "image_latest=$ECR_REGISTRY/$ECR_REPOSITORY:latest" >> $GITHUB_OUTPUT
+          echo "image=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image_latest=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest" >> $GITHUB_OUTPUT
+
+      - name: Update ECS Service
+        run: |
+          echo "🔄 Updating ECS service to use new image..."
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+          
+          echo "✅ ECS service update initiated!"
+          echo "Service will deploy the new image. Check status with:"
+          echo "  aws ecs describe-services --cluster ${{ env.ECS_CLUSTER }} --services ${{ env.ECS_SERVICE }} --region ${{ env.AWS_REGION }}"
 
       - name: Output image URI
         run: |
-          echo "✅ Image pushed successfully!"
+          echo "✅ Image pushed and ECS service updated!"
           echo "Image URI: ${{ steps.build-image.outputs.image }}"
           echo "Latest tag: ${{ steps.build-image.outputs.image_latest }}"
           echo ""
-          echo "Use this image URI in your Terraform deployment:"
-          echo "${{ steps.build-image.outputs.image_latest }}"
-
+          echo "ECS service '${{ env.ECS_SERVICE }}' is being updated with the new image."
