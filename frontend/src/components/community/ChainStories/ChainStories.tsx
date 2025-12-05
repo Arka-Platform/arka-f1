@@ -1,10 +1,12 @@
 import React, { useMemo, useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styles from './ChainStories.module.css'
 import Button from '../../shared/Button/Button'
 import { communityApi, ChainStoryResponse } from '../../../utils/api'
 import { useToast } from '../../../contexts/ToastContext'
 
 const ChainStories: React.FC = () => {
+  const navigate = useNavigate()
   const { success, error: showError } = useToast()
   const [stories, setStories] = useState<ChainStoryResponse[]>([])
   const [selectedStory, setSelectedStory] = useState<ChainStoryResponse | null>(null)
@@ -19,8 +21,9 @@ const ChainStories: React.FC = () => {
         if (data.length > 0) {
           setSelectedStory(data[0])
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error loading chains:', error)
+        showError('Failed to load chain stories. Please try again later.')
         // Set empty array on error to show empty state
         setStories([])
       } finally {
@@ -28,7 +31,7 @@ const ChainStories: React.FC = () => {
       }
     }
     loadChains()
-  }, [])
+  }, [showError])
 
   const handlePingChain = async (chainId: string) => {
     try {
@@ -99,14 +102,22 @@ const ChainStories: React.FC = () => {
               community, story-style.
             </p>
           </div>
-          <Button variant="primary" onClick={() => {}}>
+          <Button 
+            variant="primary" 
+            onClick={() => {
+              // Navigate to books marketplace to start a chain
+              navigate('/books')
+            }}
+          >
             Start a Chain
           </Button>
         </div>
 
         <div className={styles.scrollArea}>
-          {stories.length === 0 ? (
-            <p>No chains available</p>
+          {stories.length === 0 && !loading ? (
+            <div className={styles.emptyState}>
+              <p>No chains available. Start a chain by sharing a book!</p>
+            </div>
           ) : (
             stories.map((story) => (
             <article
@@ -122,7 +133,14 @@ const ChainStories: React.FC = () => {
               <div className={styles.storyContent}>
                 <p className={styles.storyTitle}>{story.title}</p>
                 <p className={styles.storyMeta}>{story.lastHop}</p>
-                <button className={styles.storyButton} type="button">
+                <button 
+                  className={styles.storyButton} 
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedStory(story)
+                  }}
+                >
                   View chain
                 </button>
               </div>

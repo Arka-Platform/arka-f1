@@ -177,6 +177,13 @@
   font-size: 1.2rem;
 }
 
+.emptyState {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--color-gray);
+  font-size: 1rem;
+}
+
 .storyButton {
   border: none;
   background: rgba(255, 255, 255, 0.15);

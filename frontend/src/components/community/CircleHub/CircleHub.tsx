@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useToast } from '../../../contexts/ToastContext'
 import styles from './CircleHub.module.css'
 import Button from '../../shared/Button/Button'
 import { communityApi, CommunityCircleResponse } from '../../../utils/api'
 
 const CircleHub: React.FC = () => {
+  const navigate = useNavigate()
+  const { error: showError } = useToast()
   const [circles, setCircles] = useState<CommunityCircleResponse[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -13,14 +17,17 @@ const CircleHub: React.FC = () => {
         setLoading(true)
         const data = await communityApi.getCircles()
         setCircles(data)
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error loading circles:', error)
+        showError('Failed to load reading circles. Please try again later.')
+        // Set empty array on error to show empty state
+        setCircles([])
       } finally {
         setLoading(false)
       }
     }
     loadCircles()
-  }, [])
+  }, [showError])
 
   if (loading) {
     return (
@@ -45,9 +52,9 @@ const CircleHub: React.FC = () => {
       </div>
 
       <div className={styles.circlesGrid}>
-        {circles.length === 0 ? (
+        {circles.length === 0 && !loading ? (
           <div className={styles.emptyState}>
-            <p>No circles available at the moment.</p>
+            <p>No circles available at the moment. Check back later!</p>
           </div>
         ) : (
           circles.map((circle) => (
@@ -89,12 +96,27 @@ const CircleHub: React.FC = () => {
               <span className={styles.streakPill}>
                 🔥 Chain alive for {circle.streakDays} days
               </span>
-              <Button variant="secondary" onClick={() => {}}>
+              <Button 
+                variant="secondary" 
+                onClick={() => {
+                  // Navigate to books filtered by circle tags/genre
+                  const genreTag = circle.tags[0] || circle.name.toLowerCase()
+                  navigate(`/books?genre=${encodeURIComponent(genreTag)}`)
+                }}
+              >
                 View Circle
               </Button>
             </div>
 
-            <button className={styles.ghostButton} type="button" onClick={() => {}}>
+            <button 
+              className={styles.ghostButton} 
+              type="button" 
+              onClick={() => {
+                // Navigate to books marketplace with circle filter
+                const genreTag = circle.tags[0] || circle.name.toLowerCase()
+                navigate(`/books?genre=${encodeURIComponent(genreTag)}`)
+              }}
+            >
               See live shelf
               <svg viewBox="0 0 24 24" fill="none">
                 <path
