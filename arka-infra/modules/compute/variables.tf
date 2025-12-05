@@ -91,3 +91,9 @@ variable "frontend_url" {
   type        = string
   default     = ""
 }
+
+variable "app_storage_bucket_name" {
+  description = "S3 bucket name for application storage (uploads, assets, etc.)"
+  type        = string
+  default     = ""
+}

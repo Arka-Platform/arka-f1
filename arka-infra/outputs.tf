@@ -16,7 +16,7 @@ output "public_subnet_ids" {
 # ALB Output
 output "alb_dns_name" {
   value       = module.compute.alb_dns_name
-  description = "Application load balancer DNS name - use this URL to access your backend API"
+  description = "Application load balancer DNS name - use this URL to access both frontend and backend (frontend at root, API at /api)"
 }
 
 output "alb_arn" {
@@ -91,39 +91,41 @@ output "ecr_repository_name" {
 
 # Service endpoint information
 output "service_endpoint_info" {
-  description = "Information about how to access the ECS service"
+  description = "Information about how to access the application"
   value = {
     cluster_name = module.compute.cluster_name
     service_name = module.compute.service_name
     alb_dns_name = module.compute.alb_dns_name
-    backend_url  = "http://${module.compute.alb_dns_name}"
-    note         = "Backend API is accessible via ALB at the URL above"
+    frontend_url = "http://${module.compute.alb_dns_name}"
+    backend_url  = "http://${module.compute.alb_dns_name}/api"
+    note         = "Both frontend and backend are served from the same ALB. Frontend at root, API at /api"
   }
 }
 
-# Frontend Outputs
-output "frontend_bucket_name" {
-  description = "S3 bucket name for frontend static files"
-  value       = module.frontend.bucket_name
-}
-
-output "frontend_bucket_arn" {
-  description = "ARN of frontend S3 bucket"
-  value       = module.frontend.bucket_arn
-}
-
+# Frontend Outputs (served from ALB via backend static files)
 output "frontend_url" {
-  description = "Frontend URL (CloudFront distribution or S3 website endpoint)"
-  value       = module.frontend.frontend_url
+  description = "Frontend URL (served from ALB via backend static files)"
+  value       = "http://${module.compute.alb_dns_name}"
 }
 
-output "frontend_cloudfront_distribution_id" {
-  description = "CloudFront distribution ID for frontend"
-  value       = module.frontend.cloudfront_distribution_id
-}
-
-output "frontend_cloudfront_domain_name" {
-  description = "CloudFront distribution domain name for frontend"
-  value       = module.frontend.cloudfront_domain_name
-}
+# Frontend module outputs commented out - using ALB instead
+# output "frontend_bucket_name" {
+#   description = "S3 bucket name for frontend static files"
+#   value       = module.frontend.bucket_name
+# }
+#
+# output "frontend_bucket_arn" {
+#   description = "ARN of frontend S3 bucket"
+#   value       = module.frontend.bucket_arn
+# }
+#
+# output "frontend_cloudfront_distribution_id" {
+#   description = "CloudFront distribution ID for frontend"
+#   value       = module.frontend.cloudfront_distribution_id
+# }
+#
+# output "frontend_cloudfront_domain_name" {
+#   description = "CloudFront distribution domain name for frontend"
+#   value       = module.frontend.cloudfront_domain_name
+# }
 

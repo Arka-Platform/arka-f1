@@ -29,7 +29,7 @@ public class BookService {
     if (bookRepository.existsByTitleIgnoreCaseAndAuthorIgnoreCase(request.title(), request.author())) {
       return Result.failure("Book already exists");
     }
-    // TODO: Get ownerId from authenticated user context
+    // For now, use placeholder. In production, get ownerId from authenticated user context
     UUID ownerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
     BookEntity entity = new BookEntity(request.title(), request.author(), request.description(), 
         request.genre(), null, null, request.price(), ownerId);
@@ -69,6 +69,54 @@ public class BookService {
         .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
         .map(mapper::toResponse)
         .toList();
+  }
+
+  public java.util.Optional<BookResponse> getBookById(UUID id) {
+    return bookRepository.findById(id)
+        .filter(book -> book.getStatus() == BookStatus.PUBLISHED)
+        .map(mapper::toResponse);
+  }
+
+  @Transactional
+  public Result<BookResponse> updateBook(UUID id, CreateBookRequest request) {
+    return bookRepository.findById(id)
+        .map(entity -> {
+          entity.setTitle(request.title());
+          entity.setAuthor(request.author());
+          entity.setDescription(request.description());
+          entity.setGenre(request.genre());
+          entity.setCreditPrice(request.price());
+          BookEntity saved = bookRepository.save(entity);
+          return Result.success(mapper.toResponse(saved));
+        })
+        .orElse(Result.failure("Book not found"));
+  }
+
+  @Transactional
+  public Result<Void> deleteBook(UUID id) {
+    return bookRepository.findById(id)
+        .map(entity -> {
+          entity.setStatus(BookStatus.DRAFT); // Mark as draft instead of deleting
+          bookRepository.save(entity);
+          return Result.<Void>success(null);
+        })
+        .orElse(Result.failure("Book not found"));
+  }
+
+  @Transactional
+  public Result<BookResponse> updateBookStatus(UUID id, String status) {
+    try {
+      BookStatus newStatus = BookStatus.valueOf(status.toUpperCase());
+      return bookRepository.findById(id)
+          .map(entity -> {
+            entity.setStatus(newStatus);
+            BookEntity saved = bookRepository.save(entity);
+            return Result.success(mapper.toResponse(saved));
+          })
+          .orElse(Result.failure("Book not found"));
+    } catch (IllegalArgumentException e) {
+      return Result.failure("Invalid status: " + status);
+    }
   }
 }
 

@@ -9,8 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -47,6 +51,47 @@ public class BookController {
       return ResponseEntity.ok(bookService.listBooksByGenre(genre.trim()));
     }
     return ResponseEntity.ok(bookService.listBooks(page, size));
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<?> getById(@PathVariable java.util.UUID id) {
+    return bookService.getBookById(id)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<?> update(
+      @PathVariable java.util.UUID id,
+      @RequestBody @Valid CreateBookRequest request) {
+    Result<BookResponse> result = bookService.updateBook(id, request);
+    return switch (result) {
+      case Result.Success<BookResponse> success -> ResponseEntity.ok(success.value());
+      case Result.Failure<BookResponse> failure -> ResponseEntity.badRequest()
+          .body(Map.of("error", failure.message()));
+    };
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> delete(@PathVariable java.util.UUID id) {
+    Result<Void> result = bookService.deleteBook(id);
+    return switch (result) {
+      case Result.Success<Void> success -> ResponseEntity.noContent().build();
+      case Result.Failure<Void> failure -> ResponseEntity.badRequest()
+          .body(Map.of("error", failure.message()));
+    };
+  }
+
+  @PatchMapping("/{id}/status")
+  public ResponseEntity<?> updateStatus(
+      @PathVariable java.util.UUID id,
+      @RequestParam String status) {
+    Result<BookResponse> result = bookService.updateBookStatus(id, status);
+    return switch (result) {
+      case Result.Success<BookResponse> success -> ResponseEntity.ok(success.value());
+      case Result.Failure<BookResponse> failure -> ResponseEntity.badRequest()
+          .body(Map.of("error", failure.message()));
+    };
   }
 }
 

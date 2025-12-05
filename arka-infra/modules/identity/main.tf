@@ -52,6 +52,22 @@ resource "aws_iam_role_policy" "ecs_task_default" {
           "logs:PutLogEvents"
         ]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:DeleteObject"
+        ]
+        Resource = var.app_storage_bucket_arn != "" ? "${var.app_storage_bucket_arn}/*" : "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket"
+        ]
+        Resource = var.app_storage_bucket_arn != "" ? var.app_storage_bucket_arn : "*"
       }
     ]
   })

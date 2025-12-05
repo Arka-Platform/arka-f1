@@ -150,6 +150,14 @@ resource "aws_ecs_task_definition" "this" {
         {
           name  = "FRONTEND_URL"
           value = var.frontend_url != "" ? var.frontend_url : "*"
+        },
+        {
+          name  = "AWS_S3_BUCKET_NAME"
+          value = var.app_storage_bucket_name != "" ? var.app_storage_bucket_name : ""
+        },
+        {
+          name  = "AWS_REGION"
+          value = data.aws_region.current.name
         }
       ]
       logConfiguration = {

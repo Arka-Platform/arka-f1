@@ -11,6 +11,12 @@ variable "ecs_task_execution_policies" {
   default = []
 }
 
+variable "app_storage_bucket_arn" {
+  description = "ARN of S3 bucket for application storage"
+  type        = string
+  default     = ""
+}
+
 
 
 

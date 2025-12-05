@@ -34,9 +34,12 @@ public class ExchangeController {
    */
   @PostMapping
   public ResponseEntity<?> createExchange(
-      @RequestBody @Valid CreateExchangeRequest request) {
-    // TODO: Get buyerId from authenticated user context
-    UUID buyerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder
+      @RequestBody @Valid CreateExchangeRequest request,
+      @RequestParam(required = false) UUID buyerId) {
+    // For now, accept buyerId as parameter. In production, get from authenticated user context
+    if (buyerId == null) {
+      buyerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
+    }
     
     Result<ExchangeResponse> result = exchangeService.createExchange(request.bookId(), buyerId);
     return switch (result) {
@@ -52,9 +55,12 @@ public class ExchangeController {
    * GET /api/v1/exchanges/my
    */
   @GetMapping("/my")
-  public ResponseEntity<List<ExchangeResponse>> getMyExchanges() {
-    // TODO: Get userId from authenticated user context
-    UUID userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder
+  public ResponseEntity<List<ExchangeResponse>> getMyExchanges(
+      @RequestParam(required = false) UUID userId) {
+    // For now, accept userId as parameter. In production, get from authenticated user context
+    if (userId == null) {
+      userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
+    }
     
     List<ExchangeResponse> exchanges = exchangeService.getUserExchanges(userId);
     return ResponseEntity.ok(exchanges);
@@ -76,9 +82,13 @@ public class ExchangeController {
    * PUT /api/v1/exchanges/{exchangeId}/confirm
    */
   @PutMapping("/{exchangeId}/confirm")
-  public ResponseEntity<?> confirmExchange(@PathVariable UUID exchangeId) {
-    // TODO: Get sellerId from authenticated user context
-    UUID sellerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder
+  public ResponseEntity<?> confirmExchange(
+      @PathVariable UUID exchangeId,
+      @RequestParam(required = false) UUID sellerId) {
+    // For now, accept sellerId as parameter. In production, get from authenticated user context
+    if (sellerId == null) {
+      sellerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
+    }
     
     Result<ExchangeResponse> result = exchangeService.confirmExchange(exchangeId, sellerId);
     return switch (result) {
@@ -94,9 +104,13 @@ public class ExchangeController {
    * PUT /api/v1/exchanges/{exchangeId}/complete
    */
   @PutMapping("/{exchangeId}/complete")
-  public ResponseEntity<?> completeExchange(@PathVariable UUID exchangeId) {
-    // TODO: Get buyerId from authenticated user context
-    UUID buyerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder
+  public ResponseEntity<?> completeExchange(
+      @PathVariable UUID exchangeId,
+      @RequestParam(required = false) UUID buyerId) {
+    // For now, accept buyerId as parameter. In production, get from authenticated user context
+    if (buyerId == null) {
+      buyerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
+    }
     
     Result<ExchangeResponse> result = exchangeService.completeExchange(exchangeId, buyerId);
     return switch (result) {
@@ -112,9 +126,13 @@ public class ExchangeController {
    * DELETE /api/v1/exchanges/{exchangeId}
    */
   @DeleteMapping("/{exchangeId}")
-  public ResponseEntity<?> cancelExchange(@PathVariable UUID exchangeId) {
-    // TODO: Get userId from authenticated user context
-    UUID userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder
+  public ResponseEntity<?> cancelExchange(
+      @PathVariable UUID exchangeId,
+      @RequestParam(required = false) UUID userId) {
+    // For now, accept userId as parameter. In production, get from authenticated user context
+    if (userId == null) {
+      userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
+    }
     
     Result<ExchangeResponse> result = exchangeService.cancelExchange(exchangeId, userId);
     return switch (result) {

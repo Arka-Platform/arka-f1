@@ -86,6 +86,7 @@ module "identity" {
     "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
     "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
   ]
+  app_storage_bucket_arn = module.storage.app_storage_bucket_arn
 }
 
 module "observability" {
@@ -119,7 +120,9 @@ module "compute" {
   database_name               = var.database_name
   database_username           = var.database_master_username
   database_password           = local.database_password
-  frontend_url                = var.frontend_url != "" ? var.frontend_url : module.frontend.frontend_url
+  # Use ALB URL for frontend (served from backend static files)
+  frontend_url            = var.frontend_url != "" ? var.frontend_url : "http://${module.compute.alb_dns_name}"
+  app_storage_bucket_name = module.storage.app_storage_bucket_name
 }
 
 module "database" {
@@ -148,15 +151,17 @@ module "database" {
   multi_az                     = var.database_multi_az
 }
 
-module "frontend" {
-  source = "./modules/frontend"
-
-  project           = var.project
-  environment       = var.environment
-  domain_name       = var.frontend_domain_name
-  certificate_arn   = var.frontend_certificate_arn
-  enable_cloudfront = var.frontend_enable_cloudfront
-}
+# Frontend module disabled - using ALB to serve both frontend and backend
+# Frontend static files are built into the backend JAR (see Dockerfile)
+# module "frontend" {
+#   source = "./modules/frontend"
+#
+#   project           = var.project
+#   environment       = var.environment
+#   domain_name       = var.frontend_domain_name
+#   certificate_arn   = var.frontend_certificate_arn
+#   enable_cloudfront = var.frontend_enable_cloudfront
+# }
 
 # Security group rule to allow ECS tasks to access RDS
 # Created separately to avoid circular dependency
