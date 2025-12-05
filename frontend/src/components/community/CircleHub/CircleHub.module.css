@@ -170,6 +170,14 @@
   height: 16px;
 }
 
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--color-gray);
+  font-size: 1rem;
+}
+
 @media (max-width: 768px) {
   .circleSection {
     padding: 3rem 1rem;

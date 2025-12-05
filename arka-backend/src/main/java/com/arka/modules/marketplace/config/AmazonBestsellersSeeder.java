@@ -47,10 +47,13 @@ public class AmazonBestsellersSeeder {
   @PostConstruct
   public void seed() {
     try {
-      if (bookRepository.count() > 0) {
-        log.info("Books already present, skipping Amazon bestsellers import");
+      long existingCount = bookRepository.count();
+      if (existingCount > 0) {
+        log.info("Books already present ({} books), skipping Amazon bestsellers import", existingCount);
         return;
       }
+      
+      log.info("No books found in database, starting Amazon bestsellers import...");
 
       // Load category-genre mapping
       loadCategoryGenreMapping();
@@ -63,8 +66,12 @@ public class AmazonBestsellersSeeder {
       }
 
       log.info("Importing Amazon bestsellers from CSV...");
-      importBooks(resource);
-      log.info("Successfully imported Amazon bestsellers");
+      int imported = importBooks(resource);
+      if (imported > 0) {
+        log.info("Successfully imported {} Amazon bestsellers", imported);
+      } else {
+        log.warn("Import completed but no books were imported. Check CSV format and data.");
+      }
     } catch (Exception e) {
       log.error("Failed to import Amazon bestsellers, continuing without seed data", e);
     }
@@ -93,7 +100,7 @@ public class AmazonBestsellersSeeder {
     }
   }
 
-  private void importBooks(ClassPathResource resource) throws IOException {
+  private int importBooks(ClassPathResource resource) throws IOException {
     Set<String> seenTitles = new HashSet<>();
     int imported = 0;
     int skipped = 0;
@@ -204,11 +211,16 @@ public class AmazonBestsellersSeeder {
             }
 
             book.setStatus(BookStatus.PUBLISHED);
-            bookRepository.save(book);
-            imported++;
-
-            if (imported % 100 == 0) {
-              log.info("Imported {} books so far...", imported);
+            try {
+              bookRepository.save(book);
+              imported++;
+              
+              if (imported % 100 == 0) {
+                log.info("Imported {} books so far...", imported);
+              }
+            } catch (Exception saveException) {
+              log.warn("Failed to save book '{}': {}", title, saveException.getMessage());
+              skipped++;
             }
           } catch (Exception e) {
             log.warn("Failed to import book from record: {}", e.getMessage());
@@ -219,6 +231,7 @@ public class AmazonBestsellersSeeder {
     }
 
     log.info("Import complete: {} imported, {} skipped", imported, skipped);
+    return imported;
   }
 
   private String getValue(CSVRecord record, String column) {

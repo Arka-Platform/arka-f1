@@ -21,6 +21,8 @@ const ChainStories: React.FC = () => {
         }
       } catch (error) {
         console.error('Error loading chains:', error)
+        // Set empty array on error to show empty state
+        setStories([])
       } finally {
         setLoading(false)
       }
@@ -35,8 +37,16 @@ const ChainStories: React.FC = () => {
       // Reload chains to get updated data
       const data = await communityApi.getChains()
       setStories(data)
-    } catch (error) {
-      showError('Failed to ping chain')
+      // Update selected story if it's the one we pinged
+      if (selectedStory?.id === chainId) {
+        const updated = data.find(s => s.id === chainId)
+        if (updated) {
+          setSelectedStory(updated)
+        }
+      }
+    } catch (error: any) {
+      showError(error?.message || 'Failed to ping chain')
+      console.error('Error pinging chain:', error)
     }
   }
 
@@ -47,8 +57,16 @@ const ChainStories: React.FC = () => {
       // Reload chains to get updated data
       const data = await communityApi.getChains()
       setStories(data)
-    } catch (error) {
-      showError('Failed to keep chain alive')
+      // Update selected story if it's the one we kept alive
+      if (selectedStory?.id === chainId) {
+        const updated = data.find(s => s.id === chainId)
+        if (updated) {
+          setSelectedStory(updated)
+        }
+      }
+    } catch (error: any) {
+      showError(error?.message || 'Failed to keep chain alive')
+      console.error('Error keeping chain alive:', error)
     }
   }
 

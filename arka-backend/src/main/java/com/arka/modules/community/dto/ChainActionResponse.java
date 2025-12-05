@@ -4,7 +4,7 @@ public record ChainActionResponse(
     String chainId,
     String status,
     int streakDays,
-    String message) {}
+    String lastHop) {}
 
 
 

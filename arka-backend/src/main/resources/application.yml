@@ -82,7 +82,7 @@ app:
     allowed-origins:
       - ${FRONTEND_URL:http://localhost:5173}
   amazon-bestsellers:
-    enabled: false  # Disable in production - CSV files may not be in container
+    enabled: true  # Enable in production - CSV files are in JAR resources
   aws:
     s3:
       bucket-name: ${AWS_S3_BUCKET_NAME:}

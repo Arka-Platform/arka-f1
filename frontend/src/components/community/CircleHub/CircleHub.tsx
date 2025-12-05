@@ -45,7 +45,12 @@ const CircleHub: React.FC = () => {
       </div>
 
       <div className={styles.circlesGrid}>
-        {circles.map((circle) => (
+        {circles.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>No circles available at the moment.</p>
+          </div>
+        ) : (
+          circles.map((circle) => (
           <article key={circle.id} className={styles.circleCard}>
             <div className={styles.circleHeader}>
               <div className={styles.circleBadge}>{circle.badge}</div>
@@ -102,7 +107,8 @@ const CircleHub: React.FC = () => {
               </svg>
             </button>
           </article>
-        ))}
+          ))
+        )}
       </div>
     </section>
   )
