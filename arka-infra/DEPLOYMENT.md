@@ -95,45 +95,37 @@ aws ecs update-service \
 
 ### 6. Get Service Endpoint
 
-Since ALB is currently disabled, you'll need to get the task IP addresses:
+Get the ALB DNS name (backend API endpoint):
 
 ```bash
-# List tasks
-TASK_ARN=$(aws ecs list-tasks \
-  --cluster $CLUSTER_NAME \
-  --service-name $SERVICE_NAME \
-  --region $AWS_REGION \
-  --query 'taskArns[0]' \
-  --output text)
-
-# Get task details
-aws ecs describe-tasks \
-  --cluster $CLUSTER_NAME \
-  --tasks $TASK_ARN \
-  --region $AWS_REGION \
-  --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' \
-  --output text | xargs -I {} aws ec2 describe-network-interfaces \
-  --network-interface-ids {} \
-  --region $AWS_REGION \
-  --query 'NetworkInterfaces[0].Association.PublicIp' \
-  --output text
+cd arka-infra
+terraform output alb_dns_name
 ```
 
-The backend API will be available at: `http://<TASK_IP>:8080`
+The backend API will be available at: `http://<ALB_DNS_NAME>`
+
+Example:
+```bash
+BACKEND_URL=$(terraform output -raw alb_dns_name)
+echo "Backend URL: http://${BACKEND_URL}"
+```
 
 ### 7. Deploy Frontend to S3
 
-After infrastructure is created, get the frontend bucket name:
+After infrastructure is created, get the frontend bucket name and backend URL:
 
 ```bash
-FRONTEND_BUCKET=$(cd arka-infra && terraform output -raw frontend_bucket_name)
-AWS_REGION=$(cd arka-infra && terraform output -raw aws_region || echo "us-east-1")
+cd arka-infra
+FRONTEND_BUCKET=$(terraform output -raw frontend_bucket_name)
+BACKEND_URL=$(terraform output -raw alb_dns_name)
+AWS_REGION=$(terraform output -raw aws_region || echo "us-east-1")
 ```
 
-Build the frontend:
+Build the frontend with backend URL:
 
 ```bash
-cd frontend
+cd ../frontend
+echo "VITE_API_BASE_URL=http://${BACKEND_URL}" > .env.production
 npm install
 npm run build
 ```
@@ -141,20 +133,6 @@ npm run build
 Upload frontend to S3:
 
 ```bash
-aws s3 sync dist/ s3://$FRONTEND_BUCKET --delete --region $AWS_REGION
-```
-
-Get the backend endpoint and configure frontend:
-
-```bash
-# Get backend task IP (see step 6)
-BACKEND_IP=<TASK_IP>
-
-# Create .env.production with backend URL
-echo "VITE_API_BASE_URL=http://${BACKEND_IP}:8080" > .env.production
-
-# Rebuild and redeploy
-npm run build
 aws s3 sync dist/ s3://$FRONTEND_BUCKET --delete --region $AWS_REGION
 ```
 

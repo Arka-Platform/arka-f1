@@ -82,11 +82,17 @@ terraform.tfvars (frontend_url)
 
 The frontend needs to know the backend API URL:
 
-1. **Build time**: Set `VITE_API_BASE_URL` environment variable
+1. **Build time**: Set `VITE_API_BASE_URL` environment variable to ALB DNS name
 2. **Runtime**: Frontend reads from `import.meta.env.VITE_API_BASE_URL`
 3. **Default**: Falls back to `http://localhost:8080` for local development
 
 **File**: `frontend/src/utils/api.ts`
+
+**Backend URL**: Use the ALB DNS name from Terraform output:
+```bash
+terraform output -raw alb_dns_name
+# Use: http://<alb_dns_name>
+```
 
 ## Deployment Workflow
 
@@ -133,41 +139,21 @@ This:
 
 ### 4. Get Backend Endpoint
 
-Since ALB is currently disabled, get the backend IP:
+Get the ALB DNS name (backend API endpoint):
 
 ```bash
 cd arka-infra
-CLUSTER_NAME=$(terraform output -raw cluster_name)
-SERVICE_NAME=$(terraform output -raw service_name)
-AWS_REGION=$(terraform output -raw aws_region || echo "us-east-1")
-
-# Get task IP
-TASK_ARN=$(aws ecs list-tasks \
-  --cluster $CLUSTER_NAME \
-  --service-name $SERVICE_NAME \
-  --region $AWS_REGION \
-  --query 'taskArns[0]' \
-  --output text)
-
-BACKEND_IP=$(aws ecs describe-tasks \
-  --cluster $CLUSTER_NAME \
-  --tasks $TASK_ARN \
-  --region $AWS_REGION \
-  --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' \
-  --output text | xargs -I {} aws ec2 describe-network-interfaces \
-  --network-interface-ids {} \
-  --region $AWS_REGION \
-  --query 'NetworkInterfaces[0].Association.PublicIp' \
-  --output text)
-
-echo "Backend URL: http://${BACKEND_IP}:8080"
+BACKEND_URL=$(terraform output -raw alb_dns_name)
+echo "Backend URL: http://${BACKEND_URL}"
 ```
 
 ### 5. Update Frontend with Backend URL
 
 ```bash
-cd frontend
-echo "VITE_API_BASE_URL=http://${BACKEND_IP}:8080" > .env.production
+cd arka-infra
+BACKEND_URL=$(terraform output -raw alb_dns_name)
+cd ../frontend
+echo "VITE_API_BASE_URL=http://${BACKEND_URL}" > .env.production
 npm run build
 cd ../arka-infra
 ./deploy-frontend.sh
@@ -197,7 +183,9 @@ cd arka-infra
 # Frontend URL
 terraform output frontend_url
 
-# Backend endpoint (requires manual retrieval - see step 4 above)
+# Backend ALB URL
+terraform output alb_dns_name
+# Use: http://$(terraform output -raw alb_dns_name)
 ```
 
 ## Troubleshooting
@@ -209,14 +197,20 @@ terraform output frontend_url
    aws ecs describe-services --cluster <cluster> --services <service> --region <region>
    ```
 
-2. Verify CORS configuration:
+2. Verify ALB is healthy:
+   ```bash
+   aws elbv2 describe-target-health --target-group-arn <target-group-arn> --region <region>
+   ```
+
+3. Verify CORS configuration:
    - Check `FRONTEND_URL` in ECS task definition
    - Check backend logs for CORS errors
    - Verify frontend URL matches backend CORS allowed origins
 
-3. Check security groups:
-   - ECS tasks should allow inbound traffic on port 8080
-   - Currently configured for public access (for testing)
+4. Check security groups:
+   - ALB security group should allow inbound traffic on port 80
+   - ECS service security group should allow traffic from ALB security group
+   - ECS tasks are in private subnets (ALB is in public subnets)
 
 ### Frontend not updating
 

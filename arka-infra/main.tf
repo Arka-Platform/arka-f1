@@ -170,12 +170,6 @@ resource "aws_security_group_rule" "rds_ingress_from_ecs" {
   description              = "PostgreSQL from ECS service"
 }
 
-# ALB Output - COMMENTED OUT (ALB is currently disabled)
-# output "alb_dns_name" {
-#   description = "Public DNS name of the application load balancer"
-#   value       = module.compute.alb_dns_name
-# }
-
 output "service_security_group_id" {
   value       = module.compute.service_security_group_id
   description = "Security group protecting ECS service"

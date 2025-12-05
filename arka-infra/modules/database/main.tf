@@ -64,7 +64,8 @@ resource "aws_db_instance" "this" {
   }
 
   # Ignore changes to final_snapshot_identifier to prevent unnecessary replacements
+  # Ignore changes to engine_version since AWS doesn't allow downgrading
   lifecycle {
-    ignore_changes = [final_snapshot_identifier]
+    ignore_changes = [final_snapshot_identifier, engine_version]
   }
 }

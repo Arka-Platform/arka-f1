@@ -42,22 +42,10 @@ resource "aws_subnet" "private" {
   }
 }
 
-resource "aws_eip" "nat" {
-  domain = "vpc"
-  tags = {
-    Name = "${var.project}-${var.environment}-nat-eip"
-  }
-}
-
-resource "aws_nat_gateway" "nat" {
-  allocation_id = aws_eip.nat.id
-  subnet_id     = values(aws_subnet.public)[0].id
-  depends_on    = [aws_internet_gateway.igw]
-
-  tags = {
-    Name = "${var.project}-${var.environment}-nat"
-  }
-}
+# NAT Gateway removed - not needed since:
+# - ECS tasks are in public subnets (can access internet directly)
+# - Database is in private subnets but doesn't need internet access
+# This saves ~$32/month in NAT Gateway costs
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
@@ -78,10 +66,8 @@ resource "aws_route_table_association" "public" {
 
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.this.id
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat.id
-  }
+  # No internet route needed - database in private subnets doesn't need internet access
+  # ECS tasks are in public subnets and can access internet directly
   tags = {
     Name = "${var.project}-${var.environment}-private-rt"
   }

@@ -37,6 +37,59 @@ resource "aws_s3_bucket_public_access_block" "logs" {
   restrict_public_buckets = true
 }
 
+# S3 bucket policy for ALB access logs
+data "aws_elb_service_account" "main" {
+  count = var.log_bucket_enabled ? 1 : 0
+}
+
+data "aws_caller_identity" "current" {
+  count = var.log_bucket_enabled ? 1 : 0
+}
+
+data "aws_region" "current" {
+  count = var.log_bucket_enabled ? 1 : 0
+}
+
+resource "aws_s3_bucket_policy" "logs" {
+  count  = var.log_bucket_enabled ? 1 : 0
+  bucket = aws_s3_bucket.logs[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = data.aws_elb_service_account.main[0].arn
+        }
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.logs[0].arn}/*"
+      },
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "delivery.logs.amazonaws.com"
+        }
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.logs[0].arn}/*"
+        Condition = {
+          StringEquals = {
+            "s3:x-amz-acl" = "bucket-owner-full-control"
+          }
+        }
+      },
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "delivery.logs.amazonaws.com"
+        }
+        Action   = "s3:GetBucketAcl"
+        Resource = aws_s3_bucket.logs[0].arn
+      }
+    ]
+  })
+}
+
 # Application storage bucket for future use (uploads, assets, etc.)
 resource "aws_s3_bucket" "app_storage" {
   count  = var.app_storage_bucket_enabled ? 1 : 0

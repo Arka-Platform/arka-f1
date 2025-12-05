@@ -1,7 +1,12 @@
-# ALB Output - COMMENTED OUT
-# output "alb_dns_name" {
-#   value = aws_lb.this.dns_name
-# }
+output "alb_dns_name" {
+  description = "DNS name of the Application Load Balancer"
+  value       = aws_lb.this.dns_name
+}
+
+output "alb_arn" {
+  description = "ARN of the Application Load Balancer"
+  value       = aws_lb.this.arn
+}
 
 output "service_security_group_id" {
   value = aws_security_group.service.id

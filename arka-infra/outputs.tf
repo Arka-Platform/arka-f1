@@ -13,11 +13,16 @@ output "public_subnet_ids" {
   description = "Public subnets for load balancer"
 }
 
-# ALB Output - COMMENTED OUT
-# output "alb_dns_name" {
-#   value       = module.compute.alb_dns_name
-#   description = "Application load balancer DNS"
-# }
+# ALB Output
+output "alb_dns_name" {
+  value       = module.compute.alb_dns_name
+  description = "Application load balancer DNS name - use this URL to access your backend API"
+}
+
+output "alb_arn" {
+  value       = module.compute.alb_arn
+  description = "Application load balancer ARN"
+}
 
 output "cluster_name" {
   value       = module.compute.cluster_name
@@ -90,7 +95,9 @@ output "service_endpoint_info" {
   value = {
     cluster_name = module.compute.cluster_name
     service_name = module.compute.service_name
-    note         = "Since ALB is disabled, use AWS CLI to get task IPs: aws ecs list-tasks --cluster ${module.compute.cluster_name} --service-name ${module.compute.service_name} --region ${var.aws_region}"
+    alb_dns_name = module.compute.alb_dns_name
+    backend_url  = "http://${module.compute.alb_dns_name}"
+    note         = "Backend API is accessible via ALB at the URL above"
   }
 }
 
