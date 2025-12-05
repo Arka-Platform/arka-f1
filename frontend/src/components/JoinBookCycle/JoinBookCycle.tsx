@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styles from './JoinBookCycle.module.css'
 
 interface JoinOption {
@@ -9,6 +10,7 @@ interface JoinOption {
 }
 
 const JoinBookCycle: React.FC = () => {
+  const navigate = useNavigate()
   const [isExpanded, setIsExpanded] = useState(true)
 
   const options: JoinOption[] = [
@@ -88,7 +90,13 @@ const JoinBookCycle: React.FC = () => {
                 <div className={styles.optionContent}>
                   <h3 className={styles.optionTitle}>{option.title}</h3>
                   <p className={styles.optionDescription}>{option.description}</p>
-                  <button className={styles.optionButton}>{option.buttonText}</button>
+                  <button 
+                    className={styles.optionButton}
+                    onClick={() => navigate('/register')}
+                    type="button"
+                  >
+                    {option.buttonText}
+                  </button>
                 </div>
               </div>
             ))}

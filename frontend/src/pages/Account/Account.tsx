@@ -30,6 +30,24 @@ const Account: React.FC = () => {
     if (user?.id) {
       loadUserData()
     }
+    // Load settings from localStorage if available
+    const savedSettings = localStorage.getItem('arka_user_settings')
+    if (savedSettings) {
+      try {
+        setSettings(JSON.parse(savedSettings))
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
+    // Load order preferences from localStorage if available
+    const savedPrefs = localStorage.getItem('arka_order_preferences')
+    if (savedPrefs) {
+      try {
+        setOrderPreferences(JSON.parse(savedPrefs))
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
   }, [user?.id])
 
   const loadUserData = async () => {
@@ -102,9 +120,18 @@ const Account: React.FC = () => {
     }
   }
 
-  const handleSaveSettings = () => {
-    console.log('Settings saved:', settings)
-    // Show success message
+  const handleSaveSettings = async () => {
+    try {
+      setSaving(true)
+      // TODO: Implement backend API for saving user settings
+      // For now, just save to localStorage
+      localStorage.setItem('arka_user_settings', JSON.stringify(settings))
+      success('Settings saved successfully!')
+    } catch (error: any) {
+      showError(error.message || 'Failed to save settings')
+    } finally {
+      setSaving(false)
+    }
   }
 
   if (loading) {
@@ -277,9 +304,9 @@ const Account: React.FC = () => {
                     </label>
                   </div>
                 </div>
-                <Button type="button" variant="primary" onClick={handleSaveSettings}>
-                  Save Settings
-                </Button>
+                  <Button type="button" variant="primary" onClick={handleSaveSettings} disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Settings'}
+                  </Button>
               </div>
             )}
 
@@ -336,8 +363,25 @@ const Account: React.FC = () => {
                       <span className={styles.toggleSlider} />
                     </label>
                   </div>
-                  <Button type="button" variant="primary" onClick={() => console.log('Order preferences saved:', orderPreferences)}>
-                    Save Preferences
+                  <Button 
+                    type="button" 
+                    variant="primary" 
+                    onClick={async () => {
+                      try {
+                        setSaving(true)
+                        // TODO: Implement backend API for saving order preferences
+                        // For now, just save to localStorage
+                        localStorage.setItem('arka_order_preferences', JSON.stringify(orderPreferences))
+                        success('Order preferences saved successfully!')
+                      } catch (error: any) {
+                        showError(error.message || 'Failed to save preferences')
+                      } finally {
+                        setSaving(false)
+                      }
+                    }}
+                    disabled={saving}
+                  >
+                    {saving ? 'Saving...' : 'Save Preferences'}
                   </Button>
                 </form>
               </div>

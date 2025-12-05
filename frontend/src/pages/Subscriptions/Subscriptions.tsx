@@ -7,7 +7,7 @@ import styles from './Subscriptions.module.css'
 
 const Subscriptions: React.FC = () => {
   const { user } = useAuth()
-  const { showToast } = useToast()
+  const { success, error: showError } = useToast()
   const [subscription, setSubscription] = useState<SubscriptionResponse | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -68,10 +68,10 @@ const Subscriptions: React.FC = () => {
     
     try {
       await subscriptionsApi.create({ userId: user.id, plan: planId })
-      showToast(`Subscribed to ${planId} plan`, 'success')
+      success(`Subscribed to ${planId} plan`)
       loadSubscription()
     } catch (error: any) {
-      showToast(error.message || 'Failed to subscribe', 'error')
+      showError(error.message || 'Failed to subscribe')
     }
   }
 
@@ -80,10 +80,10 @@ const Subscriptions: React.FC = () => {
     
     try {
       await subscriptionsApi.renew(user.id)
-      showToast('Subscription renewed', 'success')
+      success('Subscription renewed')
       loadSubscription()
     } catch (error: any) {
-      showToast(error.message || 'Failed to renew subscription', 'error')
+      showError(error.message || 'Failed to renew subscription')
     }
   }
 
@@ -96,10 +96,10 @@ const Subscriptions: React.FC = () => {
     
     try {
       await subscriptionsApi.cancel(user.id)
-      showToast('Subscription cancelled', 'success')
+      success('Subscription cancelled')
       loadSubscription()
     } catch (error: any) {
-      showToast(error.message || 'Failed to cancel subscription', 'error')
+      showError(error.message || 'Failed to cancel subscription')
     }
   }
 

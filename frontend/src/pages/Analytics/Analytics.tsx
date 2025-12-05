@@ -6,7 +6,7 @@ import styles from './Analytics.module.css'
 
 const Analytics: React.FC = () => {
   const { user } = useAuth()
-  const { showToast } = useToast()
+  const { error: showError } = useToast()
   const [userAnalytics, setUserAnalytics] = useState<UserAnalyticsResponse | null>(null)
   const [platformInsights, setPlatformInsights] = useState<PlatformInsightsResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -26,7 +26,7 @@ const Analytics: React.FC = () => {
       setUserAnalytics(userData)
       setPlatformInsights(platformData)
     } catch (error) {
-      showToast('Failed to load analytics', 'error')
+      showError('Failed to load analytics')
     } finally {
       setLoading(false)
     }

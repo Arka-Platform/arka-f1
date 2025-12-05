@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useToast } from '../../contexts/ToastContext'
 import Button from '../../components/shared/Button/Button'
 import Select from '../../components/shared/Select/Select'
 import SelectableTag from '../../components/shared/SelectableTag/SelectableTag'
@@ -7,6 +8,7 @@ import styles from './Preferences.module.css'
 
 const Preferences: React.FC = () => {
   const navigate = useNavigate()
+  const { success } = useToast()
   const [formData, setFormData] = useState({
     favoriteGenres: [] as string[],
     occupation: '',
@@ -132,7 +134,10 @@ const Preferences: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (validateForm()) {
-      console.log('Preferences submitted:', formData)
+      // TODO: Implement backend API for saving preferences
+      // For now, save to localStorage
+      localStorage.setItem('arka_user_preferences', JSON.stringify(formData))
+      success('Preferences saved successfully!')
       // Navigate to home page after successful preferences submission
       navigate('/home')
     }

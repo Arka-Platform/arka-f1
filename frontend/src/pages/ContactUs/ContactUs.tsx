@@ -1,24 +1,39 @@
 import React, { useState } from 'react'
+import { useToast } from '../../contexts/ToastContext'
 import Input from '../../components/shared/Input/Input'
 import Textarea from '../../components/shared/Textarea/Textarea'
 import Button from '../../components/shared/Button/Button'
 import styles from './ContactUs.module.css'
 
 const ContactUs: React.FC = () => {
+  const { success, error: showError } = useToast()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: '',
     message: '',
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Form submitted:', formData)
+    setIsSubmitting(true)
+    
+    // Simulate API call - in production, this would call a backend endpoint
+    try {
+      // TODO: Replace with actual API call when backend endpoint is available
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      success('Thank you for your message! We will get back to you soon.')
+      setFormData({ name: '', email: '', subject: '', message: '' })
+    } catch (err) {
+      showError('Failed to send message. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const faqs = [
@@ -79,8 +94,8 @@ const ContactUs: React.FC = () => {
                   fullWidth
                   required
                 />
-                <Button type="submit" variant="primary" fullWidth>
-                  Send Message
+                <Button type="submit" variant="primary" fullWidth disabled={isSubmitting}>
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </Button>
               </form>
             </div>

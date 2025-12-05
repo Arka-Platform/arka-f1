@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import BookCard, { Book } from '../../components/shared/BookCard/BookCard'
 import Input from '../../components/shared/Input/Input'
 import Select from '../../components/shared/Select/Select'
@@ -23,9 +24,10 @@ const genres = [
 ]
 
 const BooksMarketplace: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
   const { addToCart } = useCart()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedGenre, setSelectedGenre] = useState('')
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '')
+  const [selectedGenre, setSelectedGenre] = useState(searchParams.get('genre') || '')
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -74,14 +76,31 @@ const BooksMarketplace: React.FC = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value
     setSearchQuery(query)
+    // Update URL params
+    const newParams = new URLSearchParams(searchParams)
     if (query.trim()) {
+      newParams.set('search', query.trim())
+      newParams.delete('genre')
       trackSearch(query, selectedGenre)
+    } else {
+      newParams.delete('search')
     }
+    setSearchParams(newParams)
   }
 
   const handleGenreChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedGenre(e.target.value)
+    const genre = e.target.value
+    setSelectedGenre(genre)
     setSearchQuery('') // Clear search when filtering by genre
+    // Update URL params
+    const newParams = new URLSearchParams(searchParams)
+    if (genre) {
+      newParams.set('genre', genre)
+      newParams.delete('search')
+    } else {
+      newParams.delete('genre')
+    }
+    setSearchParams(newParams)
   }
 
   const handleBookClick = (book: Book) => {

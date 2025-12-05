@@ -1,13 +1,18 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styles from './Hero.module.css'
 
 const Hero: React.FC = () => {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle search logic here
-    console.log('Searching for:', searchQuery)
+    if (searchQuery.trim()) {
+      navigate(`/books?search=${encodeURIComponent(searchQuery.trim())}`)
+    } else {
+      navigate('/books')
+    }
   }
 
   return (
@@ -39,12 +44,6 @@ const Hero: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Search for books, authors, or genres"
             />
-            <button type="button" className={styles.searchIconButton} aria-label="Search">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
-            </button>
             <button type="submit" className={styles.findButton} aria-label="Find books">Find</button>
           </form>
         </div>

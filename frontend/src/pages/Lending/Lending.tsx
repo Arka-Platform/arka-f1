@@ -7,7 +7,7 @@ import styles from './Lending.module.css'
 
 const Lending: React.FC = () => {
   const { user } = useAuth()
-  const { showToast } = useToast()
+  const { success, error: showError } = useToast()
   const [lendings, setLendings] = useState<LendingResponse[]>([])
   const [activeLendings, setActiveLendings] = useState<LendingResponse[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,7 +31,7 @@ const Lending: React.FC = () => {
       setLendings(all)
       setActiveLendings(active)
     } catch (error) {
-      showToast('Failed to load lendings', 'error')
+      showError('Failed to load lendings')
     } finally {
       setLoading(false)
     }
@@ -42,10 +42,10 @@ const Lending: React.FC = () => {
     
     try {
       await lendingApi.approve(lendingId, user.id)
-      showToast('Lending request approved', 'success')
+      success('Lending request approved')
       loadLendings()
     } catch (error) {
-      showToast('Failed to approve lending', 'error')
+      showError('Failed to approve lending')
     }
   }
 
@@ -54,10 +54,10 @@ const Lending: React.FC = () => {
     
     try {
       await lendingApi.reject(lendingId, user.id, reason)
-      showToast('Lending request rejected', 'success')
+      success('Lending request rejected')
       loadLendings()
     } catch (error) {
-      showToast('Failed to reject lending', 'error')
+      showError('Failed to reject lending')
     }
   }
 
@@ -66,10 +66,10 @@ const Lending: React.FC = () => {
     
     try {
       await lendingApi.start(lendingId, user.id)
-      showToast('Lending started', 'success')
+      success('Lending started')
       loadLendings()
     } catch (error) {
-      showToast('Failed to start lending', 'error')
+      showError('Failed to start lending')
     }
   }
 
@@ -78,10 +78,10 @@ const Lending: React.FC = () => {
     
     try {
       await lendingApi.return(lendingId, user.id)
-      showToast('Book returned successfully', 'success')
+      success('Book returned successfully')
       loadLendings()
     } catch (error) {
-      showToast('Failed to return book', 'error')
+      showError('Failed to return book')
     }
   }
 
