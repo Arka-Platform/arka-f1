@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { api } from '../utils/api'
 
 interface User {
   id: string
@@ -45,33 +46,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Check for existing session on mount
   useEffect(() => {
     const storedUser = localStorage.getItem('arka_user')
-    if (storedUser) {
+    const storedToken = localStorage.getItem('arka_token')
+    if (storedUser && storedToken) {
       try {
         setUser(JSON.parse(storedUser))
       } catch (error) {
         console.error('Error parsing stored user:', error)
         localStorage.removeItem('arka_user')
+        localStorage.removeItem('arka_token')
       }
     }
     setIsLoading(false)
   }, [])
 
-  const login = async (email: string, _password: string) => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await api.post<{
+        token: string
+        userId: string
+        email: string
+        firstName: string
+        lastName: string
+      }>('/api/v1/users/login', { email, password })
       
-      // In a real app, this would be an API call
       const userData: User = {
-        id: '1',
-        email,
-        firstName: email.split('@')[0],
-        lastName: 'User',
+        id: response.userId,
+        email: response.email,
+        firstName: response.firstName,
+        lastName: response.lastName,
       }
       
       setUser(userData)
       localStorage.setItem('arka_user', JSON.stringify(userData))
+      localStorage.setItem('arka_token', response.token)
     } catch (error) {
       throw error
     } finally {
@@ -82,19 +90,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (userData: RegisterData) => {
     setIsLoading(true)
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await api.post<{
+        token: string
+        userId: string
+        email: string
+        firstName: string
+        lastName: string
+      }>('/api/v1/users/register', userData)
       
-      // In a real app, this would be an API call
       const newUser: User = {
-        id: Date.now().toString(),
-        email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
+        id: response.userId,
+        email: response.email,
+        firstName: response.firstName,
+        lastName: response.lastName,
       }
       
       setUser(newUser)
       localStorage.setItem('arka_user', JSON.stringify(newUser))
+      localStorage.setItem('arka_token', response.token)
     } catch (error) {
       throw error
     } finally {
@@ -105,6 +118,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     setUser(null)
     localStorage.removeItem('arka_user')
+    localStorage.removeItem('arka_token')
   }
 
   return (

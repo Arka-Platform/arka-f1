@@ -1,71 +1,38 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import styles from './CircleHub.module.css'
 import Button from '../../shared/Button/Button'
-
-interface ReadingCircle {
-  id: string
-  name: string
-  description: string
-  host: string
-  members: number
-  activeChains: number
-  streakDays: number
-  tags: string[]
-  badge: string
-}
-
-const circleData: ReadingCircle[] = [
-  {
-    id: 'south-asian-lit',
-    name: 'South Asian Lit Relay',
-    description:
-      'Hyper-curated swaps of contemporary fiction, translated classics, and diaspora voices across India, Pakistan, Sri Lanka, and Bangladesh.',
-    host: 'Anika Bhattacharya',
-    members: 214,
-    activeChains: 18,
-    streakDays: 42,
-    tags: ['Fiction', 'Translation', 'Diaspora'],
-    badge: 'SA',
-  },
-  {
-    id: 'climate-collective',
-    name: 'Climate Collective',
-    description:
-      'A circular shelf for climate nonfiction, regenerative design, and optimistic futurism—paired with quarterly micro-salons.',
-    host: 'Emmanuel Nwosu',
-    members: 168,
-    activeChains: 11,
-    streakDays: 29,
-    tags: ['Climate', 'Design', 'Policy'],
-    badge: 'CC',
-  },
-  {
-    id: 'moonlight-club',
-    name: 'Moonlight Club',
-    description:
-      'Late-night readers trading literary thrillers & speculative mysteries with a 7-day cadence to keep the suspense alive.',
-    host: 'Maya Ortiz',
-    members: 132,
-    activeChains: 9,
-    streakDays: 17,
-    tags: ['Thriller', 'Speculative', 'Night Owls'],
-    badge: 'MC',
-  },
-  {
-    id: 'tiny-hands',
-    name: 'Tiny Hands Exchange',
-    description:
-      'Parents and caregivers swapping STEM-forward picture books, Montessori kits, and tactile storyboards for ages 3-8.',
-    host: 'Jerome Lee',
-    members: 95,
-    activeChains: 7,
-    streakDays: 21,
-    tags: ['Kids', 'STEM', 'Montessori'],
-    badge: 'TH',
-  },
-]
+import { communityApi, CommunityCircleResponse } from '../../../utils/api'
 
 const CircleHub: React.FC = () => {
+  const [circles, setCircles] = useState<CommunityCircleResponse[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadCircles = async () => {
+      try {
+        setLoading(true)
+        const data = await communityApi.getCircles()
+        setCircles(data)
+      } catch (error) {
+        console.error('Error loading circles:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadCircles()
+  }, [])
+
+  if (loading) {
+    return (
+      <section className={styles.circleSection}>
+        <div className={styles.sectionHeader}>
+          <span className={styles.sectionEyebrow}>Community Exchange</span>
+          <h2 className={styles.sectionTitle}>Circles as Hubs</h2>
+          <p className={styles.sectionSubtitle}>Loading circles...</p>
+        </div>
+      </section>
+    )
+  }
   return (
     <section className={styles.circleSection}>
       <div className={styles.sectionHeader}>
@@ -78,7 +45,7 @@ const CircleHub: React.FC = () => {
       </div>
 
       <div className={styles.circlesGrid}>
-        {circleData.map((circle) => (
+        {circles.map((circle) => (
           <article key={circle.id} className={styles.circleCard}>
             <div className={styles.circleHeader}>
               <div className={styles.circleBadge}>{circle.badge}</div>

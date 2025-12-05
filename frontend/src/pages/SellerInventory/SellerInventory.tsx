@@ -1,5 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useToast } from '../../contexts/ToastContext'
+import { useAuth } from '../../contexts/AuthContext'
+import { booksApi, BookResponse, uploadApi } from '../../utils/api'
 import Input from '../../components/shared/Input/Input'
 import Textarea from '../../components/shared/Textarea/Textarea'
 import Select from '../../components/shared/Select/Select'
@@ -22,58 +24,42 @@ export interface InventoryBook {
   orders?: number
 }
 
+// Map BookResponse to InventoryBook
+const bookToInventory = (book: BookResponse): InventoryBook => {
+  // Map backend status to frontend status
+  const statusMap: Record<string, 'available' | 'pending' | 'sold'> = {
+    'PUBLISHED': 'available',
+    'DRAFT': 'pending',
+    'SOLD': 'sold',
+  }
+  
+  return {
+    id: book.id,
+    title: book.title,
+    author: book.author,
+    isbn: book.isbn || undefined,
+    description: book.description || '',
+    price: book.price || 0,
+    condition: 'good', // Default since backend doesn't have condition field
+    category: book.genre || 'Uncategorized',
+    image: book.imageUrl || undefined,
+    status: statusMap[book.status] || 'available',
+    listedDate: book.createdAt ? new Date(book.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    views: book.ratingsCount || 0,
+    orders: 0, // Not tracked in backend yet
+  }
+}
+
 const SellerInventory: React.FC = () => {
-  const { success } = useToast()
+  const { success, error: showError } = useToast()
+  const { user } = useAuth()
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingBook, setEditingBook] = useState<InventoryBook | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
-
-  // Mock inventory data - in real app, this would come from API
-  const [inventory, setInventory] = useState<InventoryBook[]>([
-    {
-      id: '1',
-      title: 'The Great Gatsby',
-      author: 'F. Scott Fitzgerald',
-      isbn: '978-0-7432-7356-5',
-      description: 'A classic American novel set in the Jazz Age.',
-      price: 15.00,
-      condition: 'like-new',
-      category: 'Fiction',
-      status: 'available',
-      listedDate: '2024-01-15',
-      views: 45,
-      orders: 2,
-    },
-    {
-      id: '2',
-      title: 'Calculus: Early Transcendentals',
-      author: 'James Stewart',
-      isbn: '978-1-305-27033-6',
-      description: 'Comprehensive calculus textbook, 8th edition.',
-      price: 40.00,
-      condition: 'good',
-      category: 'Textbook',
-      status: 'pending',
-      listedDate: '2024-01-20',
-      views: 23,
-      orders: 1,
-    },
-    {
-      id: '3',
-      title: 'The Very Hungry Caterpillar',
-      author: 'Eric Carle',
-      description: 'A beloved children\'s book.',
-      price: 10.00,
-      condition: 'new',
-      category: "Children's Books",
-      status: 'sold',
-      listedDate: '2024-01-10',
-      views: 67,
-      orders: 3,
-    },
-  ])
+  const [inventory, setInventory] = useState<InventoryBook[]>([])
+  const [loading, setLoading] = useState(true)
 
   const [formData, setFormData] = useState({
     title: '',
@@ -87,6 +73,9 @@ const SellerInventory: React.FC = () => {
   })
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const categories = [
     'Fiction',
@@ -125,10 +114,81 @@ const SellerInventory: React.FC = () => {
     ...categories.map((cat) => ({ value: cat, label: cat })),
   ]
 
+  // Load inventory on mount
+  useEffect(() => {
+    if (user?.id) {
+      loadInventory()
+    }
+  }, [user?.id])
+
+  const loadInventory = async () => {
+    if (!user?.id) return
+    
+    try {
+      setLoading(true)
+      const books = await booksApi.getMyBooks(user.id)
+      setInventory(books.map(bookToInventory))
+    } catch (err) {
+      showError('Failed to load inventory')
+      console.error('Error loading inventory:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     if (formErrors[field]) {
       setFormErrors((prev) => ({ ...prev, [field]: '' }))
+    }
+  }
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showError('Please select an image file')
+      return
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showError('Image size must be less than 5MB')
+      return
+    }
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+
+    // Upload file
+    handleImageUpload(file)
+  }
+
+  const handleImageUpload = async (file: File) => {
+    try {
+      setUploadingImage(true)
+      const result = await uploadApi.uploadBookImage(file)
+      setFormData((prev) => ({ ...prev, image: result.url }))
+      success('Image uploaded successfully!')
+    } catch (err: any) {
+      showError(err.message || 'Failed to upload image')
+      setImagePreview(null)
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  const handleRemoveImage = () => {
+    setFormData((prev) => ({ ...prev, image: '' }))
+    setImagePreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
   }
 
@@ -159,52 +219,56 @@ const SellerInventory: React.FC = () => {
     return Object.keys(errors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateForm()) return
 
-    if (editingBook) {
-      // Update existing book
-      setInventory((prev) =>
-        prev.map((book) =>
-          book.id === editingBook.id
-            ? {
-                ...book,
-                ...formData,
-                price: parseFloat(formData.price),
-              }
-            : book
-        )
-      )
-      success('Book updated successfully!')
-      setEditingBook(null)
-    } else {
-      // Add new book
-      const newBook: InventoryBook = {
-        id: Date.now().toString(),
-        ...formData,
-        price: parseFloat(formData.price),
-        status: 'available',
-        listedDate: new Date().toISOString().split('T')[0],
-        views: 0,
-        orders: 0,
+    try {
+      if (editingBook) {
+        // Update existing book
+        await booksApi.update(editingBook.id, {
+          title: formData.title,
+          author: formData.author,
+          description: formData.description,
+          genre: formData.category,
+          price: parseFloat(formData.price),
+          imageUrl: formData.image || undefined,
+        })
+        success('Book updated successfully!')
+      } else {
+        // Add new book
+        await booksApi.create({
+          title: formData.title,
+          author: formData.author,
+          description: formData.description,
+          genre: formData.category,
+          price: parseFloat(formData.price),
+          imageUrl: formData.image || undefined,
+        })
+        success('Book added to your bookshelf!')
       }
-      setInventory((prev) => [...prev, newBook])
-      success('Book added to your bookshelf!')
+      
+      // Reload inventory
+      await loadInventory()
+      
+      // Reset form
+      setFormData({
+        title: '',
+        author: '',
+        isbn: '',
+        description: '',
+        price: '',
+        condition: 'good',
+        category: '',
+        image: '',
+      })
+      setImagePreview(null)
+      setShowAddForm(false)
+      setEditingBook(null)
+    } catch (err) {
+      showError(editingBook ? 'Failed to update book' : 'Failed to add book')
+      console.error('Error saving book:', err)
     }
-
-    // Reset form
-    setFormData({
-      title: '',
-      author: '',
-      isbn: '',
-      description: '',
-      price: '',
-      condition: 'good',
-      category: '',
-      image: '',
-    })
-    setShowAddForm(false)
   }
 
   const handleEdit = (book: InventoryBook) => {
@@ -219,21 +283,41 @@ const SellerInventory: React.FC = () => {
       category: book.category,
       image: book.image || '',
     })
+    setImagePreview(book.image || null)
     setShowAddForm(true)
   }
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this book?')) {
-      setInventory((prev) => prev.filter((book) => book.id !== id))
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this book?')) {
+      return
+    }
+    
+    try {
+      await booksApi.delete(id)
       success('Book deleted successfully!')
+      await loadInventory()
+    } catch (err) {
+      showError('Failed to delete book')
+      console.error('Error deleting book:', err)
     }
   }
 
-  const handleStatusChange = (id: string, newStatus: InventoryBook['status']) => {
-    setInventory((prev) =>
-      prev.map((book) => (book.id === id ? { ...book, status: newStatus } : book))
-    )
-    success(`Book status updated to ${newStatus}!`)
+  const handleStatusChange = async (id: string, newStatus: InventoryBook['status']) => {
+    // Map frontend status to backend status
+    const statusMap: Record<string, string> = {
+      'available': 'PUBLISHED',
+      'pending': 'DRAFT',
+      'sold': 'SOLD',
+    }
+    
+    try {
+      await booksApi.updateStatus(id, statusMap[newStatus])
+      success(`Book status updated to ${newStatus}!`)
+      await loadInventory()
+    } catch (err) {
+      showError('Failed to update book status')
+      console.error('Error updating status:', err)
+    }
   }
 
   const handleCancel = () => {
@@ -249,7 +333,11 @@ const SellerInventory: React.FC = () => {
       category: '',
       image: '',
     })
+    setImagePreview(null)
     setFormErrors({})
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
 
   // Filter and search inventory
@@ -287,6 +375,16 @@ const SellerInventory: React.FC = () => {
       default:
         return ''
     }
+  }
+
+  if (loading) {
+    return (
+      <div className={styles.inventory}>
+        <div className={styles.container}>
+          <div className={styles.loading}>Loading inventory...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -414,14 +512,67 @@ const SellerInventory: React.FC = () => {
                 required
               />
 
-              <Input
-                label="Image URL (optional)"
-                type="url"
-                value={formData.image}
-                onChange={(e) => handleInputChange('image', e.target.value)}
-                placeholder="https://example.com/book-image.jpg"
-                fullWidth
-              />
+              {/* Image Upload Section */}
+              <div className={styles.imageUploadSection}>
+                <label className={styles.imageUploadLabel}>Book Cover Image (optional)</label>
+                
+                {imagePreview || formData.image ? (
+                  <div className={styles.imagePreviewContainer}>
+                    <div className={styles.imagePreview}>
+                      <img 
+                        src={imagePreview || formData.image} 
+                        alt="Book preview" 
+                        className={styles.previewImage}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className={styles.removeImageButton}
+                        aria-label="Remove image"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                    {uploadingImage && (
+                      <div className={styles.uploadProgress}>
+                        <span>Uploading...</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className={styles.imageUploadArea}>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                      onChange={handleImageSelect}
+                      className={styles.fileInput}
+                      id="book-image-upload"
+                      disabled={uploadingImage}
+                    />
+                    <label htmlFor="book-image-upload" className={styles.uploadLabel}>
+                      <div className={styles.uploadIcon}>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="17 8 12 3 7 8" />
+                          <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                      </div>
+                      <div className={styles.uploadText}>
+                        <p className={styles.uploadTitle}>
+                          {uploadingImage ? 'Uploading...' : 'Click to upload or drag and drop'}
+                        </p>
+                        <p className={styles.uploadSubtitle}>
+                          PNG, JPG, WEBP or GIF (max. 5MB)
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                )}
+              </div>
 
               <div className={styles.formActions}>
                 <Button type="button" variant="outline" onClick={handleCancel}>

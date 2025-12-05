@@ -1,16 +1,53 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
+import { useToast } from '../../contexts/ToastContext'
+import { ordersApi, OrderResponse } from '../../utils/api'
 import Button from '../../components/shared/Button/Button'
 import styles from './OrderHistory.module.css'
 
 const OrderHistory: React.FC = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { error: showError } = useToast()
+  const [orders, setOrders] = useState<OrderResponse[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const recentOrders = [
-    { id: 'ORD-001', date: '2024-01-15', items: 3, total: '$9.99', status: 'Completed' },
-    { id: 'ORD-002', date: '2024-01-10', items: 2, total: '$15.00', status: 'In Transit' },
-    { id: 'ORD-003', date: '2024-01-05', items: 1, total: '$8.99', status: 'Processing' },
-  ]
+  useEffect(() => {
+    if (user?.id) {
+      loadOrders()
+    }
+  }, [user?.id])
+
+  const loadOrders = async () => {
+    if (!user?.id) return
+    
+    try {
+      setLoading(true)
+      const data = await ordersApi.getMyOrders(user.id)
+      setOrders(data)
+    } catch (err) {
+      showError('Failed to load order history')
+      console.error('Error loading orders:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getStatusClass = (status: string) => {
+    const statusLower = status.toLowerCase().replace('_', '')
+    return styles[statusLower] || ''
+  }
+
+  if (loading) {
+    return (
+      <div className={styles.orderHistory}>
+        <div className={styles.container}>
+          <div className={styles.loading}>Loading order history...</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.orderHistory}>
@@ -21,33 +58,38 @@ const OrderHistory: React.FC = () => {
         </p>
 
         <div className={styles.ordersList}>
-          {recentOrders.map((order) => (
-            <div key={order.id} className={styles.orderCard}>
-              <div className={styles.orderHeader}>
-                <div>
-                  <h3 className={styles.orderId}>{order.id}</h3>
-                  <p className={styles.orderDate}>{order.date}</p>
+          {orders.map((order) => {
+            const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0)
+            return (
+              <div key={order.id} className={styles.orderCard}>
+                <div className={styles.orderHeader}>
+                  <div>
+                    <h3 className={styles.orderId}>Order #{order.trackingNumber || order.id.substring(0, 8)}</h3>
+                    <p className={styles.orderDate}>
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <span className={`${styles.orderStatus} ${getStatusClass(order.status)}`}>
+                    {order.status.replace('_', ' ')}
+                  </span>
                 </div>
-                <span className={`${styles.orderStatus} ${styles[order.status.toLowerCase().replace(' ', '')]}`}>
-                  {order.status}
-                </span>
+                <div className={styles.orderDetails}>
+                  <span>{itemCount} item{itemCount !== 1 ? 's' : ''}</span>
+                  <span className={styles.orderTotal}>${order.totalAmount.toFixed(2)}</span>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate(`/tracking/${order.id}`)}
+                >
+                  Track Order
+                </Button>
               </div>
-              <div className={styles.orderDetails}>
-                <span>{order.items} items</span>
-                <span className={styles.orderTotal}>{order.total}</span>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate(`/tracking/${order.id}`)}
-              >
-                Track Order
-              </Button>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
-        {recentOrders.length === 0 && (
+        {orders.length === 0 && (
           <div className={styles.emptyState}>
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={styles.emptyIcon}>
               <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
@@ -69,5 +111,3 @@ const OrderHistory: React.FC = () => {
 }
 
 export default OrderHistory
-
-

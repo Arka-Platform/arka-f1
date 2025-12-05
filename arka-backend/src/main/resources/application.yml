@@ -29,13 +29,11 @@ app:
   cors:
     allowed-origins:
       - http://localhost:5173
-  books-dataset:
-    enabled: false  # Disable in production - CSV files may not be in container
-    books-csv-path: resources/books_data/books.csv
-    ratings-csv-path: resources/books_data/ratings.csv
-    max-books: 8000
-    batch-size: 500
-    min-rating-count: 5
+  jwt:
+    secret: ${JWT_SECRET:arka-secret-key-change-in-production-min-256-bits-long-please-use-a-strong-secret-key}
+    expiration: ${JWT_EXPIRATION:86400000}  # 24 hours in milliseconds
+  amazon-bestsellers:
+    enabled: true  # Enable Amazon bestsellers CSV import
   aws:
     s3:
       bucket-name: ${AWS_S3_BUCKET_NAME:}
@@ -83,7 +81,7 @@ app:
   cors:
     allowed-origins:
       - ${FRONTEND_URL:http://localhost:5173}
-  books-dataset:
+  amazon-bestsellers:
     enabled: false  # Disable in production - CSV files may not be in container
   aws:
     s3:
@@ -109,11 +107,8 @@ app:
     allowed-origins:
       - http://localhost:5173
       - http://localhost:3000
-  books-dataset:
-    enabled: true
-    max-books: 6000
-    batch-size: 400
-    min-rating-count: 3
+  amazon-bestsellers:
+    enabled: true  # Enable for local development
 
 
 

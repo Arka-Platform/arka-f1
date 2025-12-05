@@ -1,74 +1,74 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import styles from './ChainStories.module.css'
 import Button from '../../shared/Button/Button'
-
-interface ChainStory {
-  id: string
-  title: string
-  chainBadge: string
-  coverLabel: string
-  streakDays: number
-  hops: number
-  lastHop: string
-  participants: Array<{
-    name: string
-    location: string
-    handoff: string
-  }>
-}
-
-const stories: ChainStory[] = [
-  {
-    id: 'saffron-summer',
-    title: 'A Saffron Summer',
-    chainBadge: 'Chain · 12 hops',
-    coverLabel: 'Poetry Relay',
-    streakDays: 48,
-    hops: 12,
-    lastHop: 'Bangalore → Kochi · 36h ago',
-    participants: [
-      { name: 'Anika Bhattacharya', location: 'Kolkata', handoff: 'sent to Maya' },
-      { name: 'Maya Ortiz', location: 'Dubai', handoff: 'sent to Aarav' },
-      { name: 'Aarav Menon', location: 'Bangalore', handoff: 'sent to Lila' },
-    ],
-  },
-  {
-    id: 'biosphere',
-    title: 'Designing a Biosphere',
-    chainBadge: 'Chain · 9 hops',
-    coverLabel: 'Climate Circle',
-    streakDays: 32,
-    hops: 9,
-    lastHop: 'Berlin → Amsterdam · 5h ago',
-    participants: [
-      { name: 'Emmanuel Nwosu', location: 'Lagos', handoff: 'sent to Teresa' },
-      { name: 'Teresa van Dijk', location: 'Amsterdam', handoff: 'sent to Ivo' },
-      { name: 'Ivo Marques', location: 'Lisbon', handoff: 'sent to Robin' },
-    ],
-  },
-  {
-    id: 'paper-scholars',
-    title: 'Paper Scholars',
-    chainBadge: 'Chain · 15 hops',
-    coverLabel: 'Parent Relay',
-    streakDays: 61,
-    hops: 15,
-    lastHop: 'Chennai → Pune · 2d ago',
-    participants: [
-      { name: 'Jerome Lee', location: 'Singapore', handoff: 'sent to Priya' },
-      { name: 'Priya Deshmukh', location: 'Pune', handoff: 'sent to Tessa' },
-      { name: 'Tessa Ruíz', location: 'Madrid', handoff: 'Up next' },
-    ],
-  },
-]
+import { communityApi, ChainStoryResponse } from '../../../utils/api'
+import { useToast } from '../../../contexts/ToastContext'
 
 const ChainStories: React.FC = () => {
-  const [selectedStory, setSelectedStory] = useState<ChainStory | null>(stories[0])
+  const { success, error: showError } = useToast()
+  const [stories, setStories] = useState<ChainStoryResponse[]>([])
+  const [selectedStory, setSelectedStory] = useState<ChainStoryResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadChains = async () => {
+      try {
+        setLoading(true)
+        const data = await communityApi.getChains()
+        setStories(data)
+        if (data.length > 0) {
+          setSelectedStory(data[0])
+        }
+      } catch (error) {
+        console.error('Error loading chains:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadChains()
+  }, [])
+
+  const handlePingChain = async (chainId: string) => {
+    try {
+      await communityApi.pingChain(chainId)
+      success('Chain pinged successfully!')
+      // Reload chains to get updated data
+      const data = await communityApi.getChains()
+      setStories(data)
+    } catch (error) {
+      showError('Failed to ping chain')
+    }
+  }
+
+  const handleKeepAlive = async (chainId: string) => {
+    try {
+      await communityApi.keepChainAlive(chainId)
+      success('Chain kept alive!')
+      // Reload chains to get updated data
+      const data = await communityApi.getChains()
+      setStories(data)
+    } catch (error) {
+      showError('Failed to keep chain alive')
+    }
+  }
 
   const orderedParticipants = useMemo(() => {
     if (!selectedStory) return []
-    return selectedStory.participants
+    return selectedStory.participants || []
   }, [selectedStory])
+
+  if (loading) {
+    return (
+      <section className={styles.storiesSection}>
+        <div className={styles.storiesHeader}>
+          <div>
+            <h2 className={styles.storiesTitle}>Chain Stories</h2>
+            <p className={styles.storiesSubtitle}>Loading chains...</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className={styles.storiesSection}>
@@ -87,7 +87,10 @@ const ChainStories: React.FC = () => {
         </div>
 
         <div className={styles.scrollArea}>
-          {stories.map((story) => (
+          {stories.length === 0 ? (
+            <p>No chains available</p>
+          ) : (
+            stories.map((story) => (
             <article
               key={story.id}
               className={styles.storyCard}
@@ -106,7 +109,8 @@ const ChainStories: React.FC = () => {
                 </button>
               </div>
             </article>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -138,10 +142,10 @@ const ChainStories: React.FC = () => {
             </div>
 
             <div className={styles.actionArea}>
-              <Button variant="secondary" onClick={() => {}}>
+              <Button variant="secondary" onClick={() => handlePingChain(selectedStory.id)}>
                 Ping Chain
               </Button>
-              <Button variant="primary" onClick={() => {}}>
+              <Button variant="primary" onClick={() => handleKeepAlive(selectedStory.id)}>
                 Keep Chain Alive
               </Button>
             </div>

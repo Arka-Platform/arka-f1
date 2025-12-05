@@ -1,136 +1,89 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
+import { useToast } from '../../contexts/ToastContext'
+import { ordersApi, OrderTrackingResponse, TrackingStep } from '../../utils/api'
 import Input from '../../components/shared/Input/Input'
 import Button from '../../components/shared/Button/Button'
 import styles from './Tracking.module.css'
 
-interface TrackingStep {
-  id: string
-  title: string
-  description: string
-  date?: string
-  completed: boolean
-}
-
 const Tracking: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>()
+  const { user } = useAuth()
+  const { error: showError } = useToast()
   const [trackingNumber, setTrackingNumber] = useState(orderId || '')
-  const [orderData, setOrderData] = useState<TrackingStep[] | null>(null)
+  const [trackingData, setTrackingData] = useState<OrderTrackingResponse | null>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (orderId) {
-      // Simulate fetching order data
-      const mockSteps: TrackingStep[] = [
-        {
-          id: '1',
-          title: 'Order Placed',
-          description: 'Your order has been received',
-          date: '2024-01-15 10:30 AM',
-          completed: true,
-        },
-        {
-          id: '2',
-          title: 'Processing',
-          description: 'Your order is being prepared',
-          date: '2024-01-15 11:00 AM',
-          completed: true,
-        },
-        {
-          id: '3',
-          title: 'Picked Up',
-          description: 'Your books have been collected',
-          date: '2024-01-16 09:00 AM',
-          completed: true,
-        },
-        {
-          id: '4',
-          title: 'In Transit',
-          description: 'Your order is on the way',
-          date: '2024-01-16 02:00 PM',
-          completed: true,
-        },
-        {
-          id: '5',
-          title: 'Out for Delivery',
-          description: 'Your order will arrive soon',
-          completed: false,
-        },
-        {
-          id: '6',
-          title: 'Delivered',
-          description: 'Your order has been delivered',
-          completed: false,
-        },
-      ]
-      setOrderData(mockSteps)
+    if (orderId && user?.id) {
+      loadTracking(orderId)
     }
-  }, [orderId])
+  }, [orderId, user?.id])
 
-  const handleTrack = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (trackingNumber) {
-      // Simulate fetching order data
-      const mockSteps: TrackingStep[] = [
-        {
-          id: '1',
-          title: 'Order Placed',
-          description: 'Your order has been received',
-          date: '2024-01-15 10:30 AM',
-          completed: true,
-        },
-        {
-          id: '2',
-          title: 'Processing',
-          description: 'Your order is being prepared',
-          date: '2024-01-15 11:00 AM',
-          completed: true,
-        },
-        {
-          id: '3',
-          title: 'Picked Up',
-          description: 'Your books have been collected',
-          date: '2024-01-16 09:00 AM',
-          completed: true,
-        },
-        {
-          id: '4',
-          title: 'In Transit',
-          description: 'Your order is on the way',
-          date: '2024-01-16 02:00 PM',
-          completed: true,
-        },
-        {
-          id: '5',
-          title: 'Out for Delivery',
-          description: 'Your order will arrive soon',
-          completed: false,
-        },
-        {
-          id: '6',
-          title: 'Delivered',
-          description: 'Your order has been delivered',
-          completed: false,
-        },
-      ]
-      setOrderData(mockSteps)
+  const loadTracking = async (id: string) => {
+    if (!user?.id) return
+    
+    try {
+      setLoading(true)
+      const data = await ordersApi.getTracking(id, user.id)
+      setTrackingData(data)
+      setTrackingNumber(data.trackingNumber)
+    } catch (err) {
+      showError('Failed to load tracking information')
+      console.error('Error loading tracking:', err)
+    } finally {
+      setLoading(false)
     }
+  }
+
+  const handleTrack = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!trackingNumber || !user?.id) return
+    
+    try {
+      setLoading(true)
+      // Try to find order by tracking number
+      const orders = await ordersApi.getMyOrders(user.id)
+      const order = orders.find(o => o.trackingNumber === trackingNumber || o.id === trackingNumber)
+      
+      if (order) {
+        await loadTracking(order.id)
+      } else {
+        showError('Order not found')
+      }
+    } catch (err) {
+      showError('Failed to track order')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading && !trackingData) {
+    return (
+      <div className={styles.tracking}>
+        <div className={styles.container}>
+          <div className={styles.loading}>Loading tracking information...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className={styles.tracking}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <Link to="/account" className={styles.backLink}>
+          <Link to="/orders" className={styles.backLink}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
-            Back to Account
+            Back to Orders
           </Link>
           <h1 className={styles.title}>Track Your Order</h1>
         </div>
 
         {/* Search Form */}
-        {!orderData && (
+        {!trackingData && (
           <div className={styles.searchCard}>
             <h2 className={styles.searchTitle}>Enter Tracking Number</h2>
             <form onSubmit={handleTrack} className={styles.searchForm}>
@@ -141,23 +94,30 @@ const Tracking: React.FC = () => {
                 fullWidth
                 required
               />
-              <Button type="submit" variant="primary" fullWidth>
-                Track Order
+              <Button type="submit" variant="primary" fullWidth disabled={loading}>
+                {loading ? 'Tracking...' : 'Track Order'}
               </Button>
             </form>
           </div>
         )}
 
         {/* Tracking Timeline */}
-        {orderData && (
+        {trackingData && (
           <div className={styles.timelineCard}>
             <div className={styles.orderInfo}>
-              <h2 className={styles.orderTitle}>Order #{trackingNumber || orderId}</h2>
-              <p className={styles.orderSubtitle}>Estimated delivery: January 18, 2024</p>
+              <h2 className={styles.orderTitle}>Order #{trackingData.trackingNumber}</h2>
+              <p className={styles.orderSubtitle}>
+                Status: {trackingData.status.replace('_', ' ')}
+              </p>
+              {trackingData.estimatedDelivery && (
+                <p className={styles.orderSubtitle}>
+                  Estimated delivery: {new Date(trackingData.estimatedDelivery).toLocaleDateString()}
+                </p>
+              )}
             </div>
 
             <div className={styles.timeline}>
-              {orderData.map((step, index) => (
+              {trackingData.steps.map((step, index) => (
                 <div key={step.id} className={styles.timelineItem}>
                   <div className={styles.timelineMarker}>
                     <div
@@ -169,7 +129,7 @@ const Tracking: React.FC = () => {
                         </svg>
                       )}
                     </div>
-                    {index < orderData.length - 1 && (
+                    {index < trackingData.steps.length - 1 && (
                       <div className={`${styles.timelineLine} ${step.completed ? styles.completed : ''}`} />
                     )}
                   </div>
@@ -177,39 +137,22 @@ const Tracking: React.FC = () => {
                     <h3 className={styles.stepTitle}>{step.title}</h3>
                     <p className={styles.stepDescription}>{step.description}</p>
                     {step.date && (
-                      <p className={styles.stepDate}>{step.date}</p>
+                      <p className={styles.stepDate}>
+                        {new Date(step.date).toLocaleString()}
+                      </p>
                     )}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className={styles.orderDetails}>
-              <h3 className={styles.detailsTitle}>Order Details</h3>
-              <div className={styles.detailsGrid}>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Order Number:</span>
-                  <span className={styles.detailValue}>{trackingNumber || orderId}</span>
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Order Date:</span>
-                  <span className={styles.detailValue}>January 15, 2024</span>
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Total Items:</span>
-                  <span className={styles.detailValue}>3 items</span>
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Total Amount:</span>
-                  <span className={styles.detailValue}>$9.99</span>
-                </div>
-              </div>
-            </div>
-
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOrderData(null)}
+              onClick={() => {
+                setTrackingData(null)
+                setTrackingNumber('')
+              }}
               className={styles.trackAnotherButton}
             >
               Track Another Order
@@ -222,5 +165,3 @@ const Tracking: React.FC = () => {
 }
 
 export default Tracking
-
-

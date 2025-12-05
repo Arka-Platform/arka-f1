@@ -352,6 +352,136 @@
   }
 }
 
+/* Image Upload Section */
+.imageUploadSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.imageUploadLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-black);
+  margin-bottom: 0.5rem;
+}
+
+.imageUploadArea {
+  position: relative;
+  border: 2px dashed var(--color-gray);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  background-color: var(--color-gray-light);
+  transition: border-color 0.2s, background-color 0.2s;
+  cursor: pointer;
+}
+
+.imageUploadArea:hover {
+  border-color: var(--color-black);
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.fileInput {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.uploadLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.uploadIcon {
+  color: var(--color-gray);
+  transition: color 0.2s;
+}
+
+.imageUploadArea:hover .uploadIcon {
+  color: var(--color-black);
+}
+
+.uploadText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.uploadTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-black);
+  margin: 0;
+}
+
+.uploadSubtitle {
+  font-size: 0.875rem;
+  color: var(--color-gray);
+  margin: 0;
+}
+
+.imagePreviewContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.imagePreview {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 3/4;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--color-gray-light);
+  background-color: var(--color-gray-light);
+}
+
+.previewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.removeImageButton {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  z-index: 10;
+}
+
+.removeImageButton:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+.uploadProgress {
+  padding: 0.75rem;
+  background-color: var(--color-gray-light);
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-gray);
+}
+
 @media (max-width: 480px) {
   .statsGrid {
     grid-template-columns: 1fr;
@@ -364,6 +494,10 @@
   .statusSelect,
   .actionButton {
     width: 100%;
+  }
+
+  .imagePreview {
+    max-width: 100%;
   }
 }
 

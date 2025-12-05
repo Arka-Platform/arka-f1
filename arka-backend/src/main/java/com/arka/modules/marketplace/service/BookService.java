@@ -34,6 +34,10 @@ public class BookService {
     BookEntity entity = new BookEntity(request.title(), request.author(), request.description(), 
         request.genre(), null, null, request.price(), ownerId);
     entity.setStatus(BookStatus.PUBLISHED);
+    if (request.imageUrl() != null && !request.imageUrl().trim().isEmpty()) {
+      entity.setImageUrlMedium(request.imageUrl().trim());
+      entity.setImageUrlSmall(request.imageUrl().trim());
+    }
     BookEntity saved = bookRepository.save(entity);
     
     // Award listing bonus to encourage book listings
@@ -71,6 +75,14 @@ public class BookService {
         .toList();
   }
 
+  public List<BookResponse> getBooksByOwner(UUID ownerId) {
+    return bookRepository.findByOwnerId(ownerId)
+        .stream()
+        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+        .map(mapper::toResponse)
+        .toList();
+  }
+
   public java.util.Optional<BookResponse> getBookById(UUID id) {
     return bookRepository.findById(id)
         .filter(book -> book.getStatus() == BookStatus.PUBLISHED)
@@ -86,6 +98,10 @@ public class BookService {
           entity.setDescription(request.description());
           entity.setGenre(request.genre());
           entity.setCreditPrice(request.price());
+          if (request.imageUrl() != null && !request.imageUrl().trim().isEmpty()) {
+            entity.setImageUrlMedium(request.imageUrl().trim());
+            entity.setImageUrlSmall(request.imageUrl().trim());
+          }
           BookEntity saved = bookRepository.save(entity);
           return Result.success(mapper.toResponse(saved));
         })

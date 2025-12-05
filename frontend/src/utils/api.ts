@@ -87,6 +87,27 @@ export const api = {
       method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
     }),
+  
+  // File upload helper
+  uploadFile: async <T>(endpoint: string, file: File): Promise<T> => {
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const token = localStorage.getItem('arka_token');
+    const headers: HeadersInit = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    
+    return handleResponse<T>(response);
+  },
 };
 
 // Book API types
@@ -133,8 +154,32 @@ export const booksApi = {
     return api.get<BookResponse[]>(`/api/v1/books${query ? `?${query}` : ''}`)
   },
   
-  create: (data: { title: string; author: string; description?: string; genre?: string; price: number }) =>
+  create: (data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) =>
     api.post<{ id: string }>('/api/v1/books', data),
+  
+  getById: (id: string) =>
+    api.get<BookResponse>(`/api/v1/books/${id}`),
+  
+  update: (id: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) =>
+    api.put<BookResponse>(`/api/v1/books/${id}`, data),
+  
+  delete: (id: string) =>
+    api.delete<void>(`/api/v1/books/${id}`),
+  
+  updateStatus: (id: string, status: string) =>
+    api.patch<BookResponse>(`/api/v1/books/${id}/status?status=${status}`),
+  
+  getMyBooks: (ownerId: string) =>
+    api.get<BookResponse[]>(`/api/v1/books/my?ownerId=${ownerId}`),
+};
+
+// File Upload API functions
+export const uploadApi = {
+  uploadBookImage: (file: File) =>
+    api.uploadFile<{ url: string }>('/api/v1/upload/book-image', file),
+  
+  uploadStatusImage: (file: File) =>
+    api.uploadFile<{ url: string }>('/api/v1/upload/status-image', file),
 };
 
 // Recycling API functions
@@ -430,12 +475,18 @@ export interface CommunityCircleResponse {
   id: string
   name: string
   description: string
-  moderator: string
-  memberCount: number
+  host: string
+  members: number
   activeChains: number
-  totalSwaps: number
+  streakDays: number
   tags: string[]
-  initials: string
+  badge: string
+}
+
+export interface ChainParticipant {
+  name: string
+  location: string
+  handoff: string
 }
 
 export interface ChainStoryResponse {
@@ -446,11 +497,7 @@ export interface ChainStoryResponse {
   streakDays: number
   hops: number
   lastHop: string
-  participants: Array<{
-    name: string
-    location: string
-    handoff: string
-  }>
+  participants: ChainParticipant[]
 }
 
 export interface ChainActionResponse {
@@ -473,6 +520,103 @@ export const communityApi = {
   
   keepChainAlive: (chainId: string) =>
     api.post<ChainActionResponse>(`/api/v1/community/chains/${chainId}/keep-alive`),
+};
+
+// Order API types
+export interface OrderItemRequest {
+  bookId: string
+  quantity: number
+}
+
+export interface CreateOrderRequest {
+  items: OrderItemRequest[]
+  shippingAddress: string
+  pickupTime?: string
+  paymentMethod: string
+  contactPhone?: string
+  specialInstructions?: string
+}
+
+export interface OrderItemResponse {
+  id: string
+  bookId: string
+  bookTitle: string
+  bookAuthor: string
+  quantity: number
+  unitPrice: number
+  subtotal: number
+}
+
+export interface OrderResponse {
+  id: string
+  userId: string
+  items: OrderItemResponse[]
+  totalAmount: number
+  pickupFee: number
+  status: string
+  shippingAddress: string
+  pickupTime?: string
+  paymentMethod: string
+  contactPhone?: string
+  specialInstructions?: string
+  trackingNumber: string
+  createdAt: string
+  updatedAt?: string
+}
+
+export interface TrackingStep {
+  id: string
+  title: string
+  description: string
+  date?: string
+  completed: boolean
+}
+
+export interface OrderTrackingResponse {
+  orderId: string
+  trackingNumber: string
+  status: string
+  steps: TrackingStep[]
+  estimatedDelivery: string
+}
+
+// Order API functions
+export const ordersApi = {
+  create: (userId: string, data: CreateOrderRequest) =>
+    api.post<OrderResponse>(`/api/v1/orders?userId=${userId}`, data),
+  
+  getMyOrders: (userId: string) =>
+    api.get<OrderResponse[]>(`/api/v1/orders/my?userId=${userId}`),
+  
+  getById: (orderId: string, userId: string) =>
+    api.get<OrderResponse>(`/api/v1/orders/${orderId}?userId=${userId}`),
+  
+  getTracking: (orderId: string, userId: string) =>
+    api.get<OrderTrackingResponse>(`/api/v1/orders/${orderId}/tracking?userId=${userId}`),
+};
+
+// User API types
+export interface UserResponse {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  creditBalance: number
+}
+
+export interface UpdateUserRequest {
+  firstName?: string
+  lastName?: string
+  email?: string
+}
+
+// User API functions
+export const usersApi = {
+  getById: (id: string) =>
+    api.get<UserResponse>(`/api/v1/users/${id}`),
+  
+  update: (id: string, data: UpdateUserRequest) =>
+    api.put<UserResponse>(`/api/v1/users/${id}`, data),
 };
 
 // User Behavior API functions

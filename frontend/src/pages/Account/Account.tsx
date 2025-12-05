@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
+import { useToast } from '../../contexts/ToastContext'
+import { usersApi } from '../../utils/api'
 import Input from '../../components/shared/Input/Input'
 import Textarea from '../../components/shared/Textarea/Textarea'
 import Select from '../../components/shared/Select/Select'
@@ -7,8 +10,12 @@ import Button from '../../components/shared/Button/Button'
 import styles from './Account.module.css'
 
 const Account: React.FC = () => {
+  const { user } = useAuth()
+  const { success, error: showError } = useToast()
   const [searchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState<'profile' | 'settings' | 'orderPreferences'>('profile')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
   // Set active tab from URL query parameter
   useEffect(() => {
@@ -17,13 +24,42 @@ const Account: React.FC = () => {
       setActiveTab(tab as typeof activeTab)
     }
   }, [searchParams])
+
+  // Load user data
+  useEffect(() => {
+    if (user?.id) {
+      loadUserData()
+    }
+  }, [user?.id])
+
+  const loadUserData = async () => {
+    if (!user?.id) return
+    
+    try {
+      setLoading(true)
+      const userData = await usersApi.getById(user.id)
+      setProfileData({
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        phone: '', // Not in backend yet
+        address: '', // Not in backend yet
+        bio: '', // Not in backend yet
+      })
+    } catch (error) {
+      console.error('Error loading user data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const [profileData, setProfileData] = useState({
-    firstName: 'Alex',
-    lastName: 'Smith',
-    email: 'alexsmith@email.com',
-    phone: '(+123) 456 789 000',
-    address: '123 Green Street, Eco City, EC 12345',
-    bio: 'Book lover and sustainability enthusiast.',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    bio: '',
   })
 
   const [settings, setSettings] = useState({
@@ -47,14 +83,38 @@ const Account: React.FC = () => {
     setSettings((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleSaveProfile = () => {
-    console.log('Profile saved:', profileData)
-    // Show success message
+  const handleSaveProfile = async () => {
+    if (!user?.id) return
+    
+    try {
+      setSaving(true)
+      await usersApi.update(user.id, {
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+        email: profileData.email,
+      })
+      success('Profile updated successfully!')
+      await loadUserData() // Reload to get latest data
+    } catch (error: any) {
+      showError(error.message || 'Failed to update profile')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleSaveSettings = () => {
     console.log('Settings saved:', settings)
     // Show success message
+  }
+
+  if (loading) {
+    return (
+      <div className={styles.account}>
+        <div className={styles.container}>
+          <div className={styles.loading}>Loading account...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -74,9 +134,9 @@ const Account: React.FC = () => {
                 </svg>
               </div>
               <h2 className={styles.profileName}>
-                {profileData.firstName} {profileData.lastName}
+                {profileData.firstName || user?.firstName} {profileData.lastName || user?.lastName}
               </h2>
-              <p className={styles.profileEmail}>{profileData.email}</p>
+              <p className={styles.profileEmail}>{profileData.email || user?.email}</p>
             </div>
 
             <nav className={styles.nav}>
@@ -155,8 +215,8 @@ const Account: React.FC = () => {
                     onChange={(e) => handleProfileChange('bio', e.target.value)}
                     fullWidth
                   />
-                  <Button type="button" variant="primary" onClick={handleSaveProfile}>
-                    Save Changes
+                  <Button type="button" variant="primary" onClick={handleSaveProfile} disabled={saving || loading}>
+                    {saving ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </form>
               </div>

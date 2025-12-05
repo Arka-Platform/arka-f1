@@ -10,7 +10,8 @@ public record CreateBookRequest(
     @NotBlank String author,
     String description,
     String genre,
-    @NotNull @PositiveOrZero BigDecimal price
+    @NotNull @PositiveOrZero BigDecimal price,
+    String imageUrl
 ) {}
 
 

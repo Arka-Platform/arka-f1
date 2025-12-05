@@ -93,6 +93,16 @@ public class BookController {
           .body(Map.of("error", failure.message()));
     };
   }
+
+  @GetMapping("/my")
+  public ResponseEntity<List<BookResponse>> getMyBooks(
+      @RequestParam(required = false) UUID ownerId) {
+    // For now, accept ownerId as parameter. In production, get from authenticated user context
+    if (ownerId == null) {
+      ownerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
+    }
+    return ResponseEntity.ok(bookService.getBooksByOwner(ownerId));
+  }
 }
 
 

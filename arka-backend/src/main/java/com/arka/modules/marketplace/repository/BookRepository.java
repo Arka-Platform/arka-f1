@@ -23,6 +23,8 @@ public interface BookRepository extends JpaRepository<BookEntity, UUID> {
   
   List<BookEntity> findByGenreIgnoreCase(String genre);
   
+  List<BookEntity> findByOwnerId(UUID ownerId);
+  
   long countByStatus(com.arka.modules.marketplace.entity.BookStatus status);
 }
 
