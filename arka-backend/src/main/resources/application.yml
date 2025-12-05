@@ -29,8 +29,6 @@ app:
   cors:
     allowed-origins:
       - http://localhost:5173
-  seed-data:
-    sample-enabled: false  # Disable in production to avoid startup delays
   books-dataset:
     enabled: false  # Disable in production - CSV files may not be in container
     books-csv-path: resources/books_data/books.csv
@@ -85,8 +83,6 @@ app:
   cors:
     allowed-origins:
       - ${FRONTEND_URL:http://localhost:5173}
-  seed-data:
-    sample-enabled: false  # Disable in production to avoid startup delays
   books-dataset:
     enabled: false  # Disable in production - CSV files may not be in container
   aws:
