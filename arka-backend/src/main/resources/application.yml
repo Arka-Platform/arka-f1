@@ -3,14 +3,12 @@ server:
   shutdown: graceful
 
 spring:
+  application:
+    name: arka-backend
   servlet:
     multipart:
       max-file-size: 5MB
       max-request-size: 10MB
-
-spring:
-  application:
-    name: arka-backend
   datasource:
     url: jdbc:h2:mem:arka;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
     username: sa
@@ -32,19 +30,18 @@ app:
     allowed-origins:
       - http://localhost:5173
   seed-data:
-    sample-enabled: true  # Enable for testing
+    sample-enabled: false  # Disable in production to avoid startup delays
   books-dataset:
-    enabled: true  # Enable for testing
-  aws:
-    s3:
-      bucket-name: ${AWS_S3_BUCKET_NAME:}
-      region: ${AWS_REGION:us-east-1}
-  books-dataset:
+    enabled: false  # Disable in production - CSV files may not be in container
     books-csv-path: resources/books_data/books.csv
     ratings-csv-path: resources/books_data/ratings.csv
     max-books: 8000
     batch-size: 500
     min-rating-count: 5
+  aws:
+    s3:
+      bucket-name: ${AWS_S3_BUCKET_NAME:}
+      region: ${AWS_REGION:us-east-1}
 
 management:
   endpoints:
@@ -70,7 +67,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/arka}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:}
+    password: ${DB_PASSWORD}  # Must be set - no default to prevent empty password
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -88,6 +85,10 @@ app:
   cors:
     allowed-origins:
       - ${FRONTEND_URL:http://localhost:5173}
+  seed-data:
+    sample-enabled: false  # Disable in production to avoid startup delays
+  books-dataset:
+    enabled: false  # Disable in production - CSV files may not be in container
   aws:
     s3:
       bucket-name: ${AWS_S3_BUCKET_NAME:}

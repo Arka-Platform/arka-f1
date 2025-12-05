@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+// Use relative URL when deployed (same ALB serves both frontend and backend)
+// Fallback to localhost for local development
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.PROD ? '' : 'http://localhost:8080');
 
 export class ApiError extends Error {
   constructor(

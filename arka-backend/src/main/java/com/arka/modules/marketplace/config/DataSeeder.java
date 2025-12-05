@@ -31,17 +31,18 @@ public class DataSeeder {
 
   @PostConstruct
   public void seedData() {
-    if (!seedDataEnabled || !sampleSeedEnabled) {
-      log.info("Data seeding is disabled");
-      return;
-    }
+    try {
+      if (!seedDataEnabled || !sampleSeedEnabled) {
+        log.info("Data seeding is disabled");
+        return;
+      }
 
-    if (bookRepository.count() > 0) {
-      log.info("Database already contains data, skipping seed");
-      return;
-    }
+      if (bookRepository.count() > 0) {
+        log.info("Database already contains data, skipping seed");
+        return;
+      }
 
-    log.info("Seeding sample books...");
+      log.info("Seeding sample books...");
 
     // Competitive Exams - UPSC
     createBook("Indian Polity by M. Laxmikanth", "M. Laxmikanth", 

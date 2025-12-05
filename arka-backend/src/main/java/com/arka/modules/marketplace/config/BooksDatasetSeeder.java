@@ -74,32 +74,33 @@ public class BooksDatasetSeeder {
 
   @PostConstruct
   public void seed() {
-    if (bookRepository.count() > 0) {
-      log.info("Books already present, skipping dataset import");
-      return;
-    }
-
-    Path booksPath = resolvePath(properties.getBooksCsvPath());
-    if (!Files.exists(booksPath)) {
-      log.warn("Books dataset not found at {}", booksPath);
-      return;
-    }
-
-    Map<String, RatingAggregate> ratingStats = Map.of();
-    if (properties.isUseRatings()) {
-      Path ratingsPath = resolvePath(properties.getRatingsCsvPath());
-      if (Files.exists(ratingsPath)) {
-        ratingStats = loadRatingStats(ratingsPath);
-      } else {
-        log.warn("Ratings dataset not found at {}, continuing without ratings", ratingsPath);
-      }
-    }
-
-    log.info("Importing books dataset from {}", booksPath);
     try {
+      if (bookRepository.count() > 0) {
+        log.info("Books already present, skipping dataset import");
+        return;
+      }
+
+      Path booksPath = resolvePath(properties.getBooksCsvPath());
+      if (!Files.exists(booksPath)) {
+        log.warn("Books dataset not found at {}, skipping import", booksPath);
+        return;
+      }
+
+      Map<String, RatingAggregate> ratingStats = Map.of();
+      if (properties.isUseRatings()) {
+        Path ratingsPath = resolvePath(properties.getRatingsCsvPath());
+        if (Files.exists(ratingsPath)) {
+          ratingStats = loadRatingStats(ratingsPath);
+        } else {
+          log.warn("Ratings dataset not found at {}, continuing without ratings", ratingsPath);
+        }
+      }
+
+      log.info("Importing books dataset from {}", booksPath);
       importBooks(booksPath, ratingStats);
-    } catch (IOException e) {
-      log.error("Failed to import books dataset", e);
+    } catch (Exception e) {
+      // Don't fail application startup if seeding fails
+      log.error("Failed to import books dataset, continuing without seed data", e);
     }
   }
 

@@ -21,10 +21,14 @@ public class S3StorageService {
     this.s3Client = s3Client;
     this.bucketName = bucketName;
   }
+  
+  private boolean isS3Available() {
+    return s3Client != null && bucketName != null && !bucketName.isEmpty();
+  }
 
   public Result<String> uploadFile(MultipartFile file, String folder) {
-    if (bucketName == null || bucketName.isEmpty()) {
-      return Result.failure("S3 bucket not configured");
+    if (!isS3Available()) {
+      return Result.failure("S3 storage is not available. Please configure AWS_S3_BUCKET_NAME environment variable.");
     }
 
     try {

@@ -28,17 +28,18 @@ public class RecyclingDataSeeder {
 
   @PostConstruct
   public void seedData() {
-    if (!seedDataEnabled) {
-      log.info("Recycling data seeding is disabled");
-      return;
-    }
+    try {
+      if (!seedDataEnabled) {
+        log.info("Recycling data seeding is disabled");
+        return;
+      }
 
-    if (repository.count() > 0) {
-      log.info("Recycling database already contains data, skipping seed");
-      return;
-    }
+      if (repository.count() > 0) {
+        log.info("Recycling database already contains data, skipping seed");
+        return;
+      }
 
-    log.info("Seeding sample waste paper data...");
+      log.info("Seeding sample waste paper data...");
 
     // Newspaper
     createWastePaper("Old Newspapers Collection", 
@@ -106,7 +107,11 @@ public class RecyclingDataSeeder {
         "Sorted junk mail and advertisements, ready for recycling.", 
         "Mixed Paper", new BigDecimal("15.0"), new BigDecimal("7.50"));
 
-    log.info("Successfully seeded {} waste paper items", repository.count());
+      log.info("Successfully seeded {} waste paper items", repository.count());
+    } catch (Exception e) {
+      // Don't fail application startup if seeding fails
+      log.error("Failed to seed recycling data, continuing without seed data", e);
+    }
   }
 
   private void createWastePaper(String title, String description, String category, 
