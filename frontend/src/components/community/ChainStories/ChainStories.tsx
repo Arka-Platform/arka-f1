@@ -105,8 +105,7 @@ const ChainStories: React.FC = () => {
           <Button 
             variant="primary" 
             onClick={() => {
-              // Navigate to books marketplace to start a chain
-              navigate('/books')
+              navigate('/start-chain')
             }}
           >
             Start a Chain

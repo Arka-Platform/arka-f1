@@ -4,10 +4,15 @@ import com.arka.modules.community.dto.ChainActionResponse;
 import com.arka.modules.community.dto.ChainParticipant;
 import com.arka.modules.community.dto.ChainStoryResponse;
 import com.arka.modules.community.dto.CommunityCircleResponse;
+import com.arka.modules.community.dto.CreateChainRequest;
+import com.arka.modules.marketplace.dto.BookResponse;
+import com.arka.modules.marketplace.service.BookService;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,7 +20,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class CommunityService {
-
+  
+  private final BookService bookService;
+  
   private final List<CommunityCircleResponse> circles = List.of(
       new CommunityCircleResponse(
           "south-asian-lit",
@@ -61,7 +68,9 @@ public class CommunityService {
   private final Map<String, ChainStoryResponse> chainStories = new LinkedHashMap<>();
   private final Map<String, AtomicInteger> streakCounters = new LinkedHashMap<>();
 
-  public CommunityService() {
+  public CommunityService(BookService bookService) {
+    this.bookService = bookService;
+    
     addChain(new ChainStoryResponse(
         "saffron-summer",
         "A Saffron Summer",
@@ -109,8 +118,81 @@ public class CommunityService {
     return new ArrayList<>(circles);
   }
 
+  public Optional<CommunityCircleResponse> getCircleById(String circleId) {
+    return circles.stream()
+        .filter(circle -> circle.id().equals(circleId))
+        .findFirst();
+  }
+
+  public List<BookResponse> getCircleBooks(String circleId, int page, int size) {
+    Optional<CommunityCircleResponse> circleOpt = getCircleById(circleId);
+    if (circleOpt.isEmpty()) {
+      return List.of();
+    }
+    
+    CommunityCircleResponse circle = circleOpt.get();
+    // Get books matching any of the circle's tags/genres
+    List<BookResponse> allMatchingBooks = new ArrayList<>();
+    for (String tag : circle.tags()) {
+      List<BookResponse> booksByTag = bookService.listBooksByGenre(tag);
+      allMatchingBooks.addAll(booksByTag);
+    }
+    
+    // Remove duplicates (by ID) and sort by creation date
+    Map<UUID, BookResponse> uniqueBooks = new LinkedHashMap<>();
+    for (BookResponse book : allMatchingBooks) {
+      uniqueBooks.putIfAbsent(book.id(), book);
+    }
+    
+    return uniqueBooks.values().stream()
+        .sorted((a, b) -> {
+          // Sort by creation date if available, otherwise by title
+          if (a.createdAt() != null && b.createdAt() != null) {
+            return b.createdAt().compareTo(a.createdAt());
+          }
+          return a.title().compareToIgnoreCase(b.title());
+        })
+        .skip((long) page * size)
+        .limit(size)
+        .toList();
+  }
+
   public List<ChainStoryResponse> getChainStories() {
     return new ArrayList<>(chainStories.values());
+  }
+
+  public ChainStoryResponse createChain(CreateChainRequest request) {
+    // Generate a unique chain ID
+    String chainId = UUID.randomUUID().toString().substring(0, 8);
+    
+    // Get book info if available
+    String bookTitle = "New Chain";
+    String bookAuthor = "Community";
+    try {
+      UUID bookUuid = UUID.fromString(request.bookId());
+      var bookOpt = bookService.getBookById(bookUuid);
+      if (bookOpt.isPresent()) {
+        bookTitle = bookOpt.get().title();
+        bookAuthor = bookOpt.get().author();
+      }
+    } catch (Exception e) {
+      // Ignore if book ID is invalid
+    }
+    
+    // Create new chain
+    ChainStoryResponse newChain = new ChainStoryResponse(
+        chainId,
+        request.title(),
+        "New Chain",
+        bookTitle + " by " + bookAuthor,
+        1, // Start with 1 day streak
+        1, // Start with 1 hop
+        "Chain started",
+        List.of(new ChainParticipant("You", "Your Location", "Chain starter"))
+    );
+    
+    addChain(newChain);
+    return newChain;
   }
 
   public ChainActionResponse pingChain(String chainId) {
@@ -141,15 +223,3 @@ public class CommunityService {
     return new ChainActionResponse(chainId, status, nextStreak, lastHop);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-

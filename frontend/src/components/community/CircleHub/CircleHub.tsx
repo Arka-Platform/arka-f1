@@ -99,9 +99,7 @@ const CircleHub: React.FC = () => {
               <Button 
                 variant="secondary" 
                 onClick={() => {
-                  // Navigate to books filtered by circle tags/genre
-                  const genreTag = circle.tags[0] || circle.name.toLowerCase()
-                  navigate(`/books?genre=${encodeURIComponent(genreTag)}`)
+                  navigate(`/circles/${circle.id}`)
                 }}
               >
                 View Circle
@@ -112,9 +110,7 @@ const CircleHub: React.FC = () => {
               className={styles.ghostButton} 
               type="button" 
               onClick={() => {
-                // Navigate to books marketplace with circle filter
-                const genreTag = circle.tags[0] || circle.name.toLowerCase()
-                navigate(`/books?genre=${encodeURIComponent(genreTag)}`)
+                navigate(`/circles/${circle.id}`)
               }}
             >
               See live shelf

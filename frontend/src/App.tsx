@@ -21,6 +21,8 @@ import SellerInventory from './pages/SellerInventory/SellerInventory'
 import Lending from './pages/Lending/Lending'
 import Subscriptions from './pages/Subscriptions/Subscriptions'
 import Analytics from './pages/Analytics/Analytics'
+import CircleDetail from './pages/CircleDetail/CircleDetail'
+import StartChain from './pages/StartChain/StartChain'
 import './App.css'
 
 function AppContent() {
@@ -48,6 +50,8 @@ function AppContent() {
             <Route path="/lending" element={<Lending />} />
             <Route path="/subscriptions" element={<Subscriptions />} />
             <Route path="/analytics" element={<Analytics />} />
+            <Route path="/circles/:circleId" element={<CircleDetail />} />
+            <Route path="/start-chain" element={<StartChain />} />
         </Routes>
       </Layout>
       <ToastContainer toasts={toasts} onClose={removeToast} />

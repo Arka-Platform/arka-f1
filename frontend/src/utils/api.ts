@@ -507,13 +507,33 @@ export interface ChainActionResponse {
   lastHop: string
 }
 
+// Community API types
+export interface CreateChainRequest {
+  title: string
+  bookId: string
+  description?: string
+}
+
 // Community API functions
 export const communityApi = {
   getCircles: () =>
     api.get<CommunityCircleResponse[]>('/api/v1/community/circles'),
   
+  getCircleById: (circleId: string) =>
+    api.get<CommunityCircleResponse>(`/api/v1/community/circles/${circleId}`),
+  
+  getCircleBooks: (circleId: string, page?: number, size?: number) => {
+    const params = new URLSearchParams()
+    if (page !== undefined) params.append('page', page.toString())
+    if (size !== undefined) params.append('size', size.toString())
+    return api.get<BookResponse[]>(`/api/v1/community/circles/${circleId}/books?${params.toString()}`)
+  },
+  
   getChains: () =>
     api.get<ChainStoryResponse[]>('/api/v1/community/chains'),
+  
+  createChain: (data: CreateChainRequest) =>
+    api.post<ChainStoryResponse>('/api/v1/community/chains', data),
   
   pingChain: (chainId: string) =>
     api.post<ChainActionResponse>(`/api/v1/community/chains/${chainId}/ping`),
