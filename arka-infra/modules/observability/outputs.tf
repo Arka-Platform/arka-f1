@@ -3,3 +3,26 @@ output "log_group_name" {
   description = "CloudWatch log group for ECS service"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

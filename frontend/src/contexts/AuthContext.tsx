@@ -56,7 +56,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false)
   }, [])
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, _password: string) => {
     setIsLoading(true)
     try {
       // Simulate API call

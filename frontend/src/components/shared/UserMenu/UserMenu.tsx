@@ -102,7 +102,47 @@ const UserMenu: React.FC = () => {
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
-            Account
+            Account Settings
+          </Link>
+          <Link
+            to="/analytics"
+            className={styles.dropdownItem}
+            onClick={() => setIsOpen(false)}
+            role="menuitem"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+            Analytics
+          </Link>
+          <Link
+            to="/lending"
+            className={styles.dropdownItem}
+            onClick={() => setIsOpen(false)}
+            role="menuitem"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              <path d="M12 8v8" />
+              <path d="M8 12h8" />
+            </svg>
+            Book Lending
+          </Link>
+          <Link
+            to="/subscriptions"
+            className={styles.dropdownItem}
+            onClick={() => setIsOpen(false)}
+            role="menuitem"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+            Subscriptions
           </Link>
           <Link
             to="/orders"
@@ -115,7 +155,7 @@ const UserMenu: React.FC = () => {
               <line x1="3" y1="6" x2="21" y2="6" />
               <path d="M16 10a4 4 0 0 1-8 0" />
             </svg>
-            Order
+            Orders
           </Link>
           <div className={styles.dropdownDivider} />
           <button

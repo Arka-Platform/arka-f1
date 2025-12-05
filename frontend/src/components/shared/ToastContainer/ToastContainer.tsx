@@ -2,8 +2,10 @@ import React from 'react'
 import Toast, { ToastProps } from '../Toast/Toast'
 import styles from './ToastContainer.module.css'
 
+type ToastMessage = Omit<ToastProps, 'onClose'>
+
 interface ToastContainerProps {
-  toasts: ToastProps[]
+  toasts: ToastMessage[]
   onClose: (id: string) => void
 }
 

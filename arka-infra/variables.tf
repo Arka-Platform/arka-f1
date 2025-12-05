@@ -14,6 +14,11 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "aws_account_id" {
+  description = "AWS account ID"
+  type        = string
+}
+
 variable "vpc_cidr" {
   description = "CIDR block for the VPC"
   type        = string
@@ -33,8 +38,33 @@ variable "private_subnet_cidrs" {
 }
 
 variable "container_image" {
-  description = "Container image for ECS service"
+  description = "Container image for ECS service (e.g., ECR URI or Docker Hub image). If empty, uses ECR repository URL with :latest tag"
   type        = string
+  default     = ""
+}
+
+variable "frontend_url" {
+  description = "Frontend URL for CORS configuration in backend (if not set, will use CloudFront URL from frontend module)"
+  type        = string
+  default     = ""
+}
+
+variable "frontend_domain_name" {
+  description = "Custom domain name for frontend CloudFront distribution (optional)"
+  type        = string
+  default     = ""
+}
+
+variable "frontend_certificate_arn" {
+  description = "ACM certificate ARN for frontend custom domain (required if frontend_domain_name is set)"
+  type        = string
+  default     = ""
+}
+
+variable "frontend_enable_cloudfront" {
+  description = "Enable CloudFront distribution for frontend"
+  type        = bool
+  default     = true
 }
 
 variable "container_port" {
@@ -76,7 +106,7 @@ variable "log_bucket_enabled" {
 variable "health_check_path" {
   description = "HTTP path for ALB health checks"
   type        = string
-  default     = "/actuator/health/readiness"
+  default     = "/health"
 }
 
 # Database (RDS Aurora PostgreSQL) Variables
@@ -94,33 +124,46 @@ variable "database_master_username" {
 }
 
 variable "database_master_password" {
-  description = "Master password for the database. Should be provided via environment variable or secrets manager"
+  description = "Master password for the database. If not provided, a random password will be generated automatically"
   type        = string
   sensitive   = true
+  default     = "" # Empty string means generate random password
 }
 
 variable "database_engine_version" {
-  description = "Aurora PostgreSQL engine version"
+  description = "PostgreSQL engine version (leave empty for default, or use 14.10, 15.2, etc.)"
   type        = string
-  default     = "15.4"
+  default     = ""  # Empty string uses AWS default
 }
 
 variable "database_instance_class" {
-  description = "Instance class for Aurora instances"
+  description = "Instance class for RDS instance (Free Tier: db.t3.micro or db.t4g.micro, standard: db.t4g.medium)"
   type        = string
-  default     = "db.t4g.medium"
+  default     = "db.t4g.micro"  # Free Tier compatible
 }
 
-variable "database_instance_count" {
-  description = "Number of Aurora instances in the cluster"
+variable "database_allocated_storage" {
+  description = "Allocated storage in GB (Free Tier: up to 20 GB)"
   type        = number
-  default     = 2
+  default     = 20
+}
+
+variable "database_max_allocated_storage" {
+  description = "Maximum allocated storage for autoscaling (0 to disable, Free Tier: 0)"
+  type        = number
+  default     = 0
+}
+
+variable "database_multi_az" {
+  description = "Enable Multi-AZ deployment (not available in Free Tier)"
+  type        = bool
+  default     = false
 }
 
 variable "database_backup_retention_period" {
-  description = "Number of days to retain backups"
+  description = "Number of days to retain backups (Free Tier limit: 1 day, standard: up to 35 days)"
   type        = number
-  default     = 7
+  default     = 1 # Set to 1 for Free Tier compatibility
 }
 
 variable "database_preferred_backup_window" {
@@ -158,6 +201,8 @@ variable "database_kms_key_id" {
   type        = string
   default     = ""
 }
+
+# Removed serverless variables - using regular RDS PostgreSQL instead
 
 # Application Storage S3 Variables
 variable "app_storage_bucket_enabled" {

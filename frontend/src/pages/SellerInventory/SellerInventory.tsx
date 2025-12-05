@@ -23,7 +23,7 @@ export interface InventoryBook {
 }
 
 const SellerInventory: React.FC = () => {
-  const { success, error: showError } = useToast()
+  const { success } = useToast()
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingBook, setEditingBook] = useState<InventoryBook | null>(null)
   const [searchQuery, setSearchQuery] = useState('')

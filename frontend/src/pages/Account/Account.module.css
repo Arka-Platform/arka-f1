@@ -97,6 +97,25 @@
   color: var(--color-white);
 }
 
+.navLink {
+  padding: 1rem 1.5rem;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-gray-dark);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: block;
+}
+
+.navLink:hover {
+  background-color: var(--color-gray-light);
+  color: var(--color-black);
+}
+
 .mainContent {
   background-color: var(--color-gray-light);
   padding: 3rem;

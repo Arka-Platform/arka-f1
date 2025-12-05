@@ -84,6 +84,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "app_storage" {
     id     = "transition-to-ia"
     status = "Enabled"
 
+    filter {}
+
     transition {
       days          = var.app_storage_ia_transition_days
       storage_class = "STANDARD_IA"
@@ -94,6 +96,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "app_storage" {
     id     = "transition-to-glacier"
     status = var.app_storage_glacier_transition_enabled ? "Enabled" : "Disabled"
 
+    filter {}
+
     transition {
       days          = var.app_storage_glacier_transition_days
       storage_class = "GLACIER"
@@ -103,6 +107,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "app_storage" {
   rule {
     id     = "expire-old-versions"
     status = var.app_storage_versioning_enabled ? "Enabled" : "Disabled"
+
+    filter {}
 
     expiration {
       days = var.app_storage_version_expiration_days

@@ -71,6 +71,24 @@
   margin: 0;
 }
 
+.loading,
+.error,
+.empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--color-gray-dark);
+}
+
+.error {
+  color: #dc3545;
+}
+
+.resultsInfo {
+  margin-bottom: 1.5rem;
+  color: var(--color-gray-dark);
+  font-size: 0.875rem;
+}
+
 @media (max-width: 1024px) {
   .searchBar {
     flex-direction: column;

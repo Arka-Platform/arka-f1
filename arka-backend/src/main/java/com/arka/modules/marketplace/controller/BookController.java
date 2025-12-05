@@ -35,9 +35,28 @@ public class BookController {
   }
 
   @GetMapping
-  public ResponseEntity<List<BookResponse>> list(@RequestParam(defaultValue = "0") int page,
-                                                 @RequestParam(defaultValue = "20") int size) {
+  public ResponseEntity<List<BookResponse>> list(
+      @RequestParam(required = false) String search,
+      @RequestParam(required = false) String genre,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    if (search != null && !search.trim().isEmpty()) {
+      return ResponseEntity.ok(bookService.searchBooks(search.trim()));
+    }
+    if (genre != null && !genre.trim().isEmpty()) {
+      return ResponseEntity.ok(bookService.listBooksByGenre(genre.trim()));
+    }
     return ResponseEntity.ok(bookService.listBooks(page, size));
   }
 }
+
+
+
+
+
+
+
+
+
+
 

@@ -11,3 +11,26 @@ variable "ecs_task_execution_policies" {
   default = []
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

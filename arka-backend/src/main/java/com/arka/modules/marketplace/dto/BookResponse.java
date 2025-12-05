@@ -9,8 +9,26 @@ public record BookResponse(
     String title,
     String author,
     String description,
+    String genre,
     BigDecimal price,
     String status,
-    Instant createdAt
+    Instant createdAt,
+    String isbn,
+    String publisher,
+    Integer publicationYear,
+    String imageUrl,
+    String thumbnailUrl,
+    BigDecimal averageRating,
+    Integer ratingsCount
 ) {}
+
+
+
+
+
+
+
+
+
+
 

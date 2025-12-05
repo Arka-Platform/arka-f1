@@ -1,0 +1,35 @@
+================================================================================
+AMAZON INDIA BESTSELLERS - QUANTITATIVE RESEARCH REPORT
+================================================================================
+
+EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+Dataset: November Bestsellers Amazon India
+Total Records: 35335
+Analysis Date: 2025-12-04 12:20:17
+
+KEY FINDINGS
+--------------------------------------------------------------------------------
+1. Price Analysis:
+   - Average book price: ₹904.08
+   - Median book price: ₹471.71
+   - Price range: ₹0.00 - ₹76198.83
+
+2. Rating Analysis:
+   - Average rating: 4.43/5.0
+   - 18665 books (57.8%) have 4.5+ stars
+
+3. Format Distribution:
+   - Most common format: Paperback (21592 books)
+
+4. Author Analysis:
+   - Most prolific author: Wonder House Books (272 bestsellers)
+
+STATISTICAL ANALYSIS
+--------------------------------------------------------------------------------
+Price-Rating Correlation: r=0.0822, p-value=0.0000
+Interpretation: Statistically significant relationship between price and rating.
+
+================================================================================
+END OF REPORT
+================================================================================

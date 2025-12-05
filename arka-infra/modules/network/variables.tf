@@ -18,3 +18,26 @@ variable "private_subnet_cidrs" {
   type = list(string)
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

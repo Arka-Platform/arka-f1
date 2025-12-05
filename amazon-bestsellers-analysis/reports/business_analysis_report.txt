@@ -1,0 +1,52 @@
+================================================================================
+AMAZON INDIA BESTSELLERS - BUSINESS ANALYSIS REPORT
+================================================================================
+
+EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+Dataset: November Bestsellers Amazon India
+Total Records: 28,918
+Analysis Date: 2025-12-04 12:21:05
+
+KEY BUSINESS METRICS
+--------------------------------------------------------------------------------
+1. Market Size:
+   - Total bestsellers analyzed: 28,918
+   - Books with pricing data: 26,835
+   - Books with ratings: 26,005
+
+2. Pricing Strategy Insights:
+   - Average market price: ₹702.89
+   - Median market price: ₹449.00
+   - Price range: ₹0.00 - ₹2370.00
+   - 50% of books priced between ₹297.00 - ₹966.00
+
+3. Quality Indicators:
+   - Average rating: 4.42/5.0
+   - 14535 books (55.9%) have 4.5+ stars
+   - 23793 books (91.5%) have 4.0+ stars
+
+TOP GENRES BY MARKET SHARE
+--------------------------------------------------------------------------------
+Fiction: 5,204 books | ₹616.02 avg | 4.48★
+Non-Fiction: 3,713 books | ₹674.40 avg | 4.38★
+Travel: 2,124 books | ₹807.18 avg | 4.39★
+Self-Help: 1,530 books | ₹631.96 avg | 4.37★
+Health & Fitness: 1,347 books | ₹726.22 avg | 4.43★
+Science: 1,156 books | ₹986.34 avg | 4.47★
+Children: 1,115 books | ₹611.43 avg | 4.40★
+Cooking: 798 books | ₹920.41 avg | 4.37★
+Technology: 338 books | ₹557.36 avg | 4.24★
+History: 309 books | ₹1208.70 avg | 4.46★
+
+================================================================================
+BUSINESS RECOMMENDATIONS
+================================================================================
+1. Pricing Strategy: Target ₹297.00 - ₹966.00 range for optimal market penetration
+2. Quality Threshold: Maintain 4.0+ rating for competitive positioning
+3. Genre Focus: Consider top-performing genres for market entry
+4. Format Strategy: Paperback dominates market share
+
+================================================================================
+END OF REPORT
+================================================================================

@@ -8,7 +8,7 @@ import styles from './Register.module.css'
 
 const Register: React.FC = () => {
   const navigate = useNavigate()
-  const { register, isAuthenticated } = useAuth()
+  const { register } = useAuth()
   const { success, error: showError } = useToast()
   const [formData, setFormData] = useState({
     firstName: '',

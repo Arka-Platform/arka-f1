@@ -1,6 +1,9 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../components/shared/Button/Button'
+import RecommendationSection from '../../components/shared/RecommendationSection/RecommendationSection'
+import CircleHub from '../../components/community/CircleHub/CircleHub'
+import ChainStories from '../../components/community/ChainStories/ChainStories'
 import styles from './Home.module.css'
 
 const Home: React.FC = () => {
@@ -36,6 +39,9 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
+
+      <CircleHub />
+      <ChainStories />
 
       {/* Waste Paper Pickup Section */}
       <section className={styles.serviceSection}>
@@ -89,7 +95,20 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Testimonials moved to Landing Page */}
+      {/* Recommendations Section */}
+      <RecommendationSection
+        title="Recommended for You"
+        type="personalized"
+        limit={6}
+        showViewAll
+      />
+      
+      <RecommendationSection
+        title="Popular This Week"
+        type="popular"
+        limit={6}
+        showViewAll
+      />
     </div>
   )
 }

@@ -67,3 +67,56 @@ output "database_security_group_id" {
   value       = module.database.security_group_id
 }
 
+output "database_master_password" {
+  description = "Database master password (randomly generated if not provided). SAVE THIS SECURELY!"
+  value       = local.database_password
+  sensitive   = true
+}
+
+# ECR Outputs
+output "ecr_repository_url" {
+  description = "ECR repository URL for pushing container images"
+  value       = module.ecr.repository_url
+}
+
+output "ecr_repository_name" {
+  description = "ECR repository name"
+  value       = module.ecr.repository_name
+}
+
+# Service endpoint information
+output "service_endpoint_info" {
+  description = "Information about how to access the ECS service"
+  value = {
+    cluster_name = module.compute.cluster_name
+    service_name = module.compute.service_name
+    note         = "Since ALB is disabled, use AWS CLI to get task IPs: aws ecs list-tasks --cluster ${module.compute.cluster_name} --service-name ${module.compute.service_name} --region ${var.aws_region}"
+  }
+}
+
+# Frontend Outputs
+output "frontend_bucket_name" {
+  description = "S3 bucket name for frontend static files"
+  value       = module.frontend.bucket_name
+}
+
+output "frontend_bucket_arn" {
+  description = "ARN of frontend S3 bucket"
+  value       = module.frontend.bucket_arn
+}
+
+output "frontend_url" {
+  description = "Frontend URL (CloudFront distribution or S3 website endpoint)"
+  value       = module.frontend.frontend_url
+}
+
+output "frontend_cloudfront_distribution_id" {
+  description = "CloudFront distribution ID for frontend"
+  value       = module.frontend.cloudfront_distribution_id
+}
+
+output "frontend_cloudfront_domain_name" {
+  description = "CloudFront distribution domain name for frontend"
+  value       = module.frontend.cloudfront_domain_name
+}
+

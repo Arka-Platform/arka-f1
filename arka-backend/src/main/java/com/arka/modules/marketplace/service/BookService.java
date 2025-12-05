@@ -16,10 +16,12 @@ import org.springframework.stereotype.Service;
 public class BookService {
   private final BookRepository bookRepository;
   private final BookMapper mapper;
+  private final ExchangeService exchangeService;
 
-  public BookService(BookRepository bookRepository, BookMapper mapper) {
+  public BookService(BookRepository bookRepository, BookMapper mapper, ExchangeService exchangeService) {
     this.bookRepository = bookRepository;
     this.mapper = mapper;
+    this.exchangeService = exchangeService;
   }
 
   @Transactional
@@ -27,20 +29,56 @@ public class BookService {
     if (bookRepository.existsByTitleIgnoreCaseAndAuthorIgnoreCase(request.title(), request.author())) {
       return Result.failure("Book already exists");
     }
-    BookEntity entity = new BookEntity(request.title(), request.author(), request.description(), request.price());
+    // TODO: Get ownerId from authenticated user context
+    UUID ownerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
+    BookEntity entity = new BookEntity(request.title(), request.author(), request.description(), 
+        request.genre(), null, null, request.price(), ownerId);
     entity.setStatus(BookStatus.PUBLISHED);
     BookEntity saved = bookRepository.save(entity);
+    
+    // Award listing bonus to encourage book listings
+    exchangeService.awardListingBonus(ownerId);
+    
     return Result.success(saved.getId());
   }
 
   public List<BookResponse> listBooks(int page, int size) {
     return bookRepository.findAll()
         .stream()
+        .filter(book -> book.getStatus() == BookStatus.PUBLISHED)
         .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
         .skip((long) page * size)
         .limit(size)
         .map(mapper::toResponse)
         .toList();
   }
+
+  public List<BookResponse> searchBooks(String query) {
+    return bookRepository.search(query)
+        .stream()
+        .filter(book -> book.getStatus() == BookStatus.PUBLISHED)
+        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+        .map(mapper::toResponse)
+        .toList();
+  }
+
+  public List<BookResponse> listBooksByGenre(String genre) {
+    return bookRepository.findByGenreIgnoreCase(genre)
+        .stream()
+        .filter(book -> book.getStatus() == BookStatus.PUBLISHED)
+        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+        .map(mapper::toResponse)
+        .toList();
+  }
 }
+
+
+
+
+
+
+
+
+
+
 

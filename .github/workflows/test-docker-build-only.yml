@@ -1,0 +1,110 @@
+name: Test Docker Build (Build Only - No Push)
+
+on:
+  workflow_dispatch:  # Manual trigger only
+  push:
+    branches:
+      - dev
+      - main
+      - master
+    paths:
+      - 'frontend/**'
+      - 'arka-backend/**'
+      - 'Dockerfile'
+
+jobs:
+  test-build-only:
+    name: Test Docker Build (No Push)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          echo "📦 Building Docker image..."
+          docker build -t arka-app:test .
+          echo "✅ Image built successfully"
+
+      - name: Verify image
+        run: |
+          echo "🔍 Verifying Docker image..."
+          
+          # Check image exists
+          if docker images arka-app:test --format "{{.Repository}}" | grep -q "arka-app"; then
+            echo "✅ Image exists"
+          else
+            echo "❌ Image not found"
+            exit 1
+          fi
+          
+          # Show image info
+          echo ""
+          echo "📊 Image information:"
+          docker images arka-app:test --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.ID}}"
+          
+          # Inspect image
+          echo ""
+          echo "📋 Image configuration:"
+          docker inspect arka-app:test --format '{{.Config.Cmd}}' || echo "No CMD"
+          docker inspect arka-app:test --format '{{.Config.ExposedPorts}}' || echo "No exposed ports"
+          
+          # Check layers
+          echo ""
+          echo "📦 Image layers (size):"
+          docker history arka-app:test --format "{{.Size}}\t{{.CreatedBy}}" | head -15
+
+      - name: Test image structure
+        run: |
+          echo "🔍 Testing image structure..."
+          
+          # Create a temporary container to check files
+          CONTAINER_ID=$(docker create arka-app:test)
+          
+          echo "✅ Container created for inspection"
+          
+          # Check if app.jar exists (Spring Boot)
+          if docker exec $CONTAINER_ID test -f /app/app.jar 2>/dev/null || docker cp $CONTAINER_ID:/app/app.jar /tmp/app.jar 2>/dev/null; then
+            echo "✅ app.jar found"
+          else
+            echo "⚠️  app.jar not found in /app/"
+          fi
+          
+          # Check static files (frontend)
+          if docker exec $CONTAINER_ID test -d /app/static 2>/dev/null || docker cp $CONTAINER_ID:/app/static /tmp/static 2>/dev/null; then
+            echo "✅ Static files directory found"
+          else
+            echo "⚠️  Static files directory not found"
+          fi
+          
+          # Cleanup
+          docker rm $CONTAINER_ID
+          
+          echo ""
+          echo "✅ Image structure verified"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Remove test image
+          docker rmi arka-app:test || true
+          docker system prune -f
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

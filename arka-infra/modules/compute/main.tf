@@ -131,6 +131,28 @@ resource "aws_ecs_task_definition" "this" {
           protocol      = "tcp"
         }
       ]
+      environment = [
+        {
+          name  = "SPRING_PROFILES_ACTIVE"
+          value = "prod"
+        },
+        {
+          name  = "DB_URL"
+          value = "jdbc:postgresql://${var.database_endpoint}/${var.database_name}"
+        },
+        {
+          name  = "DB_USERNAME"
+          value = var.database_username
+        },
+        {
+          name  = "DB_PASSWORD"
+          value = var.database_password
+        },
+        {
+          name  = "FRONTEND_URL"
+          value = var.frontend_url != "" ? var.frontend_url : "*"
+        }
+      ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {

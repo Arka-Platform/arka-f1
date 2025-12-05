@@ -1,0 +1,53 @@
+# Project Configuration
+project     = "arka"
+environment = "dev"
+
+# AWS Configuration
+aws_region   = "us-east-1"
+aws_account_id = "600751737236"
+
+# Network Configuration
+vpc_cidr             = "10.10.0.0/16"
+public_subnet_cidrs  = ["10.10.0.0/24", "10.10.1.0/24"]
+private_subnet_cidrs = ["10.10.10.0/24", "10.10.11.0/24"]
+
+# Container Configuration
+# Leave empty to use ECR repository URL with :latest tag
+container_image = ""
+container_port  = 8080
+
+# ECS Configuration
+desired_count = 2
+fargate_cpu   = 512
+fargate_memory = 1024
+
+# Frontend Configuration
+# Set this to your frontend URL (e.g., CloudFront distribution, S3 static website, etc.)
+# Leave empty to allow all origins (not recommended for production)
+frontend_url = ""
+
+# Database Configuration
+database_name           = "arka"
+database_master_username = "postgres"
+# IMPORTANT: Set database_master_password via environment variable or AWS Secrets Manager
+# export TF_VAR_database_master_password="your-secure-password"
+
+# Observability
+log_retention_in_days = 30
+log_bucket_enabled    = true
+
+# Health Check
+health_check_path = "/actuator/health"
+
+# Storage Configuration
+app_storage_bucket_enabled = true
+app_storage_bucket_name    = ""  # Leave empty for auto-generated name
+
+
+
+
+
+
+
+
+

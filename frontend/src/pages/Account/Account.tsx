@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
 import Input from '../../components/shared/Input/Input'
 import Textarea from '../../components/shared/Textarea/Textarea'
 import Select from '../../components/shared/Select/Select'
@@ -98,6 +98,15 @@ const Account: React.FC = () => {
               >
                 Order Preferences
               </button>
+              <Link to="/lending" className={styles.navLink}>
+                Book Lending
+              </Link>
+              <Link to="/subscriptions" className={styles.navLink}>
+                Subscriptions
+              </Link>
+              <Link to="/analytics" className={styles.navLink}>
+                Analytics
+              </Link>
             </nav>
           </aside>
 

@@ -16,7 +16,7 @@ public sealed interface Result<T> permits Result.Success, Result.Failure {
       Objects.requireNonNull(message, "message");
     }
 
-    public Optional<Throwable> cause() {
+    public Optional<Throwable> getCauseOptional() {
       return Optional.ofNullable(cause);
     }
   }

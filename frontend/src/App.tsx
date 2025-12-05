@@ -1,14 +1,16 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { CartProvider } from './contexts/CartContext'
 import { ToastProvider, useToast } from './contexts/ToastContext'
 import Layout from './components/Layout/Layout'
 import ToastContainer from './components/shared/ToastContainer/ToastContainer'
 import LandingPage from './pages/LandingPage/LandingPage'
 import Home from './pages/Home/Home'
 import BooksMarketplace from './pages/BooksMarketplace/BooksMarketplace'
+import Recycling from './pages/Recycling/Recycling'
+import Cart from './pages/Cart/Cart'
 import Order from './pages/Order/Order'
 import ContactUs from './pages/ContactUs/ContactUs'
-import BookPickup from './pages/BookPickup/BookPickup'
 import Login from './pages/Login/Login'
 import Register from './pages/Register/Register'
 import Preferences from './pages/Preferences/Preferences'
@@ -16,6 +18,9 @@ import Account from './pages/Account/Account'
 import OrderHistory from './pages/OrderHistory/OrderHistory'
 import Tracking from './pages/Tracking/Tracking'
 import SellerInventory from './pages/SellerInventory/SellerInventory'
+import Lending from './pages/Lending/Lending'
+import Subscriptions from './pages/Subscriptions/Subscriptions'
+import Analytics from './pages/Analytics/Analytics'
 import './App.css'
 
 function AppContent() {
@@ -28,9 +33,11 @@ function AppContent() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<Home />} />
           <Route path="/books" element={<BooksMarketplace />} />
+          <Route path="/recycling" element={<Recycling />} />
+          <Route path="/pickup" element={<Recycling />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="/order" element={<Order />} />
           <Route path="/contact" element={<ContactUs />} />
-          <Route path="/pickup" element={<BookPickup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/preferences" element={<Preferences />} />
@@ -38,6 +45,9 @@ function AppContent() {
             <Route path="/orders" element={<OrderHistory />} />
             <Route path="/tracking/:orderId?" element={<Tracking />} />
             <Route path="/inventory" element={<SellerInventory />} />
+            <Route path="/lending" element={<Lending />} />
+            <Route path="/subscriptions" element={<Subscriptions />} />
+            <Route path="/analytics" element={<Analytics />} />
         </Routes>
       </Layout>
       <ToastContainer toasts={toasts} onClose={removeToast} />
@@ -49,11 +59,13 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <ToastProvider>
-          <div className="app">
-            <AppContent />
-          </div>
-        </ToastProvider>
+        <CartProvider>
+          <ToastProvider>
+            <div className="app">
+              <AppContent />
+            </div>
+          </ToastProvider>
+        </CartProvider>
       </AuthProvider>
     </Router>
   )

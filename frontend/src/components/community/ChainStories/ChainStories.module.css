@@ -1,0 +1,223 @@
+.storiesSection {
+  padding: 4rem;
+  background: var(--color-gray-light);
+}
+
+.storiesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.storiesTitle {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-black);
+}
+
+.storiesSubtitle {
+  font-size: 1rem;
+  color: var(--color-gray-dark);
+  margin: 0.3rem 0 0 0;
+}
+
+.scrollArea {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+}
+
+.storyCard {
+  position: relative;
+  width: 160px;
+  min-width: 160px;
+  height: 260px;
+  border-radius: 26px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.storyCard:hover {
+  transform: translateY(-4px);
+}
+
+.storyGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.6));
+}
+
+.storyContent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.2rem;
+  color: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.storyTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.storyMeta {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.chainBadge {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.8rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--color-white);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.selectedStory {
+  margin-top: 2.5rem;
+  background: var(--color-white);
+  border-radius: 24px;
+  padding: 2.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  box-shadow: 0 20px 50px rgba(10, 24, 15, 0.08);
+}
+
+.selectedHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.selectedTitle {
+  font-size: 2rem;
+  margin: 0;
+  color: var(--color-black);
+}
+
+.selectedMeta {
+  margin: 0.5rem 0 0 0;
+  color: var(--color-gray-dark);
+}
+
+.participantsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.participantRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.1rem;
+  border-radius: 14px;
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.participantName {
+  font-weight: 600;
+  color: var(--color-black);
+}
+
+.participantLocation {
+  font-size: 0.9rem;
+  color: var(--color-gray-dark);
+}
+
+.actionArea {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.streakBadge {
+  padding: 0.5rem 0.9rem;
+  border-radius: 12px;
+  background: rgba(255, 193, 7, 0.15);
+  color: #c27400;
+  font-weight: 600;
+}
+
+.coverMock {
+  width: 100%;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(13, 148, 136, 0.4));
+  min-height: 320px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 1.5rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+
+.coverMock span {
+  font-size: 1.2rem;
+}
+
+.storyButton {
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--color-white);
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+  .storiesSection {
+    padding: 3rem 1rem;
+  }
+
+  .selectedStory {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .storiesTitle {
+    font-size: 1.7rem;
+  }
+
+  .storyCard {
+    width: 130px;
+    min-width: 130px;
+    height: 220px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,61 +1,93 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import BookCard, { Book } from '../../components/shared/BookCard/BookCard'
 import Input from '../../components/shared/Input/Input'
 import Select from '../../components/shared/Select/Select'
+import RecommendationSection from '../../components/shared/RecommendationSection/RecommendationSection'
+import { useCart } from '../../contexts/CartContext'
+import { booksApi, BookResponse } from '../../utils/api'
+import { trackSearch, trackBookView, trackCartAdd } from '../../utils/tracking'
 import styles from './BooksMarketplace.module.css'
 
+const genres = [
+  { value: '', label: 'All Genres' },
+  { value: 'Fiction', label: 'Fiction' },
+  { value: 'Science Fiction', label: 'Science Fiction' },
+  { value: 'Mystery', label: 'Mystery' },
+  { value: 'Thriller', label: 'Thriller' },
+  { value: 'Non-Fiction', label: 'Non-Fiction' },
+  { value: 'Biography', label: 'Biography' },
+  { value: 'Fantasy', label: 'Fantasy' },
+  { value: 'Romance', label: 'Romance' },
+  { value: 'Horror', label: 'Horror' },
+  { value: 'Historical Fiction', label: 'Historical Fiction' },
+]
+
 const BooksMarketplace: React.FC = () => {
+  const { addToCart } = useCart()
   const [searchQuery, setSearchQuery] = useState('')
-  const [category, setCategory] = useState('')
-  const [condition, setCondition] = useState('')
-  const [priceRange, setPriceRange] = useState('')
+  const [selectedGenre, setSelectedGenre] = useState('')
+  const [books, setBooks] = useState<Book[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const books: Book[] = [
-    {
-      id: '1',
-      title: 'The Great Gatsby',
-      description: 'A classic novel by F. Scott Fitzgerald.',
-      price: '$15.00',
-    },
-    {
-      id: '2',
-      title: 'Calculus: Early Transcendentals',
-      description: 'Comprehensive calculus textbook by James Stewart.',
-      price: '$40.00',
-    },
-    {
-      id: '3',
-      title: 'The Very Hungry Caterpillar',
-      description: 'A beloved children\'s book by Eric Carle.',
-      price: '$10.00',
-    },
-  ]
+  const bookToCard = (book: BookResponse): Book => ({
+    id: book.id,
+    title: book.title,
+    author: book.author,
+    description: book.description || '',
+    genre: book.genre || undefined,
+    price: book.price || 0,
+    image: book.imageUrl || undefined,
+    thumbnail: book.thumbnailUrl || undefined,
+    publisher: book.publisher || undefined,
+    publicationYear: book.publicationYear || undefined,
+    averageRating: book.averageRating || undefined,
+    ratingsCount: book.ratingsCount || undefined,
+  })
 
-  const recommendedBooks: Book[] = [
-    {
-      id: '4',
-      title: 'Gone Girl',
-      description: 'A thriller novel by Gillian Flynn.',
-    },
-    {
-      id: '5',
-      title: 'Atomic Habits',
-      description: 'A self-help book by James Clear.',
-    },
-    {
-      id: '6',
-      title: 'The Joy of Cooking',
-      description: 'A comprehensive cookbook by Irma S. Rombauer.',
-    },
-  ]
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const params: { search?: string; genre?: string } = {}
+        
+        if (searchQuery.trim()) {
+          params.search = searchQuery.trim()
+        } else if (selectedGenre) {
+          params.genre = selectedGenre
+        }
+        
+        const data = await booksApi.list(params)
+        setBooks(data.map(bookToCard))
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load books')
+        console.error('Error fetching books:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  const reviews = [
-    { text: 'Great selection of books and user-friendly interface!', author: 'Sarah L.' },
-    { text: 'I found rare books at an amazing price here. Highly recommend!', author: 'John D.' },
-  ]
+    fetchBooks()
+  }, [searchQuery, selectedGenre])
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value
+    setSearchQuery(query)
+    if (query.trim()) {
+      trackSearch(query, selectedGenre)
+    }
+  }
+
+  const handleGenreChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedGenre(e.target.value)
+    setSearchQuery('') // Clear search when filtering by genre
+  }
 
   const handleBookClick = (book: Book) => {
-    console.log('Book clicked:', book)
+    trackBookView(book.id, 0)
+    trackCartAdd(book.id)
+    addToCart(book)
   }
 
   return (
@@ -66,91 +98,78 @@ const BooksMarketplace: React.FC = () => {
           <div className={styles.searchBar}>
             <Input
               type="text"
-              placeholder="Search books..."
+              placeholder="Search books by title, author, genre, or description..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
               fullWidth
             />
             <div className={styles.filters}>
               <Select
-                options={[
-                  { value: '', label: 'Category' },
-                  { value: 'fiction', label: 'Fiction' },
-                  { value: 'non-fiction', label: 'Non-Fiction' },
-                  { value: 'textbook', label: 'Textbook' },
-                ]}
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              />
-              <Select
-                options={[
-                  { value: '', label: 'Condition' },
-                  { value: 'new', label: 'New' },
-                  { value: 'like-new', label: 'Like New' },
-                  { value: 'good', label: 'Good' },
-                ]}
-                value={condition}
-                onChange={(e) => setCondition(e.target.value)}
-              />
-              <Select
-                options={[
-                  { value: '', label: 'Price Range' },
-                  { value: '0-10', label: '$0 - $10' },
-                  { value: '10-25', label: '$10 - $25' },
-                  { value: '25-50', label: '$25 - $50' },
-                ]}
-                value={priceRange}
-                onChange={(e) => setPriceRange(e.target.value)}
+                options={genres}
+                value={selectedGenre}
+                onChange={handleGenreChange}
               />
             </div>
           </div>
         </div>
       </section>
 
+      {/* Recommendations Section - Show when no search/filter */}
+      {!searchQuery && !selectedGenre && !loading && (
+        <>
+          <RecommendationSection
+            title="Recommended for You"
+            type="personalized"
+            limit={8}
+            showViewAll
+          />
+          <RecommendationSection
+            title="Popular Books"
+            type="popular"
+            limit={8}
+            showViewAll
+          />
+        </>
+      )}
+
       {/* Book Listings */}
       <section className={styles.listingsSection}>
         <div className={styles.container}>
-          <div className={styles.booksGrid}>
-            {books.map((book) => (
-              <BookCard
-                key={book.id}
-                book={book}
-                onButtonClick={handleBookClick}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* User Reviews */}
-      <section className={styles.reviewsSection}>
-        <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>User Reviews</h2>
-          <div className={styles.reviewsGrid}>
-            {reviews.map((review, index) => (
-              <div key={index} className={styles.reviewCard}>
-                <p className={styles.reviewText}>"{review.text}"</p>
-                <p className={styles.reviewAuthor}>- {review.author}</p>
+          {loading && (
+            <div className={styles.loading}>
+              <p>Loading books...</p>
+            </div>
+          )}
+          
+          {error && (
+            <div className={styles.error}>
+              <p>Error: {error}</p>
+            </div>
+          )}
+          
+          {!loading && !error && books.length === 0 && (
+            <div className={styles.empty}>
+              <p>No books found. Try adjusting your search or filters.</p>
+            </div>
+          )}
+          
+          {!loading && !error && books.length > 0 && (
+            <>
+              <div className={styles.resultsInfo}>
+                <p>Found {books.length} book{books.length !== 1 ? 's' : ''}</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Recommended for You */}
-      <section className={styles.recommendedSection}>
-        <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>Recommended for You</h2>
-          <div className={styles.booksGrid}>
-            {recommendedBooks.map((book) => (
-              <BookCard
-                key={book.id}
-                book={book}
-                showPrice={false}
-                showButton={false}
-              />
-            ))}
-          </div>
+              <div className={styles.booksGrid}>
+                {books.map((book) => (
+                  <BookCard
+                    key={book.id}
+                    book={book}
+                    onButtonClick={handleBookClick}
+                    buttonText="Add to Cart"
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </section>
     </div>
@@ -158,5 +177,3 @@ const BooksMarketplace: React.FC = () => {
 }
 
 export default BooksMarketplace
-
-

@@ -9,6 +9,17 @@ public record CreateBookRequest(
     @NotBlank String title,
     @NotBlank String author,
     String description,
+    String genre,
     @NotNull @PositiveOrZero BigDecimal price
 ) {}
+
+
+
+
+
+
+
+
+
+
 

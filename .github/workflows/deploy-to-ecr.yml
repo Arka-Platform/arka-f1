@@ -19,8 +19,8 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: arka-app
-  AWS_ACCOUNT_ID: 934189896155
+  ECR_REPOSITORY: arka-dev-app
+  AWS_ACCOUNT_ID: 600751737236
 
 jobs:
   build-and-push:
@@ -52,8 +52,13 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
+          # Verify we're in the right directory and Dockerfile exists
+          pwd
+          ls -la Dockerfile || (echo "❌ Dockerfile not found!" && exit 1)
+          
           # Build Docker image
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          echo "📦 Building Docker image from $(pwd)..."
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f Dockerfile .
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
           
           # Push both tags

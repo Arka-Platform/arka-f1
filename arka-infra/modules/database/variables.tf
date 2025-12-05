@@ -18,10 +18,7 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
-variable "allowed_security_group_ids" {
-  description = "List of security group IDs allowed to access RDS (e.g., ECS service security group)"
-  type        = list(string)
-}
+# Note: Security group rules are created separately in main.tf to avoid circular dependencies
 
 variable "database_name" {
   description = "Name of the default database to create"
@@ -43,21 +40,33 @@ variable "master_password" {
 }
 
 variable "engine_version" {
-  description = "Aurora PostgreSQL engine version"
+  description = "PostgreSQL engine version (use available version like 15.3 or 14.10)"
   type        = string
-  default     = "15.4"
+  default     = "15.3"  # Updated to available version
 }
 
 variable "instance_class" {
-  description = "Instance class for Aurora instances"
+  description = "Instance class for RDS instance (Free Tier: db.t3.micro or db.t4g.micro)"
   type        = string
-  default     = "db.t4g.medium"
+  default     = "db.t4g.micro"
 }
 
-variable "instance_count" {
-  description = "Number of Aurora instances in the cluster"
+variable "allocated_storage" {
+  description = "Allocated storage in GB (Free Tier: up to 20 GB)"
   type        = number
-  default     = 2
+  default     = 20
+}
+
+variable "max_allocated_storage" {
+  description = "Maximum allocated storage for autoscaling (0 to disable)"
+  type        = number
+  default     = 0
+}
+
+variable "multi_az" {
+  description = "Enable Multi-AZ deployment (not available in Free Tier)"
+  type        = bool
+  default     = false
 }
 
 variable "backup_retention_period" {
@@ -101,4 +110,6 @@ variable "kms_key_id" {
   type        = string
   default     = ""
 }
+
+# Removed serverless variables - using regular RDS PostgreSQL instead
 

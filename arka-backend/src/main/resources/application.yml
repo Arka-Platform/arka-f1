@@ -25,6 +25,15 @@ app:
   cors:
     allowed-origins:
       - http://localhost:5173
+  seed-data:
+    sample-enabled: false
+  books-dataset:
+    enabled: false
+    books-csv-path: resources/books_data/books.csv
+    ratings-csv-path: resources/books_data/ratings.csv
+    max-books: 8000
+    batch-size: 500
+    min-rating-count: 5
 
 management:
   endpoints:
@@ -42,6 +51,34 @@ logging:
     org.springframework.security: WARN
 
 ---
+# Production profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/arka}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+app:
+  cors:
+    allowed-origins:
+      - ${FRONTEND_URL:http://localhost:5173}
+
+---
 # Local development overrides
 spring:
   config:
@@ -49,10 +86,30 @@ spring:
       on-profile: local
   datasource:
     url: jdbc:h2:mem:arka_local;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # Auto-create schema from entities for local dev
+  flyway:
+    enabled: false  # Disable Flyway for local development
 
 app:
   cors:
     allowed-origins:
       - http://localhost:5173
       - http://localhost:3000
+  books-dataset:
+    enabled: true
+    max-books: 6000
+    batch-size: 400
+    min-rating-count: 3
+
+
+
+
+
+
+
+
+
+
 

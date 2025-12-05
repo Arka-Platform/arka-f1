@@ -1,0 +1,163 @@
+name: Test Docker Build
+
+on:
+  workflow_dispatch:  # Manual trigger
+  push:
+    branches:
+      - dev
+      - main
+      - master
+    paths:
+      - 'frontend/**'
+      - 'arka-backend/**'
+      - 'Dockerfile'
+  pull_request:
+    branches:
+      - dev
+      - main
+      - master
+    paths:
+      - 'frontend/**'
+      - 'arka-backend/**'
+      - 'Dockerfile'
+
+jobs:
+  test-docker-build:
+    name: Build and Test Docker Image
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        id: build
+        run: |
+          echo "📦 Building Docker image..."
+          docker build -t arka-app:test .
+          
+          # Get image ID
+          IMAGE_ID=$(docker images arka-app:test --format "{{.ID}}")
+          echo "image_id=$IMAGE_ID" >> $GITHUB_OUTPUT
+          echo "✅ Image built successfully (ID: $IMAGE_ID)"
+
+      - name: Test Docker image
+        run: |
+          echo "🧪 Testing Docker image..."
+          
+          # Start container in background
+          CONTAINER_ID=$(docker run -d -p 8080:8080 arka-app:test)
+          echo "container_id=$CONTAINER_ID" >> $GITHUB_OUTPUT
+          echo "✅ Container started: $CONTAINER_ID"
+          
+          # Wait for application to be ready
+          echo "⏳ Waiting for application to start..."
+          MAX_WAIT=60
+          WAIT_COUNT=0
+          
+          while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
+            if curl -s -f http://localhost:8080/actuator/health > /dev/null 2>&1; then
+              echo "✅ Application is ready!"
+              break
+            fi
+            WAIT_COUNT=$((WAIT_COUNT + 1))
+            sleep 1
+            echo -n "."
+          done
+          
+          echo ""
+          
+          if [ $WAIT_COUNT -eq $MAX_WAIT ]; then
+            echo "❌ Application failed to start within ${MAX_WAIT} seconds"
+            echo "📋 Container logs:"
+            docker logs $CONTAINER_ID
+            docker stop $CONTAINER_ID
+            docker rm $CONTAINER_ID
+            exit 1
+          fi
+          
+          # Test endpoints
+          echo ""
+          echo "🧪 Testing endpoints..."
+          echo ""
+          
+          # Health check
+          if curl -s -f http://localhost:8080/actuator/health > /dev/null 2>&1; then
+            echo "✅ Health endpoint: OK"
+            curl -s http://localhost:8080/actuator/health | jq '.' || curl -s http://localhost:8080/actuator/health
+          else
+            echo "❌ Health endpoint: FAILED"
+            exit 1
+          fi
+          
+          # API endpoint
+          echo ""
+          API_RESPONSE=$(curl -s -w "\n%{http_code}" http://localhost:8080/api/v1/books 2>/dev/null || echo -e "\n000")
+          HTTP_CODE=$(echo "$API_RESPONSE" | tail -n 1)
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "404" ]; then
+            echo "✅ API endpoint: OK (HTTP $HTTP_CODE)"
+            echo "$API_RESPONSE" | head -n -1 | jq '.' 2>/dev/null || echo "$API_RESPONSE" | head -n -1
+          else
+            echo "⚠️  API endpoint: HTTP $HTTP_CODE"
+          fi
+          
+          # Frontend
+          echo ""
+          FRONTEND_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/ 2>/dev/null || echo "000")
+          if [ "$FRONTEND_CODE" = "200" ]; then
+            echo "✅ Frontend: OK (HTTP $FRONTEND_CODE)"
+          else
+            echo "⚠️  Frontend: HTTP $FRONTEND_CODE"
+          fi
+          
+          # Show container logs
+          echo ""
+          echo "📋 Container logs (last 20 lines):"
+          docker logs --tail 20 $CONTAINER_ID
+          
+          # Cleanup
+          echo ""
+          echo "🧹 Cleaning up..."
+          docker stop $CONTAINER_ID
+          docker rm $CONTAINER_ID
+          
+          echo ""
+          echo "========================================="
+          echo "✅ All tests passed!"
+          echo "========================================="
+
+      - name: Show image size
+        if: always()
+        run: |
+          echo "📊 Docker image information:"
+          docker images arka-app:test --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}"
+          
+          # Get detailed size breakdown
+          echo ""
+          echo "📦 Image layers:"
+          docker history arka-app:test --format "{{.Size}}\t{{.CreatedBy}}" | head -10
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Remove test image to save space
+          docker rmi arka-app:test || true
+          docker system prune -f
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

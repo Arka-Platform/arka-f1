@@ -1,0 +1,197 @@
+.circleSection {
+  padding: 5rem 4rem;
+  background: var(--color-white);
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.sectionEyebrow {
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--color-primary-dark);
+}
+
+.sectionTitle {
+  font-size: 2.75rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0;
+}
+
+.sectionSubtitle {
+  font-size: 1.1rem;
+  color: var(--color-gray-dark);
+  max-width: 720px;
+  margin: 0;
+}
+
+.circlesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.75rem;
+}
+
+.circleCard {
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 18px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: linear-gradient(
+      120deg,
+      rgba(16, 185, 129, 0.05),
+      rgba(178, 255, 218, 0.08)
+    ),
+    #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.circleCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(16, 185, 129, 0.1);
+}
+
+.circleHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.circleBadge {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circleName {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-black);
+}
+
+.circleHost {
+  font-size: 0.95rem;
+  color: var(--color-gray-dark);
+  margin: 0;
+}
+
+.circleDescription {
+  font-size: 1rem;
+  color: var(--color-gray-dark);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.metricsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.metricCard {
+  background: rgba(16, 185, 129, 0.08);
+  border-radius: 12px;
+  padding: 0.9rem;
+  text-align: center;
+}
+
+.metricLabel {
+  font-size: 0.8rem;
+  color: var(--color-gray-dark);
+}
+
+.metricValue {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.tagsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.tag {
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--color-primary-dark);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.circleFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.streakPill {
+  background: rgba(255, 193, 7, 0.15);
+  color: #c27400;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.ghostButton {
+  border: none;
+  background: transparent;
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.95rem;
+}
+
+.ghostButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 768px) {
+  .circleSection {
+    padding: 3rem 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 2rem;
+  }
+
+  .metricsRow {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+

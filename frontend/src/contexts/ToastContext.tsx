@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react'
 import { ToastProps } from '../components/shared/Toast/Toast'
 
+type ToastMessage = Omit<ToastProps, 'onClose'>
+
 interface ToastContextType {
-  toasts: ToastProps[]
+  toasts: ToastMessage[]
   showToast: (message: string, type: ToastProps['type'], duration?: number) => void
   removeToast: (id: string) => void
   success: (message: string, duration?: number) => void
@@ -26,11 +28,11 @@ interface ToastProviderProps {
 }
 
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
-  const [toasts, setToasts] = useState<ToastProps[]>([])
+  const [toasts, setToasts] = useState<ToastMessage[]>([])
 
   const showToast = (message: string, type: ToastProps['type'] = 'info', duration?: number) => {
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 9)
-    const newToast: ToastProps = {
+    const newToast: ToastMessage = {
       id,
       message,
       type,

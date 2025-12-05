@@ -63,3 +63,31 @@ variable "log_bucket_name" {
 variable "health_check_path" {
   type = string
 }
+
+variable "database_endpoint" {
+  description = "RDS Aurora cluster endpoint"
+  type        = string
+}
+
+variable "database_name" {
+  description = "Database name"
+  type        = string
+}
+
+variable "database_username" {
+  description = "Database master username"
+  type        = string
+  sensitive   = true
+}
+
+variable "database_password" {
+  description = "Database master password"
+  type        = string
+  sensitive   = true
+}
+
+variable "frontend_url" {
+  description = "Frontend URL for CORS configuration"
+  type        = string
+  default     = ""
+}

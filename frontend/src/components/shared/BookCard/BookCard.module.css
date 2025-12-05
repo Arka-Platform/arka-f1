@@ -61,12 +61,46 @@
   margin: 0;
 }
 
+.genre {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background-color: rgba(34, 139, 34, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  margin-top: 0.25rem;
+}
+
 .description {
   font-size: 0.875rem;
   color: var(--color-gray-dark);
   line-height: 1.5;
   margin: 0;
   flex: 1;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.rating {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-warning);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.publisher {
+  font-size: 0.8rem;
+  color: var(--color-gray-dark);
+  margin: 0;
 }
 
 .price {
