@@ -95,3 +95,5 @@ If you want to remove NAT Gateway and use public subnets:
 | VPC Endpoints | ~$7-15 | High | Medium |
 | Public Subnets | $0 | Medium | Low |
 
+
+

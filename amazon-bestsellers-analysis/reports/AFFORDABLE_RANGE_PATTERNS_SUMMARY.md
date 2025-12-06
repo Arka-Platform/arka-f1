@@ -283,3 +283,5 @@ The affordable range (₹200-₹500) represents **44.6% of the bestseller market
 *For detailed analysis, see: `AFFORDABLE_SEGMENT_ANALYSIS.md`*
 
 
+
+

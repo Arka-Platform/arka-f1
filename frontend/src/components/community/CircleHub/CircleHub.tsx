@@ -46,7 +46,7 @@ const CircleHub: React.FC = () => {
         <span className={styles.sectionEyebrow}>Community Exchange</span>
         <h2 className={styles.sectionTitle}>Circles as Hubs</h2>
         <p className={styles.sectionSubtitle}>
-          Join dedicated reading circles that keep the exchange chain alive. Each hub curates genres,
+          Join dedicated reading circles. Each hub curates genres,
           nurtures streaks, and gives you transparent insight into what&apos;s moving next.
         </p>
       </div>
@@ -75,10 +75,6 @@ const CircleHub: React.FC = () => {
                 <div className={styles.metricValue}>{circle.members}</div>
               </div>
               <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Active Chains</span>
-                <div className={styles.metricValue}>{circle.activeChains}</div>
-              </div>
-              <div className={styles.metricCard}>
                 <span className={styles.metricLabel}>Streak</span>
                 <div className={styles.metricValue}>{circle.streakDays}d</div>
               </div>
@@ -94,7 +90,7 @@ const CircleHub: React.FC = () => {
 
             <div className={styles.circleFooter}>
               <span className={styles.streakPill}>
-                🔥 Chain alive for {circle.streakDays} days
+                🔥 Active for {circle.streakDays} days
               </span>
               <Button 
                 variant="secondary" 

@@ -33,3 +33,5 @@ public interface LendingRepository extends JpaRepository<LendingEntity, UUID> {
 
 
 
+
+

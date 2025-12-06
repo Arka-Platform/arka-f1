@@ -32,3 +32,5 @@ output "frontend_url" {
 
 data "aws_region" "current" {}
 
+
+

@@ -36,3 +36,5 @@ The Terraform configuration is set up for Aurora Serverless v1 (Express Configur
 
 For Free Tier, switch to regular RDS PostgreSQL which is fully supported and doesn't have the Express Configuration requirement.
 
+
+

@@ -12,3 +12,5 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
   List<OrderEntity> findByUserIdAndStatusOrderByCreatedAtDesc(UUID userId, com.arka.modules.order.entity.OrderStatus status);
 }
 
+
+

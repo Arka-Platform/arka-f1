@@ -90,3 +90,5 @@ Then access frontend via S3 website endpoint (Terraform will output the URL).
 - They work together, not as alternatives
 - You can use S3 directly without CloudFront if you want simpler setup
 
+
+
