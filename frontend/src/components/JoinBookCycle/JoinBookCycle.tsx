@@ -19,12 +19,11 @@ const JoinBookCycle: React.FC = () => {
       description: 'Help promote sustainability by sharing and recycling books.',
       buttonText: 'Join us',
       illustration: (
-        <svg viewBox="0 0 200 200" className={styles.optionIllustration}>
-          <rect x="80" y="100" width="20" height="60" fill="#00bcd4" />
-          <rect x="105" y="100" width="20" height="60" fill="#9c27b0" />
-          <rect x="130" y="100" width="20" height="60" fill="#00bcd4" />
-          <rect x="70" y="80" width="60" height="20" fill="currentColor" opacity="0.3" />
-        </svg>
+        <img 
+          src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&h=400&fit=crop&q=80" 
+          alt="Contributor"
+          className={styles.optionIllustration}
+        />
       ),
     },
     {
@@ -32,14 +31,11 @@ const JoinBookCycle: React.FC = () => {
       description: 'Collaborate with us to expand the book-sharing community.',
       buttonText: 'Partner up',
       illustration: (
-        <svg viewBox="0 0 200 200" className={styles.optionIllustration}>
-          <path
-            d="M100 50 L120 90 L160 90 L130 120 L140 160 L100 135 L60 160 L70 120 L40 90 L80 90 Z"
-            fill="currentColor"
-            opacity="0.3"
-          />
-          <circle cx="100" cy="100" r="30" fill="currentColor" opacity="0.2" />
-        </svg>
+        <img 
+          src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=400&fit=crop&q=80" 
+          alt="Partner"
+          className={styles.optionIllustration}
+        />
       ),
     },
     {
@@ -47,14 +43,11 @@ const JoinBookCycle: React.FC = () => {
       description: 'Be part of a dedicated team fostering a love for reading.',
       buttonText: 'Join the team',
       illustration: (
-        <svg viewBox="0 0 200 200" className={styles.optionIllustration}>
-          <rect x="80" y="100" width="40" height="50" fill="currentColor" opacity="0.3" />
-          <circle cx="100" cy="60" r="20" fill="currentColor" opacity="0.3" />
-          <rect x="60" y="40" width="15" height="20" fill="#00bcd4" />
-          <rect x="125" y="40" width="15" height="20" fill="#4caf50" />
-          <circle cx="70" cy="30" r="5" fill="currentColor" opacity="0.2" />
-          <circle cx="130" cy="30" r="5" fill="currentColor" opacity="0.2" />
-        </svg>
+        <img 
+          src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=400&fit=crop&q=80" 
+          alt="Team member"
+          className={styles.optionIllustration}
+        />
       ),
     },
   ]

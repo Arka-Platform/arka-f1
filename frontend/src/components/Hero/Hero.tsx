@@ -20,20 +20,16 @@ const Hero: React.FC = () => {
       <div className={styles.container}>
         <div className={styles.illustrationLeft}>
           <div className={styles.donkeyIllustration} aria-hidden="true">
-            {/* SVG illustration placeholder - replace with actual SVG */}
-            <svg viewBox="0 0 200 200" className={styles.illustrationSvg}>
-              <rect x="50" y="100" width="100" height="80" fill="currentColor" opacity="0.3" />
-              <rect x="60" y="60" width="20" height="40" fill="#00bcd4" />
-              <rect x="85" y="60" width="20" height="40" fill="#ff9800" />
-              <rect x="110" y="60" width="20" height="40" fill="#ffeb3b" />
-              <rect x="135" y="60" width="20" height="40" fill="#f44336" />
-              <rect x="160" y="60" width="20" height="40" fill="#4caf50" />
-            </svg>
+            <img 
+              src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=400&fit=crop&q=80" 
+              alt="Books on shelf"
+              className={styles.illustrationImage}
+            />
           </div>
         </div>
 
         <div className={styles.content}>
-          <h1 className={styles.heading}>Your gateway to a sustainable book</h1>
+          <h1 className={styles.heading}>All About Books.</h1>
 
           <form onSubmit={handleSearch} className={styles.searchForm}>
             <input
@@ -50,12 +46,11 @@ const Hero: React.FC = () => {
 
         <div className={styles.illustrationRight}>
           <div className={styles.recycleIllustration} aria-hidden="true">
-            {/* SVG illustration placeholder - replace with actual SVG */}
-            <svg viewBox="0 0 200 200" className={styles.illustrationSvg}>
-              <rect x="80" y="120" width="40" height="60" fill="currentColor" opacity="0.3" />
-              <path d="M70 100 L130 100 L120 80 L80 80 Z" fill="currentColor" opacity="0.2" />
-              <circle cx="100" cy="60" r="15" fill="currentColor" opacity="0.1" />
-            </svg>
+            <img 
+              src="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=400&h=400&fit=crop&q=80" 
+              alt="Recycling books"
+              className={styles.illustrationImage}
+            />
           </div>
         </div>
       </div>
