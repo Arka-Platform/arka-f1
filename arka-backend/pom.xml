@@ -64,19 +64,38 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- Runtime / dev -->
+    <!-- H2 for local development -->
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <scope>runtime</scope>
     </dependency>
 
-    <!-- Production database -->
+    <!-- PostgreSQL for production (AWS RDS) -->
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <scope>runtime</scope>
       <version>42.7.4</version>
+    </dependency>
+
+    <!-- OAuth2 for Gmail -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-oauth2-client</artifactId>
+    </dependency>
+
+    <!-- Email support -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-mail</artifactId>
+    </dependency>
+
+    <!-- AWS SNS for SMS -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>sns</artifactId>
+      <version>2.20.162</version>
     </dependency>
 
     <!-- Observability -->

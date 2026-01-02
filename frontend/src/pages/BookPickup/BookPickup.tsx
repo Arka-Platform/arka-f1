@@ -90,7 +90,7 @@ const BookPickup: React.FC = () => {
                 </svg>
               </button>
               <Button variant="secondary" fullWidth>
-                Add to Cart
+                Get This Book
               </Button>
             </div>
           </div>

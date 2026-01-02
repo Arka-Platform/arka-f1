@@ -75,7 +75,7 @@ const OrderHistory: React.FC = () => {
                 </div>
                 <div className={styles.orderDetails}>
                   <span>{itemCount} item{itemCount !== 1 ? 's' : ''}</span>
-                  <span className={styles.orderTotal}>${order.totalAmount.toFixed(2)}</span>
+                  <span className={styles.orderTotal}>₹{order.totalAmount.toFixed(2)}</span>
                 </div>
                 <Button
                   type="button"

@@ -9,7 +9,7 @@ interface LogoProps {
 
 const Logo: React.FC<LogoProps> = ({ showTagline = false, size = 'medium' }) => {
   return (
-    <Link to="/" className={styles.logoLink}>
+    <Link to="/home" className={styles.logoLink}>
       <div className={`${styles.logoContainer} ${styles[size]}`}>
         <svg
           viewBox="0 0 200 200"

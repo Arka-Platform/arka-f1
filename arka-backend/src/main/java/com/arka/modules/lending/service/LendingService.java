@@ -25,14 +25,17 @@ public class LendingService {
   private final LendingRepository lendingRepository;
   private final BookRepository bookRepository;
   private final UserRepository userRepository;
+  private final com.arka.modules.trustscore.service.TrustScoreService trustScoreService;
 
   public LendingService(
       LendingRepository lendingRepository,
       BookRepository bookRepository,
-      UserRepository userRepository) {
+      UserRepository userRepository,
+      com.arka.modules.trustscore.service.TrustScoreService trustScoreService) {
     this.lendingRepository = lendingRepository;
     this.bookRepository = bookRepository;
     this.userRepository = userRepository;
+    this.trustScoreService = trustScoreService;
   }
 
   /**
@@ -127,6 +130,9 @@ public class LendingService {
     lending.setStartDate(Instant.now());
     lending = lendingRepository.save(lending);
 
+    // Track trust score: pickup commitment
+    trustScoreService.recordPickupCommitment(ownerId);
+
     return Result.success(toResponse(lending));
   }
 
@@ -190,6 +196,9 @@ public class LendingService {
     lending.setStartDate(Instant.now());
     lending.setConditionBefore(conditionBefore);
     lending = lendingRepository.save(lending);
+
+    // Track trust score: successful show up
+    trustScoreService.recordSuccessfulShowup(ownerId);
 
     return Result.success(toResponse(lending));
   }
@@ -291,6 +300,10 @@ public class LendingService {
     );
   }
 }
+
+
+
+
 
 
 

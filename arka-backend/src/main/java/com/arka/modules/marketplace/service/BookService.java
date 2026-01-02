@@ -3,11 +3,13 @@ package com.arka.modules.marketplace.service;
 import com.arka.common.result.Result;
 import com.arka.modules.marketplace.dto.BookResponse;
 import com.arka.modules.marketplace.dto.CreateBookRequest;
+import com.arka.modules.marketplace.dto.GenreWithSubcategories;
 import com.arka.modules.marketplace.entity.BookEntity;
 import com.arka.modules.marketplace.entity.BookStatus;
 import com.arka.modules.marketplace.mapper.BookMapper;
 import com.arka.modules.marketplace.repository.BookRepository;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -25,12 +27,10 @@ public class BookService {
   }
 
   @Transactional
-  public Result<UUID> createBook(CreateBookRequest request) {
+  public Result<UUID> createBook(CreateBookRequest request, UUID ownerId) {
     if (bookRepository.existsByTitleIgnoreCaseAndAuthorIgnoreCase(request.title(), request.author())) {
       return Result.failure("Book already exists");
     }
-    // For now, use placeholder. In production, get ownerId from authenticated user context
-    UUID ownerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
     BookEntity entity = new BookEntity(request.title(), request.author(), request.description(), 
         request.genre(), null, null, request.price(), ownerId);
     entity.setStatus(BookStatus.PUBLISHED);
@@ -67,7 +67,16 @@ public class BookService {
   }
 
   public List<BookResponse> listBooksByGenre(String genre) {
-    return bookRepository.findByGenreIgnoreCase(genre)
+    return bookRepository.findByGenreContainingIgnoreCase(genre)
+        .stream()
+        .filter(book -> book.getStatus() == BookStatus.PUBLISHED)
+        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+        .map(mapper::toResponse)
+        .toList();
+  }
+
+  public List<BookResponse> listBooksByGenreAndSubcategory(String genre, String subcategory) {
+    return bookRepository.findByGenreAndSubcategoryContainingIgnoreCase(genre, subcategory)
         .stream()
         .filter(book -> book.getStatus() == BookStatus.PUBLISHED)
         .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
@@ -133,6 +142,22 @@ public class BookService {
     } catch (IllegalArgumentException e) {
       return Result.failure("Invalid status: " + status);
     }
+  }
+
+  public List<String> getAllGenres() {
+    return bookRepository.findDistinctGenres();
+  }
+
+  public List<GenreWithSubcategories> getGenresWithSubcategories() {
+    List<String> genres = bookRepository.findDistinctGenres();
+    List<GenreWithSubcategories> result = new ArrayList<>();
+    
+    for (String genre : genres) {
+      List<String> subcategories = bookRepository.findDistinctSubcategoriesByGenre(genre);
+      result.add(new GenreWithSubcategories(genre, subcategories));
+    }
+    
+    return result;
   }
 }
 

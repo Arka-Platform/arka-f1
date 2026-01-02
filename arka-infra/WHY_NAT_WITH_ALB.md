@@ -74,3 +74,8 @@ The security group on ECS tasks only allows traffic from ALB security group, so 
 
 
 
+
+
+
+
+

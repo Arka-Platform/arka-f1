@@ -67,6 +67,42 @@
   margin: 0;
 }
 
+.trustScoreContainer {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.authPrompt {
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  color: #92400e;
+}
+
+.authPrompt p {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+}
+
+.loginButton {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.loginButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
 .nav {
   display: flex;
   flex-direction: column;

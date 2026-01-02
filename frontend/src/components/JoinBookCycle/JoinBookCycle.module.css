@@ -57,11 +57,9 @@
 
 .optionIllustration {
   width: 100%;
-  height: auto;
+  max-width: 200px;
+  height: 200px;
   color: var(--color-black);
-  border-radius: 12px;
-  object-fit: cover;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .optionContent {

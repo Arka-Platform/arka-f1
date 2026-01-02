@@ -97,3 +97,8 @@ If you want to remove NAT Gateway and use public subnets:
 
 
 
+
+
+
+
+

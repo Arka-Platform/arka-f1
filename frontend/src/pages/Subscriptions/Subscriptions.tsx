@@ -124,7 +124,7 @@ const Subscriptions: React.FC = () => {
               </div>
               {subscription.monthlyPrice !== null && (
                 <div className={styles.price}>
-                  ${subscription.monthlyPrice.toFixed(2)}/month
+                  ₹{subscription.monthlyPrice.toFixed(2)}/month
                 </div>
               )}
             </div>
@@ -178,7 +178,7 @@ const Subscriptions: React.FC = () => {
               <div className={styles.planHeader}>
                 <h3>{plan.name}</h3>
                 <div className={styles.planPrice}>
-                  ${plan.price.toFixed(2)}
+                  ₹{plan.price.toFixed(2)}
                   <span className={styles.planPeriod}>/month</span>
                 </div>
               </div>

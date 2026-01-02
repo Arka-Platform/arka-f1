@@ -3,6 +3,7 @@ package com.arka.modules.marketplace.controller;
 import com.arka.common.result.Result;
 import com.arka.modules.marketplace.dto.BookResponse;
 import com.arka.modules.marketplace.dto.CreateBookRequest;
+import com.arka.modules.marketplace.dto.GenreWithSubcategories;
 import com.arka.modules.marketplace.service.BookService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -30,8 +31,14 @@ public class BookController {
   }
 
   @PostMapping
-  public ResponseEntity<?> create(@RequestBody @Valid CreateBookRequest request) {
-    Result<UUID> result = bookService.createBook(request);
+  public ResponseEntity<?> create(
+      @RequestBody @Valid CreateBookRequest request,
+      @RequestParam(required = false) UUID ownerId) {
+    // For now, accept ownerId as parameter. In production, get from authenticated user context
+    if (ownerId == null) {
+      ownerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
+    }
+    Result<UUID> result = bookService.createBook(request, ownerId);
     return switch (result) {
       case Result.Success<UUID> success -> ResponseEntity.ok(Map.of("id", success.value()));
       case Result.Failure<UUID> failure -> ResponseEntity.badRequest().body(Map.of("error", failure.message()));
@@ -42,12 +49,16 @@ public class BookController {
   public ResponseEntity<List<BookResponse>> list(
       @RequestParam(required = false) String search,
       @RequestParam(required = false) String genre,
+      @RequestParam(required = false) String subcategory,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
     if (search != null && !search.trim().isEmpty()) {
       return ResponseEntity.ok(bookService.searchBooks(search.trim()));
     }
     if (genre != null && !genre.trim().isEmpty()) {
+      if (subcategory != null && !subcategory.trim().isEmpty()) {
+        return ResponseEntity.ok(bookService.listBooksByGenreAndSubcategory(genre.trim(), subcategory.trim()));
+      }
       return ResponseEntity.ok(bookService.listBooksByGenre(genre.trim()));
     }
     return ResponseEntity.ok(bookService.listBooks(page, size));
@@ -102,6 +113,16 @@ public class BookController {
       ownerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
     }
     return ResponseEntity.ok(bookService.getBooksByOwner(ownerId));
+  }
+
+  @GetMapping("/genres")
+  public ResponseEntity<List<String>> getGenres() {
+    return ResponseEntity.ok(bookService.getAllGenres());
+  }
+
+  @GetMapping("/genres/with-subcategories")
+  public ResponseEntity<List<GenreWithSubcategories>> getGenresWithSubcategories() {
+    return ResponseEntity.ok(bookService.getGenresWithSubcategories());
   }
 }
 

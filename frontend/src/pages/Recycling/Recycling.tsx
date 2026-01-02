@@ -42,7 +42,7 @@ const WastePaperCard: React.FC<WastePaperCardProps> = ({ item }) => {
         </div>
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>Credit Value:</span>
-          <span className={styles.detailValue}>${item.creditValue.toFixed(2)}</span>
+          <span className={styles.detailValue}>₹{item.creditValue.toFixed(2)}</span>
         </div>
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>Status:</span>

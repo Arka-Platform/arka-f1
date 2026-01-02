@@ -1,0 +1,90 @@
+.adBanner {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem 0;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 0;
+}
+
+.adBanner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+
+.bannerContent {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.bannerText {
+  flex: 1;
+}
+
+.bannerTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 0.5rem 0;
+}
+
+.bannerSubtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.bannerCta {
+  display: flex;
+  align-items: center;
+}
+
+.ctaText {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+  padding: 0.75rem 2rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.adBanner:hover .ctaText {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+  .adBanner {
+    padding: 1.5rem 0;
+  }
+
+  .bannerContent {
+    padding: 0 1rem;
+  }
+
+  .bannerContent {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .bannerTitle {
+    font-size: 1.5rem;
+  }
+
+  .bannerSubtitle {
+    font-size: 1rem;
+  }
+
+  .ctaText {
+    font-size: 1rem;
+    padding: 0.5rem 1.5rem;
+  }
+}
+

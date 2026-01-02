@@ -58,14 +58,21 @@ public class AmazonBestsellersSeeder {
       // Load category-genre mapping
       loadCategoryGenreMapping();
 
-      // Load and parse CSV
-      ClassPathResource resource = new ClassPathResource("books_data/amazon_bestsellers.csv");
+      // Load and parse CSV - prioritize november latest file
+      ClassPathResource resource = new ClassPathResource("books_data/amazon_bestsellers_november_latest.csv");
       if (!resource.exists()) {
-        log.warn("Amazon bestsellers CSV not found, skipping import");
-        return;
+        // Fallback to regular file if november latest doesn't exist
+        resource = new ClassPathResource("books_data/amazon_bestsellers.csv");
+        if (!resource.exists()) {
+          log.warn("Amazon bestsellers CSV not found, skipping import");
+          return;
+        }
+        log.info("Using fallback CSV file: amazon_bestsellers.csv");
+      } else {
+        log.info("Using November latest CSV file: amazon_bestsellers_november_latest.csv");
       }
 
-      log.info("Importing Amazon bestsellers from CSV...");
+      log.info("Importing Amazon bestsellers from CSV: {}", resource.getFilename());
       int imported = importBooks(resource);
       if (imported > 0) {
         log.info("Successfully imported {} Amazon bestsellers", imported);
@@ -167,13 +174,28 @@ public class AmazonBestsellersSeeder {
             String category = null;
             String subcategory = null;
 
-            // Extract category and subcategory from links
-            String categoryLink1 = getValue(record, "category-link-1");
-            if (categoryLink1 != null && !categoryLink1.isEmpty()) {
-              String categoryId = extractCategoryId(categoryLink1);
-              if (categoryId != null && categoryGenreMap.containsKey(categoryId)) {
-                category = categoryGenreMap.get(categoryId);
+            // Extract category from first link and subcategory from last link
+            // Check all category links (0-3) to find the last non-empty one
+            String lastCategoryId = null;
+            
+            for (int i = 0; i <= 3; i++) {
+              String categoryLink = getValue(record, "category-link-" + i);
+              if (categoryLink != null && !categoryLink.isEmpty()) {
+                String categoryId = extractCategoryId(categoryLink);
+                if (categoryId != null) {
+                  if (i == 0 && categoryGenreMap.containsKey(categoryId)) {
+                    // First link is the main category
+                    category = categoryGenreMap.get(categoryId);
+                  }
+                  // Track the last non-empty link for subcategory
+                  lastCategoryId = categoryId;
+                }
               }
+            }
+            
+            // Use the last category link as subcategory
+            if (lastCategoryId != null && categoryGenreMap.containsKey(lastCategoryId)) {
+              subcategory = categoryGenreMap.get(lastCategoryId);
             }
 
             String publisher = getValue(record, "data7");

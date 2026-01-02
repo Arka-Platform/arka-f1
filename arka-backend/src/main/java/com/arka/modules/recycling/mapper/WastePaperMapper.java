@@ -24,3 +24,8 @@ public interface WastePaperMapper {
 
 
 
+
+
+
+
+

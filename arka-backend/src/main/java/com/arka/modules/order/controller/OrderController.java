@@ -4,6 +4,7 @@ import com.arka.common.result.Result;
 import com.arka.modules.order.dto.CreateOrderRequest;
 import com.arka.modules.order.dto.OrderResponse;
 import com.arka.modules.order.dto.OrderTrackingResponse;
+import com.arka.modules.order.entity.OrderStatus;
 import com.arka.modules.order.service.OrderService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -11,7 +12,9 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -91,7 +94,49 @@ public class OrderController {
       return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
     }
   }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> cancelOrder(
+      @PathVariable UUID id,
+      @RequestParam(required = false) UUID userId) {
+    // For now, accept userId as parameter. In production, get from authenticated user context
+    if (userId == null) {
+      userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
+    }
+
+    Result<OrderResponse> result = orderService.cancelOrder(id, userId);
+    return switch (result) {
+      case Result.Success<OrderResponse> success -> ResponseEntity.ok(success.value());
+      case Result.Failure<OrderResponse> failure ->
+          ResponseEntity.badRequest().body(Map.of("error", failure.message()));
+    };
+  }
+
+  @PatchMapping("/{id}/status")
+  public ResponseEntity<?> updateOrderStatus(
+      @PathVariable UUID id,
+      @RequestParam String status,
+      @RequestParam(required = false) UUID userId) {
+    // For now, accept userId as parameter. In production, get from authenticated user context
+    if (userId == null) {
+      userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
+    }
+
+    try {
+      OrderStatus newStatus = OrderStatus.valueOf(status.toUpperCase());
+      Result<OrderResponse> result = orderService.updateOrderStatus(id, userId, newStatus);
+      return switch (result) {
+        case Result.Success<OrderResponse> success -> ResponseEntity.ok(success.value());
+        case Result.Failure<OrderResponse> failure ->
+            ResponseEntity.badRequest().body(Map.of("error", failure.message()));
+      };
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(Map.of("error", "Invalid status: " + status));
+    }
+  }
 }
+
+
 
 
 

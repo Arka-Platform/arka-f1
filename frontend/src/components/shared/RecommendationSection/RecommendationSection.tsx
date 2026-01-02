@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect, useRef } from 'react'
 import BookCard, { Book } from '../BookCard/BookCard'
 import { recommendationsApi, BookResponse } from '../../../utils/api'
 import { useAuth } from '../../../contexts/AuthContext'
@@ -26,6 +25,9 @@ const RecommendationSection: React.FC<RecommendationSectionProps> = ({
   const { addToCart } = useCart()
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
 
   useEffect(() => {
     const fetchRecommendations = async () => {
@@ -78,6 +80,42 @@ const RecommendationSection: React.FC<RecommendationSectionProps> = ({
     addToCart(book)
   }
 
+  const checkScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current
+      setCanScrollLeft(scrollLeft > 0)
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
+    }
+  }
+
+  useEffect(() => {
+    checkScrollButtons()
+    const container = scrollContainerRef.current
+    if (container) {
+      container.addEventListener('scroll', checkScrollButtons)
+      window.addEventListener('resize', checkScrollButtons)
+      return () => {
+        container.removeEventListener('scroll', checkScrollButtons)
+        window.removeEventListener('resize', checkScrollButtons)
+      }
+    }
+  }, [books])
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current
+      const scrollAmount = container.clientWidth * 0.8 // Scroll 80% of container width
+      const targetScroll = direction === 'left' 
+        ? container.scrollLeft - scrollAmount
+        : container.scrollLeft + scrollAmount
+      
+      container.scrollTo({
+        left: targetScroll,
+        behavior: 'smooth'
+      })
+    }
+  }
+
   if (loading) {
     return (
       <section className={styles.section}>
@@ -95,21 +133,45 @@ const RecommendationSection: React.FC<RecommendationSectionProps> = ({
     <section className={styles.section}>
       <div className={styles.header}>
         <h2 className={styles.title}>{title}</h2>
-        {showViewAll && (
-          <Link to="/books" className={styles.viewAll}>
-            View All →
-          </Link>
-        )}
       </div>
-      <div className={styles.booksGrid}>
-        {books.map((book) => (
-          <BookCard
-            key={book.id}
-            book={book}
-            onButtonClick={handleBookClick}
-            buttonText="Add to Cart"
-          />
-        ))}
+      <div className={styles.carouselContainer}>
+        {canScrollLeft && (
+          <button
+            className={`${styles.navButton} ${styles.navButtonLeft}`}
+            onClick={() => scroll('left')}
+            aria-label="Scroll left"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+        )}
+        <div 
+          className={styles.booksCarousel}
+          ref={scrollContainerRef}
+          onScroll={checkScrollButtons}
+        >
+          {books.map((book) => (
+            <div key={book.id} className={styles.bookCardWrapper}>
+              <BookCard
+                book={book}
+                onButtonClick={handleBookClick}
+                buttonText="Get This Book"
+              />
+            </div>
+          ))}
+        </div>
+        {canScrollRight && (
+          <button
+            className={`${styles.navButton} ${styles.navButtonRight}`}
+            onClick={() => scroll('right')}
+            aria-label="Scroll right"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        )}
       </div>
     </section>
   )

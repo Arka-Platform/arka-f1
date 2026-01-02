@@ -1,9 +1,11 @@
 package com.arka.modules.storage.controller;
 
 import com.arka.common.result.Result;
+import com.arka.modules.storage.service.LocalFileStorageService;
 import com.arka.modules.storage.service.S3StorageService;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,10 +22,14 @@ public class FileUploadController {
       "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"
   );
 
-  private final S3StorageService storageService;
+  private final S3StorageService s3StorageService;
+  private final LocalFileStorageService localFileStorageService;
 
-  public FileUploadController(S3StorageService storageService) {
-    this.storageService = storageService;
+  public FileUploadController(
+      @Autowired(required = false) S3StorageService s3StorageService,
+      LocalFileStorageService localFileStorageService) {
+    this.s3StorageService = s3StorageService;
+    this.localFileStorageService = localFileStorageService;
   }
 
   @PostMapping("/book-image")
@@ -33,7 +39,19 @@ public class FileUploadController {
       return validationResult;
     }
 
-    Result<String> result = storageService.uploadBookImage(file);
+    // Try S3 first, fallback to local storage
+    Result<String> result = null;
+    if (s3StorageService != null && s3StorageService.isS3Available()) {
+      result = s3StorageService.uploadBookImage(file);
+      // If S3 fails, fallback to local storage
+      if (result instanceof Result.Failure) {
+        result = localFileStorageService.uploadBookImage(file);
+      }
+    } else {
+      // S3 not available, use local storage
+      result = localFileStorageService.uploadBookImage(file);
+    }
+
     return switch (result) {
       case Result.Success<String> success -> ResponseEntity.ok(Map.of("url", success.value()));
       case Result.Failure<String> failure -> ResponseEntity.badRequest().body(Map.of("error", failure.message()));
@@ -47,7 +65,19 @@ public class FileUploadController {
       return validationResult;
     }
 
-    Result<String> result = storageService.uploadStatusImage(file);
+    // Try S3 first, fallback to local storage
+    Result<String> result = null;
+    if (s3StorageService != null && s3StorageService.isS3Available()) {
+      result = s3StorageService.uploadStatusImage(file);
+      // If S3 fails, fallback to local storage
+      if (result instanceof Result.Failure) {
+        result = localFileStorageService.uploadStatusImage(file);
+      }
+    } else {
+      // S3 not available, use local storage
+      result = localFileStorageService.uploadStatusImage(file);
+    }
+
     return switch (result) {
       case Result.Success<String> success -> ResponseEntity.ok(Map.of("url", success.value()));
       case Result.Failure<String> failure -> ResponseEntity.badRequest().body(Map.of("error", failure.message()));
@@ -65,9 +95,29 @@ public class FileUploadController {
     }
 
     String contentType = file.getContentType();
-    if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase())) {
+    String originalFilename = file.getOriginalFilename();
+    
+    // Check content type first
+    boolean hasValidContentType = contentType != null && 
+        ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase());
+    
+    // If content type is invalid or missing, check file extension as fallback
+    boolean hasValidExtension = false;
+    if (originalFilename != null) {
+      String lowerFilename = originalFilename.toLowerCase();
+      hasValidExtension = lowerFilename.endsWith(".jpg") || 
+                         lowerFilename.endsWith(".jpeg") || 
+                         lowerFilename.endsWith(".png") || 
+                         lowerFilename.endsWith(".gif") || 
+                         lowerFilename.endsWith(".webp");
+    }
+    
+    if (!hasValidContentType && !hasValidExtension) {
       return ResponseEntity.badRequest()
-          .body(Map.of("error", "Invalid file type. Allowed types: JPEG, PNG, WEBP, GIF"));
+          .body(Map.of("error", 
+              String.format("Invalid file type. Content type: %s, Filename: %s. Allowed types: JPEG, PNG, WEBP, GIF", 
+                  contentType != null ? contentType : "unknown", 
+                  originalFilename != null ? originalFilename : "unknown")));
     }
 
     return null; // Validation passed

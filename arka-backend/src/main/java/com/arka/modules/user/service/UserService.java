@@ -100,6 +100,11 @@ public class UserService {
     UserEntity user = userRepository.findByEmail(request.email())
         .orElseThrow(() -> new ResourceNotFoundException("Invalid email or password"));
 
+    // Check if user is OAuth-only (no password)
+    if (user.getPasswordHash() == null) {
+      throw new IllegalArgumentException("Please use OAuth login for this account");
+    }
+
     if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
       throw new IllegalArgumentException("Invalid email or password");
     }
@@ -112,6 +117,28 @@ public class UserService {
         user.getFirstName(),
         user.getLastName()
     );
+  }
+
+  /**
+   * Verify user email using OTP
+   */
+  @Transactional
+  public void verifyEmail(UUID userId) {
+    UserEntity user = userRepository.findById(userId)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    user.setEmailVerified(true);
+    userRepository.save(user);
+  }
+
+  /**
+   * Verify user phone using OTP
+   */
+  @Transactional
+  public void verifyPhone(UUID userId) {
+    UserEntity user = userRepository.findById(userId)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    user.setPhoneVerified(true);
+    userRepository.save(user);
   }
 
   /**

@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react'
-import { useSearchParams, Link } from 'react-router-dom'
+import { useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { usersApi } from '../../utils/api'
+import { usersApi, trustScoreApi } from '../../utils/api'
 import Input from '../../components/shared/Input/Input'
 import Textarea from '../../components/shared/Textarea/Textarea'
 import Select from '../../components/shared/Select/Select'
 import Button from '../../components/shared/Button/Button'
+import TrustScoreBadge from '../../components/shared/TrustScoreBadge/TrustScoreBadge'
 import styles from './Account.module.css'
 
 const Account: React.FC = () => {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const { success, error: showError } = useToast()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState<'profile' | 'settings' | 'orderPreferences'>('profile')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [trustScore, setTrustScore] = useState<number | null>(null)
 
   // Set active tab from URL query parameter
   useEffect(() => {
@@ -25,10 +28,11 @@ const Account: React.FC = () => {
     }
   }, [searchParams])
 
-  // Load user data
+  // Load user data and trust score
   useEffect(() => {
     if (user?.id) {
       loadUserData()
+      loadTrustScore()
     }
     // Load settings from localStorage if available
     const savedSettings = localStorage.getItem('arka_user_settings')
@@ -64,10 +68,35 @@ const Account: React.FC = () => {
         address: '', // Not in backend yet
         bio: '', // Not in backend yet
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading user data:', error)
+      // If user not found, it might be a stale session - clear auth and redirect
+      if (error.message && (error.message.includes('User not found') || error.status === 404)) {
+        showError('Your session has expired. Please log in again.')
+        logout()
+        setTimeout(() => {
+          navigate('/login')
+        }, 2000)
+      }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadTrustScore = async () => {
+    if (!user?.id) return
+    
+    try {
+      const scoreData = await trustScoreApi.getTrustScore(user.id)
+      setTrustScore(scoreData.trustScore)
+    } catch (error: any) {
+      // Trust score is optional, so don't show error to user
+      // Only log if it's not a "user not found" error (which is expected for new users)
+      if (error.message && !error.message.includes('User not found')) {
+        console.error('Error loading trust score:', error)
+      }
+      // Set trust score to null to indicate it's not available
+      setTrustScore(null)
     }
   }
 
@@ -144,6 +173,20 @@ const Account: React.FC = () => {
     )
   }
 
+  // If user is not authenticated, show message
+  if (!user) {
+    return (
+      <div className={styles.account}>
+        <div className={styles.container}>
+          <div className={styles.authPrompt}>
+            <p>Please log in to view your account.</p>
+            <Link to="/login" className={styles.loginButton}>Log In</Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={styles.account}>
       <div className={styles.container}>
@@ -164,6 +207,11 @@ const Account: React.FC = () => {
                 {profileData.firstName || user?.firstName} {profileData.lastName || user?.lastName}
               </h2>
               <p className={styles.profileEmail}>{profileData.email || user?.email}</p>
+              {trustScore !== null && (
+                <div className={styles.trustScoreContainer}>
+                  <TrustScoreBadge trustScore={trustScore} size="medium" showLabel={true} />
+                </div>
+              )}
             </div>
 
             <nav className={styles.nav}>
@@ -185,9 +233,6 @@ const Account: React.FC = () => {
               >
                 Order Preferences
               </button>
-              <Link to="/lending" className={styles.navLink}>
-                Book Lending
-              </Link>
               <Link to="/subscriptions" className={styles.navLink}>
                 Subscriptions
               </Link>

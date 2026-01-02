@@ -19,11 +19,29 @@ public class UserEntity extends BaseEntity {
   @Column(nullable = false)
   private String lastName;
 
-  @Column(nullable = false)
-  private String passwordHash;
+  @Column(nullable = true)
+  private String passwordHash;  // Nullable for OAuth users
 
   @Column(nullable = false, precision = 10, scale = 2)
   private BigDecimal creditBalance = BigDecimal.ZERO;
+
+  @Column(length = 20)
+  private String phoneNumber;
+
+  @Column(nullable = false)
+  private Boolean emailVerified = false;
+
+  @Column(nullable = false)
+  private Boolean phoneVerified = false;
+
+  @Column(length = 50)
+  private String oauthProvider;  // e.g., "google", "facebook"
+
+  @Column(length = 255)
+  private String oauthProviderId;  // User ID from OAuth provider
+
+  @Column(nullable = false)
+  private Boolean isAdmin = false;
 
   protected UserEntity() {
     // JPA
@@ -86,7 +104,57 @@ public class UserEntity extends BaseEntity {
     }
     this.creditBalance = this.creditBalance.subtract(amount);
   }
+
+  public String getPhoneNumber() {
+    return phoneNumber;
+  }
+
+  public void setPhoneNumber(String phoneNumber) {
+    this.phoneNumber = phoneNumber;
+  }
+
+  public Boolean getEmailVerified() {
+    return emailVerified;
+  }
+
+  public void setEmailVerified(Boolean emailVerified) {
+    this.emailVerified = emailVerified;
+  }
+
+  public Boolean getPhoneVerified() {
+    return phoneVerified;
+  }
+
+  public void setPhoneVerified(Boolean phoneVerified) {
+    this.phoneVerified = phoneVerified;
+  }
+
+  public String getOauthProvider() {
+    return oauthProvider;
+  }
+
+  public void setOauthProvider(String oauthProvider) {
+    this.oauthProvider = oauthProvider;
+  }
+
+  public String getOauthProviderId() {
+    return oauthProviderId;
+  }
+
+  public void setOauthProviderId(String oauthProviderId) {
+    this.oauthProviderId = oauthProviderId;
+  }
+
+  public Boolean getIsAdmin() {
+    return isAdmin;
+  }
+
+  public void setIsAdmin(Boolean isAdmin) {
+    this.isAdmin = isAdmin;
+  }
 }
+
+
 
 
 

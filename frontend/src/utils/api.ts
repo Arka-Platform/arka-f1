@@ -17,8 +17,10 @@ export class ApiError extends Error {
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    // Backend may return either "error" or "message" field
+    const errorMessage = errorData.error || errorData.message || `HTTP error! status: ${response.status}`;
     throw new ApiError(
-      errorData.message || `HTTP error! status: ${response.status}`,
+      errorMessage,
       response.status,
       errorData
     );
@@ -38,12 +40,15 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
   
+  // Merge headers properly - ensure Content-Type is always set
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(options?.headers as Record<string, string> || {}),
+  };
+  
   const config: RequestInit = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
     ...options,
+    headers,
   };
 
   try {
@@ -117,6 +122,8 @@ export interface BookResponse {
   author: string
   description: string
   genre: string | null
+  category: string | null
+  subcategory: string | null
   price: number | null
   status: string
   createdAt: string
@@ -141,12 +148,72 @@ export interface WastePaperResponse {
   createdAt: string
 }
 
+// Donation API types
+export interface NGOResponse {
+  id: string
+  name: string
+  description: string | null
+  location: string | null
+  verified: boolean
+  booksReceived: number | null
+  categories: string[] | null
+  contactEmail: string | null
+  contactPhone: string | null
+  website: string | null
+}
+
+export interface DonationRequest {
+  ngoId: string
+  donorName: string
+  donorEmail: string
+  donorPhone: string
+  donorType: 'INDIVIDUAL' | 'INSTITUTION'
+  institutionName?: string
+  bookCount: number
+  bookCategories?: string[]
+  condition: 'NEW' | 'LIKE_NEW' | 'GOOD' | 'FAIR'
+  pickupAddress: {
+    street: string
+    city: string
+    state: string
+    pincode: string
+  }
+  additionalNotes?: string
+  userId?: string
+}
+
+export interface DonationResponse {
+  id: string
+  ngoId: string
+  ngoName: string
+  donorName: string
+  donorEmail: string
+  donorPhone: string
+  donorType: 'INDIVIDUAL' | 'INSTITUTION'
+  institutionName: string | null
+  bookCount: number
+  bookCategories: string[] | null
+  condition: 'NEW' | 'LIKE_NEW' | 'GOOD' | 'FAIR'
+  pickupAddress: {
+    street: string
+    city: string
+    state: string
+    pincode: string
+  }
+  additionalNotes: string | null
+  status: 'PENDING' | 'APPROVED' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED'
+  userId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 // Book API functions
 export const booksApi = {
-  list: (params?: { search?: string; genre?: string; page?: number; size?: number }) => {
+  list: (params?: { search?: string; genre?: string; subcategory?: string; page?: number; size?: number }) => {
     const searchParams = new URLSearchParams()
     if (params?.search) searchParams.append('search', params.search)
     if (params?.genre) searchParams.append('genre', params.genre)
+    if (params?.subcategory) searchParams.append('subcategory', params.subcategory)
     if (params?.page) searchParams.append('page', params.page.toString())
     if (params?.size) searchParams.append('size', params.size.toString())
     
@@ -154,8 +221,11 @@ export const booksApi = {
     return api.get<BookResponse[]>(`/api/v1/books${query ? `?${query}` : ''}`)
   },
   
-  create: (data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) =>
-    api.post<{ id: string }>('/api/v1/books', data),
+  create: (ownerId: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) => {
+    const params = new URLSearchParams()
+    params.append('ownerId', ownerId)
+    return api.post<{ id: string }>(`/api/v1/books?${params}`, data)
+  },
   
   getById: (id: string) =>
     api.get<BookResponse>(`/api/v1/books/${id}`),
@@ -171,6 +241,15 @@ export const booksApi = {
   
   getMyBooks: (ownerId: string) =>
     api.get<BookResponse[]>(`/api/v1/books/my?ownerId=${ownerId}`),
+  
+  getGenres: () =>
+    api.get<string[]>('/api/v1/books/genres'),
+  
+  getGenresWithSubcategories: () =>
+    api.get<Array<{ genre: string; subcategories: string[] }>>('/api/v1/books/genres/with-subcategories'),
+  
+  search: (query: string) =>
+    api.get<BookResponse[]>(`/api/v1/books?search=${encodeURIComponent(query)}`),
 };
 
 // File Upload API functions
@@ -193,6 +272,258 @@ export const recyclingApi = {
     return api.get<WastePaperResponse[]>(`/api/v1/recycling${query ? `?${query}` : ''}`)
   },
 };
+
+// Donation API functions
+export const donationsApi = {
+  getNGOs: () =>
+    api.get<NGOResponse[]>('/api/v1/donations/ngos'),
+  
+  createDonation: (data: DonationRequest) =>
+    api.post<DonationResponse>('/api/v1/donations', data),
+  
+  getMyDonations: (userId: string) =>
+    api.get<DonationResponse[]>(`/api/v1/donations/my?userId=${userId}`),
+  
+  getDonation: (donationId: string) =>
+    api.get<DonationResponse>(`/api/v1/donations/${donationId}`),
+  
+  cancelDonation: (donationId: string) =>
+    api.delete<DonationResponse>(`/api/v1/donations/${donationId}`),
+};
+
+// Admin API functions
+export const adminApi = {
+  login: (email: string, password: string) => {
+    return api.post<{
+      token: string
+      userId: string
+      email: string
+      firstName: string
+      lastName: string
+    }>('/api/admin/auth/login', { email, password })
+  },
+  
+  getNGOs: () => {
+    const token = localStorage.getItem('arka_admin_token')
+    return api.get<NGOResponse[]>('/api/admin/donations/ngos', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+  },
+  
+  createNGO: (data: CreateNGORequest) => {
+    const token = localStorage.getItem('arka_admin_token')
+    return api.post<NGOResponse>('/api/admin/donations/ngos', data, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+  },
+  
+  updateNGO: (ngoId: string, data: UpdateNGORequest) => {
+    const token = localStorage.getItem('arka_admin_token')
+    return api.put<NGOResponse>(`/api/admin/donations/ngos/${ngoId}`, data, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+  },
+  
+  deleteNGO: (ngoId: string) => {
+    const token = localStorage.getItem('arka_admin_token')
+    return api.delete<void>(`/api/admin/donations/ngos/${ngoId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+  },
+  
+  verifyNGO: (ngoId: string) => {
+    const token = localStorage.getItem('arka_admin_token')
+    return api.put<NGOResponse>(`/api/admin/donations/ngos/${ngoId}/verify`, {}, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+  },
+};
+
+// Demand/Book Requests API types
+export interface BookRequestResponse {
+  id: string
+  requesterId: string
+  requesterName: string
+  requesterEmail: string | null
+  title: string
+  author: string
+  description: string | null
+  genre: string | null
+  category: string | null
+  subcategory: string | null
+  isbn: string | null
+  maxPrice: number | null
+  preferredCondition: string | null
+  urgency: string | null
+  location: string | null
+  additionalNotes: string | null
+  status: 'OPEN' | 'FULFILLED' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED'
+  expiresAt: string | null
+  fulfilledBy: string | null
+  fulfilledByName: string | null
+  fulfilledAt: string | null
+  viewsCount: number
+  offersCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateBookRequestRequest {
+  title: string
+  author: string
+  description?: string
+  genre?: string
+  category?: string
+  subcategory?: string
+  isbn?: string
+  maxPrice?: number
+  preferredCondition?: string
+  urgency?: string
+  location?: string
+  additionalNotes?: string
+  expiresAt?: string
+}
+
+export interface FulfillRequestRequest {
+  bookId: string
+  offeredPrice: number
+  condition: string
+  notes?: string
+}
+
+// Demand/Book Requests API functions
+export const demandApi = {
+  createRequest: (requesterId: string, data: CreateBookRequestRequest) =>
+    api.post<CreateRequestResponse>(`/api/v1/demand/requests?requesterId=${requesterId}`, data),
+  
+  getOpenRequests: () =>
+    api.get<BookRequestResponse[]>('/api/v1/demand/requests'),
+  
+  getMyRequests: (userId: string) =>
+    api.get<BookRequestResponse[]>(`/api/v1/demand/requests/my?userId=${userId}`),
+  
+  getRequest: (requestId: string) =>
+    api.get<BookRequestResponse>(`/api/v1/demand/requests/${requestId}`),
+  
+  searchRequests: (query: string) =>
+    api.get<BookRequestResponse[]>(`/api/v1/demand/requests?search=${encodeURIComponent(query)}`),
+  
+  fulfillRequest: (requestId: string, sellerId: string, data: FulfillRequestRequest) =>
+    api.put<BookRequestResponse>(`/api/v1/demand/requests/${requestId}/fulfill?sellerId=${sellerId}`, data),
+  
+  cancelRequest: (requestId: string, userId: string) =>
+    api.delete<BookRequestResponse>(`/api/v1/demand/requests/${requestId}?userId=${userId}`),
+  
+  getMatchesForRequest: (requestId: string, userId: string) => {
+    const params = new URLSearchParams()
+    params.append('userId', userId)
+    return api.get<MatchResponse[]>(`/api/v1/demand/requests/${requestId}/matches?${params}`)
+  },
+  
+  getMatchesForBook: (bookId: string, sellerId: string) =>
+    api.get<RequestMatchResponse[]>(`/api/v1/demand/books/${bookId}/matches?sellerId=${sellerId}`),
+  
+  getAutoFillSuggestions: (userId: string) =>
+    api.get<AutoFillSuggestions>(`/api/v1/demand/requests/autofill?userId=${userId}`),
+  
+  getQuickSuggestions: (userId: string, query: string, fieldType: string) =>
+    api.get<string[]>(`/api/v1/demand/requests/suggestions?userId=${userId}&query=${encodeURIComponent(query)}&fieldType=${fieldType}`),
+  
+  getRecentlyServedRequests: (limit?: number) =>
+    api.get<BookRequestResponse[]>(`/api/v1/demand/requests/recently-served${limit ? `?limit=${limit}` : ''}`),
+  
+  getWeeklyStats: () =>
+    api.get<WeeklyStats>(`/api/v1/demand/requests/stats/weekly`),
+  
+  getMostRequestedBooks: (limit: number = 5) => {
+    const params = new URLSearchParams()
+    params.append('limit', limit.toString())
+    return api.get<Array<{ title: string; author: string; requestCount: number }>>(
+      `/api/v1/demand/requests/most-requested?${params}`
+    )
+  },
+};
+
+export interface WeeklyStats {
+  openRequests: number
+  completedThisWeek: number
+  createdThisWeek: number
+}
+
+export interface MatchResponse {
+  bookId: string
+  bookTitle: string
+  bookAuthor: string
+  bookGenre: string | null
+  bookPrice: number
+  bookImageUrl: string | null
+  sellerId: string
+  sellerName: string
+  matchScore: number
+  matchReasons: string[]
+}
+
+export interface CreateRequestResponse {
+  request: BookRequestResponse
+  matches: MatchResponse[]
+  totalMatches: number
+}
+
+export interface RequestMatchResponse {
+  requestId: string
+  requestTitle: string
+  requestAuthor: string
+  requestGenre: string | null
+  maxPrice: number | null
+  urgency: string | null
+  location: string | null
+  viewsCount: number
+  matchScore: number
+  matchReasons: string[]
+}
+
+export interface AutoFillSuggestions {
+  recentSearches: string[]
+  suggestedGenres: string[]
+  recentlyViewedBooks: Array<{
+    title: string
+    author: string
+    genre: string | null
+  }>
+  popularGenres: string[]
+}
+
+export interface CreateNGORequest {
+  name: string
+  description?: string
+  location?: string
+  categories?: string[]
+  contactEmail?: string
+  contactPhone?: string
+  website?: string
+  verified?: boolean
+}
+
+export interface UpdateNGORequest {
+  name?: string
+  description?: string
+  location?: string
+  categories?: string[]
+  contactEmail?: string
+  contactPhone?: string
+  website?: string
+  verified?: boolean
+}
 
 // Exchange API types
 export interface ExchangeResponse {
@@ -224,23 +555,43 @@ export interface FeeCalculationResponse {
 
 // Exchange API functions
 export const exchangesApi = {
-  create: (data: CreateExchangeRequest) =>
-    api.post<ExchangeResponse>('/api/v1/exchanges', data),
+  create: (data: CreateExchangeRequest, buyerId?: string) => {
+    const url = buyerId 
+      ? `/api/v1/exchanges?buyerId=${buyerId}`
+      : '/api/v1/exchanges'
+    return api.post<ExchangeResponse>(url, data)
+  },
   
-  getMyExchanges: () =>
-    api.get<ExchangeResponse[]>('/api/v1/exchanges/my'),
+  getMyExchanges: (userId?: string) => {
+    const url = userId
+      ? `/api/v1/exchanges/my?userId=${userId}`
+      : '/api/v1/exchanges/my'
+    return api.get<ExchangeResponse[]>(url)
+  },
   
   getBookExchanges: (bookId: string) =>
     api.get<ExchangeResponse[]>(`/api/v1/exchanges/book/${bookId}`),
   
-  confirm: (exchangeId: string) =>
-    api.put<ExchangeResponse>(`/api/v1/exchanges/${exchangeId}/confirm`),
+  confirm: (exchangeId: string, sellerId?: string) => {
+    const url = sellerId
+      ? `/api/v1/exchanges/${exchangeId}/confirm?sellerId=${sellerId}`
+      : `/api/v1/exchanges/${exchangeId}/confirm`
+    return api.put<ExchangeResponse>(url)
+  },
   
-  complete: (exchangeId: string) =>
-    api.put<ExchangeResponse>(`/api/v1/exchanges/${exchangeId}/complete`),
+  complete: (exchangeId: string, buyerId?: string) => {
+    const url = buyerId
+      ? `/api/v1/exchanges/${exchangeId}/complete?buyerId=${buyerId}`
+      : `/api/v1/exchanges/${exchangeId}/complete`
+    return api.put<ExchangeResponse>(url)
+  },
   
-  cancel: (exchangeId: string) =>
-    api.delete<ExchangeResponse>(`/api/v1/exchanges/${exchangeId}`),
+  cancel: (exchangeId: string, userId?: string) => {
+    const url = userId
+      ? `/api/v1/exchanges/${exchangeId}?userId=${userId}`
+      : `/api/v1/exchanges/${exchangeId}`
+    return api.delete<ExchangeResponse>(url)
+  },
   
   calculateFee: (bookPrice: number) => {
     const params = new URLSearchParams()
@@ -515,6 +866,108 @@ export interface CreateChainRequest {
 }
 
 // Community API functions
+// Wishlist API types
+export interface WishlistItemResponse {
+  wishlistId: string
+  bookId: string
+  bookTitle: string
+  bookAuthor: string
+  bookGenre: string | null
+  bookDescription: string | null
+  bookPrice: number
+  bookImageUrl: string | null
+  bookStatus: string
+  bookOwnerId: string
+  bookOwnerName: string
+  notes: string | null
+  addedAt: string
+}
+
+export interface AddToWishlistRequest {
+  notes?: string
+}
+
+// Wishlist API functions
+export const wishlistApi = {
+  addToWishlist: (userId: string, bookId: string, data?: AddToWishlistRequest) =>
+    api.post<WishlistItemResponse>(`/api/v1/wishlist/items?userId=${userId}&bookId=${bookId}`, data || {}),
+  
+  removeFromWishlist: (userId: string, bookId: string) =>
+    api.delete<{ message: string }>(`/api/v1/wishlist/items?userId=${userId}&bookId=${bookId}`),
+  
+  getWishlist: (userId: string) =>
+    api.get<WishlistItemResponse[]>(`/api/v1/wishlist/items?userId=${userId}`),
+  
+  checkInWishlist: (userId: string, bookId: string) =>
+    api.get<{ isInWishlist: boolean }>(`/api/v1/wishlist/items/check?userId=${userId}&bookId=${bookId}`),
+  
+  getWishlistCount: (userId: string) =>
+    api.get<{ count: number }>(`/api/v1/wishlist/count?userId=${userId}`),
+};
+
+// Bookshelf API types
+export interface BookshelfItemResponse {
+  id: string
+  userId: string
+  bookId: string
+  bookTitle: string
+  bookAuthor: string
+  bookImageUrl: string | null
+  bookPrice: number
+  notes: string | null
+  addedAt: string
+}
+
+export interface AddToBookshelfRequest {
+  notes?: string
+}
+
+// Bookshelf API functions
+export const bookshelfApi = {
+  addToBookshelf: (userId: string, bookId: string, data?: AddToBookshelfRequest) =>
+    api.post<BookshelfItemResponse>(`/api/v1/bookshelf?userId=${userId}&bookId=${bookId}`, data || {}),
+  
+  removeFromBookshelf: (userId: string, bookId: string) =>
+    api.delete<{ message: string }>(`/api/v1/bookshelf/${bookId}?userId=${userId}`),
+  
+  getBookshelf: (userId: string) =>
+    api.get<BookshelfItemResponse[]>(`/api/v1/bookshelf?userId=${userId}`),
+  
+  checkInBookshelf: (userId: string, bookId: string) =>
+    api.get<{ isInBookshelf: boolean }>(`/api/v1/bookshelf/check?userId=${userId}&bookId=${bookId}`),
+  
+  getBookshelfCount: (userId: string) =>
+    api.get<{ count: number }>(`/api/v1/bookshelf/count?userId=${userId}`),
+}
+
+// Trust Score API types
+export interface TrustScoreResponse {
+  userId: string
+  trustScore: number
+  conditionAccuracyScore: number
+  conditionAssessmentsCount: number
+  accurateConditionCount: number
+  showupReliabilityScore: number
+  pickupCommitmentsCount: number
+  successfulShowupsCount: number
+  noShowsCount: number
+  responseTimeScore: number
+  averageResponseTimeHours: number
+  requestsRespondedCount: number
+  completionRate: number
+  totalTransactions: number
+  completedTransactions: number
+  cancellationRate: number
+  cancelledTransactions: number
+  lastCalculatedAt: string
+}
+
+// Trust Score API functions
+export const trustScoreApi = {
+  getTrustScore: (userId: string) =>
+    api.get<TrustScoreResponse>(`/api/v1/trustscore?userId=${userId}`),
+}
+
 export const communityApi = {
   getCircles: () =>
     api.get<CommunityCircleResponse[]>('/api/v1/community/circles'),

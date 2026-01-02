@@ -10,20 +10,46 @@ spring:
       max-file-size: 5MB
       max-request-size: 10MB
   datasource:
-    url: jdbc:h2:mem:arka;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
-    username: sa
-    password: sa
-    driver-class-name: org.h2.Driver
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:arka}}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
   jpa:
     hibernate:
       ddl-auto: validate
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: false
   flyway:
     enabled: true
     locations: classpath:db/migration
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+  # Exclude OAuth2 auto-configuration - we'll configure it conditionally
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
 
 app:
   cors:
@@ -38,6 +64,34 @@ app:
     s3:
       bucket-name: ${AWS_S3_BUCKET_NAME:}
       region: ${AWS_REGION:us-east-1}
+    rds:
+      host: ${AWS_RDS_HOST:}
+      port: ${AWS_RDS_PORT:5432}
+      database: ${AWS_RDS_DATABASE:arka}
+      username: ${AWS_RDS_USERNAME:}
+      password: ${AWS_RDS_PASSWORD:}
+  oauth2:
+    google:
+      client-id: ${GOOGLE_CLIENT_ID:}
+      client-secret: ${GOOGLE_CLIENT_SECRET:}
+      redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}
+  otp:
+    email:
+      enabled: true
+      expiration-minutes: 10
+      length: 6
+    phone:
+      enabled: true
+      expiration-minutes: 10
+      length: 6
+      provider: ${SMS_PROVIDER:aws-sns}  # aws-sns or twilio
+  sms:
+    aws:
+      region: ${AWS_SNS_REGION:us-east-1}
+    twilio:
+      account-sid: ${TWILIO_ACCOUNT_SID:}
+      auth-token: ${TWILIO_AUTH_TOKEN:}
+      from-number: ${TWILIO_FROM_NUMBER:}
 
 management:
   endpoints:
@@ -55,16 +109,19 @@ logging:
     org.springframework.security: WARN
 
 ---
-# Production profile
+# Production profile - AWS RDS
 spring:
   config:
     activate:
       on-profile: prod
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/arka}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD}  # Must be set - no default to prevent empty password
+    url: jdbc:postgresql://${AWS_RDS_HOST}:${AWS_RDS_PORT:5432}/${AWS_RDS_DATABASE:arka}
+    username: ${AWS_RDS_USERNAME}
+    password: ${AWS_RDS_PASSWORD}  # Must be set
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
   jpa:
     hibernate:
       ddl-auto: validate
@@ -82,25 +139,38 @@ app:
     allowed-origins:
       - ${FRONTEND_URL:http://localhost:5173}
   amazon-bestsellers:
-    enabled: true  # Enable in production - CSV files are in JAR resources
+    enabled: true
   aws:
     s3:
       bucket-name: ${AWS_S3_BUCKET_NAME:}
       region: ${AWS_REGION:us-east-1}
+    rds:
+      host: ${AWS_RDS_HOST:}
+      port: ${AWS_RDS_PORT:5432}
+      database: ${AWS_RDS_DATABASE:arka}
+      username: ${AWS_RDS_USERNAME:}
+      password: ${AWS_RDS_PASSWORD:}
 
 ---
-# Local development overrides
+# Local development - H2 in-memory database
 spring:
   config:
     activate:
       on-profile: local
   datasource:
     url: jdbc:h2:mem:arka_local;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password: sa
+    driver-class-name: org.h2.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop  # Auto-create schema from entities for local dev
+      ddl-auto: update  # Auto-update schema from entities for local dev (creates missing tables)
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
   flyway:
-    enabled: false  # Disable Flyway for local development
+    enabled: true  # Enable Flyway to run migrations
+    continue-on-error: true  # Continue even if some migrations fail (e.g., column already exists)
 
 app:
   cors:
@@ -108,7 +178,7 @@ app:
       - http://localhost:5173
       - http://localhost:3000
   amazon-bestsellers:
-    enabled: true  # Enable for local development
+    enabled: true
 
 
 

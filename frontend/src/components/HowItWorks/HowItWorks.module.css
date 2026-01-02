@@ -36,47 +36,1188 @@
   transform: rotate(180deg);
 }
 
-.steps {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4rem;
-}
-
-.step {
+.flowsContainer {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 1.5rem;
+  gap: 4rem;
+  padding: 3rem 0;
 }
 
-.stepIllustrationWrapper {
-  width: 100%;
-  max-width: 280px;
+.flow {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.flowTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: left;
+  margin: 0;
+  padding-bottom: 1rem;
+  border-bottom: 3px solid currentColor;
+}
+
+.flowContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
   align-items: center;
 }
 
-.stepIllustration {
-  width: 100%;
-  height: auto;
-  color: var(--color-black);
-  border-radius: 12px;
-  object-fit: cover;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.flowContentReversed {
+  grid-template-columns: 1fr 1fr;
+}
+
+.flowContentReversed .stepsList {
+  order: 2;
+}
+
+.flowContentReversed .animationContainer {
+  order: 1;
+}
+
+.stepsList {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.stepsListRight {
+  text-align: right;
+}
+
+.stepsListRight .stepItem {
+  flex-direction: row-reverse;
+}
+
+.stepsListRight .stepArrow {
+  left: auto;
+  right: 20px;
+}
+
+.stepItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  position: relative;
+}
+
+.stepNumber {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: currentColor;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  opacity: 0.2;
+}
+
+.stepText {
+  flex: 1;
 }
 
 .stepTitle {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--color-black);
+  margin: 0 0 0.5rem 0;
 }
 
 .stepDescription {
   font-size: 1rem;
   color: var(--color-gray-dark);
   line-height: 1.6;
+  margin: 0;
+}
+
+.stepArrow {
+  position: absolute;
+  left: 20px;
+  bottom: -1.5rem;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;
+}
+
+.animationContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  min-height: 500px;
+}
+
+.animationContainerLeft {
+  justify-content: flex-start;
+}
+
+.animatedBookIcon {
+  width: 100%;
+  max-width: 600px;
+  height: 600px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.animationIcon {
+  width: 100%;
+  height: 100%;
+}
+
+/* Character animation - slight movement */
+.character {
+  animation: characterMove 4s ease-in-out infinite;
+}
+
+.characterArms {
+  animation: armsMove 4s ease-in-out infinite;
+}
+
+/* Book placing animation - moves from character to box */
+.bookPlacing {
+  animation: bookPlace 4s ease-in-out infinite;
+}
+
+/* Box animation - slight bounce when book arrives */
+.box {
+  animation: boxBounce 4s ease-in-out infinite;
+}
+
+/* Book in box - appears after placement */
+.bookInBox {
+  animation: bookInBoxAppear 4s ease-in-out infinite;
+}
+
+/* Courier truck - moves in from right and picks up box */
+.courierTruck {
+  animation: courierPickup 4s ease-in-out infinite;
+}
+
+/* Rupee pops out after courier picks up */
+.rupeePop {
+  transform-origin: 380px 200px;
+  animation: rupeePop 4s ease-in-out infinite;
+}
+
+.sparkle1 {
+  animation: sparkle1 4s ease-in-out infinite;
+}
+
+.sparkle2 {
+  animation: sparkle2 4s ease-in-out infinite;
+}
+
+.sparkle3 {
+  animation: sparkle3 4s ease-in-out infinite;
+}
+
+@keyframes characterMove {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  20% {
+    transform: translateY(-5px);
+  }
+  25% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes armsMove {
+  0%, 15% {
+    transform: translateY(0);
+  }
+  20%, 25% {
+    transform: translateY(10px);
+  }
+  30%, 100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes bookPlace {
+  0%, 15% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  20%, 25% {
+    transform: translate(80px, 120px);
+    opacity: 1;
+  }
+  30%, 100% {
+    transform: translate(80px, 120px);
+    opacity: 0;
+  }
+}
+
+@keyframes boxBounce {
+  0%, 15% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(-10px) scale(1.05);
+    opacity: 1;
+  }
+  30%, 60% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  65% {
+    transform: translateX(-50px) translateY(-20px) scale(0.9);
+    opacity: 0.8;
+  }
+  70%, 100% {
+    transform: translateX(-200px) translateY(-20px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes bookInBoxAppear {
+  0%, 25% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  30%, 60% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  65% {
+    opacity: 0.8;
+    transform: translateX(-50px) translateY(-20px) scale(0.9);
+  }
+  70%, 100% {
+    opacity: 0;
+    transform: translateX(-200px) translateY(-20px) scale(0.8);
+  }
+}
+
+@keyframes courierPickup {
+  0%, 25% {
+    transform: translateX(200px);
+    opacity: 0;
+  }
+  30% {
+    transform: translateX(200px);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  60% {
+    transform: translateX(-50px);
+    opacity: 1;
+  }
+  65%, 100% {
+    transform: translateX(-200px);
+    opacity: 0;
+  }
+}
+
+@keyframes rupeePop {
+  0%, 60% {
+    transform: translateY(0) scale(0.5);
+    opacity: 0;
+  }
+  65% {
+    transform: translateY(-100px) scale(1.5);
+    opacity: 1;
+  }
+  75% {
+    transform: translateY(-80px) scale(1.3);
+    opacity: 1;
+  }
+  85% {
+    transform: translateY(-60px) scale(1.2);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-40px) scale(1.1);
+    opacity: 0.7;
+  }
+}
+
+@keyframes sparkle1 {
+  0%, 60%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  65%, 75% {
+    opacity: 1;
+    transform: scale(2) translate(-8px, -8px);
+  }
+}
+
+@keyframes sparkle2 {
+  0%, 60%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  65%, 75% {
+    opacity: 0.9;
+    transform: scale(1.8) translate(10px, 0px);
+  }
+}
+
+@keyframes sparkle3 {
+  0%, 60%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  65%, 75% {
+    opacity: 0.7;
+    transform: scale(1.6) translate(-5px, 8px);
+  }
+}
+
+/* Buy Flow Animations */
+.buyCharacter {
+  animation: buyCharacterReceive 4s ease-in-out infinite;
+}
+
+.buyCharacterArms {
+  animation: buyArmsReceive 4s ease-in-out infinite;
+}
+
+.deliveryPackage {
+  animation: deliveryPackageArrive 4s ease-in-out infinite;
+}
+
+.bookDelivering {
+  animation: bookDelivering 4s ease-in-out infinite;
+}
+
+.bookInHands {
+  animation: bookInHands 4s ease-in-out infinite;
+}
+
+.bookOpening {
+  transform-origin: 250px 255px;
+  animation: bookOpening 4s ease-in-out infinite;
+}
+
+.pagesTurning {
+  transform-origin: 250px 255px;
+}
+
+.turningPage {
+  animation: turningPage 4s ease-in-out infinite;
+}
+
+.joySparkles {
+  transform-origin: 250px 255px;
+}
+
+.joySparkle1 {
+  animation: joySparkle1 4s ease-in-out infinite;
+}
+
+.joySparkle2 {
+  animation: joySparkle2 4s ease-in-out infinite;
+}
+
+.joySparkle3 {
+  animation: joySparkle3 4s ease-in-out infinite;
+}
+
+.joySparkle4 {
+  animation: joySparkle4 4s ease-in-out infinite;
+}
+
+.joySparkle5 {
+  animation: joySparkle5 4s ease-in-out infinite;
+}
+
+.joySparkle6 {
+  animation: joySparkle6 4s ease-in-out infinite;
+}
+
+.readingGlow {
+  transform-origin: 250px 255px;
+  animation: readingGlow 4s ease-in-out infinite;
+}
+
+.happyFace {
+  transform-origin: 250px 200px;
+}
+
+.smile {
+  animation: smile 4s ease-in-out infinite;
+}
+
+@keyframes buyCharacterReceive {
+  0%, 30% {
+    transform: translateX(0) translateY(0);
+  }
+  40% {
+    transform: translateX(-20px) translateY(0);
+  }
+  50%, 100% {
+    transform: translateX(0) translateY(0);
+  }
+}
+
+@keyframes buyArmsReceive {
+  0%, 30% {
+    transform: translateX(0);
+  }
+  40% {
+    transform: translateX(-10px);
+  }
+  50%, 100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes deliveryPackageArrive {
+  0%, 20% {
+    transform: translateX(-150px) translateY(0);
+    opacity: 0;
+  }
+  30% {
+    transform: translateX(0) translateY(0);
+    opacity: 1;
+  }
+  45% {
+    transform: translateX(0) translateY(-10px);
+    opacity: 1;
+  }
+  50%, 100% {
+    transform: translateX(0) translateY(-10px);
+    opacity: 0.8;
+  }
+}
+
+@keyframes bookDelivering {
+  0%, 20% {
+    transform: translateX(-150px) translateY(0);
+    opacity: 0;
+  }
+  30% {
+    transform: translateX(0) translateY(0);
+    opacity: 1;
+  }
+  40% {
+    transform: translateX(60px) translateY(-135px) scale(1.1);
+    opacity: 1;
+  }
+  50%, 100% {
+    transform: translateX(60px) translateY(-135px) scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes bookInHands {
+  0%, 40% {
+    opacity: 0;
+    transform: scale(0.8) translateY(50px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  60%, 100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes bookOpening {
+  0%, 50% {
+    transform: rotateY(0deg);
+    opacity: 1;
+  }
+  60% {
+    transform: rotateY(15deg);
+    opacity: 1;
+  }
+  70% {
+    transform: rotateY(25deg);
+    opacity: 0.9;
+  }
+  80%, 100% {
+    transform: rotateY(30deg);
+    opacity: 0.9;
+  }
+}
+
+@keyframes turningPage {
+  0%, 50% {
+    opacity: 0;
+    transform: rotateY(0deg) translateX(0);
+  }
+  60% {
+    opacity: 0.8;
+    transform: rotateY(45deg) translateX(10px);
+  }
+  70% {
+    opacity: 0.6;
+    transform: rotateY(90deg) translateX(20px);
+  }
+  80%, 100% {
+    opacity: 0;
+    transform: rotateY(120deg) translateX(30px);
+  }
+}
+
+@keyframes readingGlow {
+  0%, 50% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  60% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  70% {
+    opacity: 0.25;
+    transform: scale(1.1);
+  }
+  80%, 100% {
+    opacity: 0.2;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes smile {
+  0%, 50% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  70%, 100% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes joySparkle1 {
+  0%, 50%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  55%, 75% {
+    opacity: 1;
+    transform: scale(1.8) translate(-8px, -8px);
+  }
+}
+
+@keyframes joySparkle2 {
+  0%, 50%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  55%, 75% {
+    opacity: 0.9;
+    transform: scale(1.6) translate(8px, -8px);
+  }
+}
+
+@keyframes joySparkle3 {
+  0%, 50%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  57%, 77% {
+    opacity: 1;
+    transform: scale(1.5) translate(-6px, -10px);
+  }
+}
+
+@keyframes joySparkle4 {
+  0%, 50%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  57%, 77% {
+    opacity: 0.9;
+    transform: scale(1.4) translate(6px, -10px);
+  }
+}
+
+@keyframes joySparkle5 {
+  0%, 50%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  59%, 79% {
+    opacity: 1;
+    transform: scale(1.3) translate(-4px, -12px);
+  }
+}
+
+@keyframes joySparkle6 {
+  0%, 50%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  59%, 79% {
+    opacity: 0.9;
+    transform: scale(1.2) translate(4px, -12px);
+  }
+}
+
+@keyframes mindBasePulse {
+  0%, 100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes mindEnlightened {
+  0%, 50% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  60% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  70% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+  80% {
+    opacity: 0.4;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+}
+
+@keyframes mindSharpness {
+  0%, 50% {
+    opacity: 0;
+  }
+  60% {
+    opacity: 0.3;
+  }
+  70% {
+    opacity: 0.6;
+  }
+  80%, 100% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes mindGlow {
+  0%, 50% {
+    opacity: 0.1;
+    transform: scale(0.8);
+  }
+  60% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+  70% {
+    opacity: 0.3;
+    transform: scale(1.1);
+  }
+  80% {
+    opacity: 0.25;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+}
+
+@keyframes particleFlow1 {
+  0%, 50% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-60px) scale(0.8);
+  }
+  75% {
+    opacity: 0.5;
+    transform: translateY(-100px) scale(0.5);
+  }
+  80%, 100% {
+    opacity: 0;
+    transform: translateY(-120px) scale(0);
+  }
+}
+
+@keyframes particleFlow2 {
+  0%, 52% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+  57% {
+    opacity: 1;
+    transform: translateY(-25px) scale(1);
+  }
+  67% {
+    opacity: 1;
+    transform: translateY(-65px) scale(0.8);
+  }
+  77% {
+    opacity: 0.5;
+    transform: translateY(-105px) scale(0.5);
+  }
+  82%, 100% {
+    opacity: 0;
+    transform: translateY(-125px) scale(0);
+  }
+}
+
+@keyframes particleFlow3 {
+  0%, 54% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+  59% {
+    opacity: 1;
+    transform: translateY(-30px) scale(1);
+  }
+  69% {
+    opacity: 1;
+    transform: translateY(-70px) scale(0.8);
+  }
+  79% {
+    opacity: 0.5;
+    transform: translateY(-110px) scale(0.5);
+  }
+  84%, 100% {
+    opacity: 0;
+    transform: translateY(-130px) scale(0);
+  }
+}
+
+@keyframes particleFlow4 {
+  0%, 51% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+  56% {
+    opacity: 1;
+    transform: translateY(-22px) scale(1);
+  }
+  66% {
+    opacity: 1;
+    transform: translateY(-62px) scale(0.8);
+  }
+  76% {
+    opacity: 0.5;
+    transform: translateY(-102px) scale(0.5);
+  }
+  81%, 100% {
+    opacity: 0;
+    transform: translateY(-122px) scale(0);
+  }
+}
+
+@keyframes particleFlow5 {
+  0%, 53% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+  58% {
+    opacity: 1;
+    transform: translateY(-27px) scale(1);
+  }
+  68% {
+    opacity: 1;
+    transform: translateY(-67px) scale(0.8);
+  }
+  78% {
+    opacity: 0.5;
+    transform: translateY(-107px) scale(0.5);
+  }
+  83%, 100% {
+    opacity: 0;
+    transform: translateY(-127px) scale(0);
+  }
+}
+
+@keyframes particleFlow6 {
+  0%, 55% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-32px) scale(1);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-72px) scale(0.8);
+  }
+  80% {
+    opacity: 0.5;
+    transform: translateY(-112px) scale(0.5);
+  }
+  85%, 100% {
+    opacity: 0;
+    transform: translateY(-132px) scale(0);
+  }
+}
+
+@keyframes mindExpand {
+  0%, 60% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  65% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+  70% {
+    opacity: 0.1;
+    transform: scale(1.3);
+  }
+  75% {
+    opacity: 0.05;
+    transform: scale(1.5);
+  }
+  80%, 100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@keyframes buySparkle1 {
+  0%, 60%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  65%, 80% {
+    opacity: 1;
+    transform: scale(1.8) translate(-5px, -5px);
+  }
+}
+
+@keyframes buySparkle2 {
+  0%, 60%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  65%, 80% {
+    opacity: 0.9;
+    transform: scale(1.6) translate(5px, -5px);
+  }
+}
+
+/* Exchange Flow Animations */
+.exchangeCustomer {
+  animation: exchangeCustomer 4s ease-in-out infinite;
+}
+
+.exchangeDeliveryPerson {
+  animation: exchangeDeliveryPerson 4s ease-in-out infinite;
+}
+
+.customerArms {
+  animation: customerArms 4s ease-in-out infinite;
+}
+
+.deliveryArms {
+  animation: deliveryArms 4s ease-in-out infinite;
+}
+
+.deliveryBag {
+  animation: deliveryBag 4s ease-in-out infinite;
+}
+
+.deliveryDevice {
+  animation: deliveryDevice 4s ease-in-out infinite;
+}
+
+.customerBook {
+  animation: customerBook 4s ease-in-out infinite;
+}
+
+.deliveryBook {
+  animation: deliveryBook 4s ease-in-out infinite;
+}
+
+.exchangeArrows {
+  animation: exchangeArrows 4s ease-in-out infinite;
+}
+
+.exchangeBooksTransit {
+  animation: exchangeBooksTransit 4s ease-in-out infinite;
+}
+
+.bookToDelivery {
+  animation: bookToDelivery 4s ease-in-out infinite;
+}
+
+.bookToCustomer {
+  animation: bookToCustomer 4s ease-in-out infinite;
+}
+
+.exchangeSparkle1 {
+  animation: exchangeSparkle1 4s ease-in-out infinite;
+}
+
+.exchangeSparkle2 {
+  animation: exchangeSparkle2 4s ease-in-out infinite;
+}
+
+.exchangeSparkle3 {
+  animation: exchangeSparkle3 4s ease-in-out infinite;
+}
+
+.exchangeSparkle4 {
+  animation: exchangeSparkle4 4s ease-in-out infinite;
+}
+
+@keyframes exchangeCustomer {
+  0%, 100% {
+    transform: translateX(0) translateY(0);
+  }
+  30% {
+    transform: translateX(10px) translateY(0);
+  }
+  50% {
+    transform: translateX(0) translateY(0);
+  }
+}
+
+@keyframes exchangeDeliveryPerson {
+  0%, 100% {
+    transform: translateX(0) translateY(0);
+  }
+  30% {
+    transform: translateX(-10px) translateY(0);
+  }
+  50% {
+    transform: translateX(0) translateY(0);
+  }
+}
+
+@keyframes customerArms {
+  0%, 20% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(10px);
+  }
+  50%, 100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes deliveryArms {
+  0%, 20% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(-10px);
+  }
+  50%, 100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes deliveryBag {
+  0%, 100% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateX(-8px) translateY(2px) rotate(-2deg);
+  }
+  50% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes deliveryDevice {
+  0%, 100% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: translateX(-2px) translateY(-3px) rotate(-5deg);
+    opacity: 0.9;
+  }
+  30% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes customerBook {
+  0%, 20% {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateX(80px) translateY(20px) scale(0.8);
+  }
+  40% {
+    opacity: 0;
+    transform: translateX(130px) translateY(20px) scale(0.6);
+  }
+  50%, 100% {
+    opacity: 0;
+    transform: translateX(130px) translateY(20px) scale(0.6);
+  }
+}
+
+@keyframes deliveryBook {
+  0%, 20% {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateX(-80px) translateY(20px) scale(0.8);
+  }
+  40% {
+    opacity: 0;
+    transform: translateX(-130px) translateY(20px) scale(0.6);
+  }
+  50%, 100% {
+    opacity: 0;
+    transform: translateX(-130px) translateY(20px) scale(0.6);
+  }
+}
+
+@keyframes exchangeArrows {
+  0%, 20% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.5;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+@keyframes exchangeBooksTransit {
+  0%, 25% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.8;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+@keyframes bookToDelivery {
+  0%, 25% {
+    opacity: 0;
+    transform: translateX(0) translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateX(50px) translateY(0);
+  }
+  40% {
+    opacity: 0.8;
+    transform: translateX(100px) translateY(0);
+  }
+  50%, 100% {
+    opacity: 0;
+    transform: translateX(150px) translateY(0);
+  }
+}
+
+@keyframes bookToCustomer {
+  0%, 25% {
+    opacity: 0;
+    transform: translateX(0) translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateX(-50px) translateY(0);
+  }
+  40% {
+    opacity: 0.8;
+    transform: translateX(-100px) translateY(0);
+  }
+  50%, 100% {
+    opacity: 0;
+    transform: translateX(-150px) translateY(0);
+  }
+}
+
+@keyframes exchangeSparkle1 {
+  0%, 25%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  30%, 45% {
+    opacity: 1;
+    transform: scale(1.8) translate(-5px, -5px);
+  }
+}
+
+@keyframes exchangeSparkle2 {
+  0%, 25%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  30%, 45% {
+    opacity: 0.9;
+    transform: scale(1.6) translate(5px, -5px);
+  }
+}
+
+@keyframes exchangeSparkle3 {
+  0%, 25%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  30%, 45% {
+    opacity: 1;
+    transform: scale(1.5) translate(-3px, -3px);
+  }
+}
+
+@keyframes exchangeSparkle4 {
+  0%, 25%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  30%, 45% {
+    opacity: 0.9;
+    transform: scale(1.4) translate(3px, -3px);
+  }
 }
 
 @media (min-width: 1400px) {
@@ -88,19 +1229,67 @@
     font-size: 3rem;
   }
 
-  .steps {
+  .flowTitle {
+    font-size: 2.25rem;
+  }
+
+  .flowContent {
     gap: 5rem;
   }
 
-  .stepIllustrationWrapper {
-    max-width: 320px;
+  .animationContainer {
+    min-height: 700px;
+  }
+
+  .animatedBookIcon {
+    max-width: 800px;
+    height: 800px;
+  }
+
+  .stepTitle {
+    font-size: 1.75rem;
+  }
+
+  .stepDescription {
+    font-size: 1.125rem;
   }
 }
 
 @media (max-width: 1024px) {
-  .steps {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
+  .flowContent {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .flowContentReversed .stepsList {
+    order: 1;
+  }
+
+  .flowContentReversed .animationContainer {
+    order: -1;
+  }
+
+  .animationContainer {
+    order: -1;
+    min-height: 400px;
+  }
+
+  .animatedBookIcon {
+    max-width: 400px;
+    height: 400px;
+  }
+
+  .stepsListRight {
+    text-align: left;
+  }
+
+  .stepsListRight .stepItem {
+    flex-direction: row;
+  }
+
+  .stepsListRight .stepArrow {
+    left: 20px;
+    right: auto;
   }
 }
 
@@ -113,13 +1302,49 @@
     font-size: 1.5rem;
   }
 
-  .steps {
-    grid-template-columns: 1fr;
+  .flowTitle {
+    font-size: 1.5rem;
+  }
+
+  .flowContent {
     gap: 2rem;
   }
 
-  .stepIllustrationWrapper {
-    max-width: 150px;
+  .stepsList {
+    gap: 1.5rem;
+  }
+
+  .stepItem {
+    gap: 1rem;
+  }
+
+  .stepNumber {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+
+  .stepTitle {
+    font-size: 1.25rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .stepDescription {
+    font-size: 0.875rem;
+  }
+
+  .animationContainer {
+    min-height: 300px;
+  }
+
+  .animatedBookIcon {
+    max-width: 300px;
+    height: 300px;
+  }
+
+  .stepArrow {
+    width: 20px;
+    height: 20px;
+    bottom: -1.25rem;
   }
 }
-

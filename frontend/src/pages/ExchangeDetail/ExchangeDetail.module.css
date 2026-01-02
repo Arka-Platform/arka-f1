@@ -1,0 +1,257 @@
+.exchangeDetail {
+  padding: 2rem 4rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.backButton {
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0;
+}
+
+.exchangeCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-light);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.exchangeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--color-gray-light);
+  gap: 1rem;
+}
+
+.bookTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 0.5rem 0;
+}
+
+.bookAuthor {
+  font-size: 1.25rem;
+  color: var(--color-gray-dark);
+  margin: 0;
+}
+
+.statusBadge {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.exchangeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.infoSection,
+.statusSection {
+  padding: 1.5rem;
+  background: var(--color-gray-light);
+  border-radius: 8px;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 1.5rem 0;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.infoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--color-white);
+  border-radius: 6px;
+  gap: 1rem;
+}
+
+.infoLabel {
+  font-weight: 600;
+  color: var(--color-gray-dark);
+}
+
+.infoValue {
+  color: var(--color-black);
+  font-weight: 500;
+}
+
+.infoValueWithTrustScore {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-gray-light);
+}
+
+.timelineItem {
+  display: flex;
+  gap: 1rem;
+  position: relative;
+  opacity: 0.5;
+}
+
+.timelineItem.completed {
+  opacity: 1;
+}
+
+.timelineDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-gray);
+  border: 3px solid var(--color-white);
+  position: absolute;
+  left: -2.25rem;
+  top: 0.25rem;
+  z-index: 1;
+}
+
+.timelineItem.completed .timelineDot {
+  background: var(--color-primary);
+}
+
+.timelineContent {
+  flex: 1;
+}
+
+.timelineContent h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 0.25rem 0;
+}
+
+.timelineContent p {
+  font-size: 0.9rem;
+  color: var(--color-gray-dark);
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--color-gray-light);
+}
+
+.actionButton {
+  min-width: 150px;
+}
+
+.completedMessage,
+.cancelledMessage {
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  width: 100%;
+}
+
+.completedMessage {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+.cancelledMessage {
+  background: rgba(244, 67, 54, 0.1);
+  color: #F44336;
+}
+
+.completedMessage p,
+.cancelledMessage p {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.loading,
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--color-gray-dark);
+}
+
+.emptyState p {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .exchangeDetail {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .exchangeCard {
+    padding: 1.5rem;
+  }
+
+  .exchangeHeader {
+    flex-direction: column;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actionButton {
+    width: 100%;
+  }
+}
+
+
+

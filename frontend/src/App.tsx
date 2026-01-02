@@ -18,11 +18,20 @@ import Account from './pages/Account/Account'
 import OrderHistory from './pages/OrderHistory/OrderHistory'
 import Tracking from './pages/Tracking/Tracking'
 import SellerInventory from './pages/SellerInventory/SellerInventory'
-import Lending from './pages/Lending/Lending'
 import Subscriptions from './pages/Subscriptions/Subscriptions'
 import Analytics from './pages/Analytics/Analytics'
+import Community from './pages/Community/Community'
 import CircleDetail from './pages/CircleDetail/CircleDetail'
 import StartChain from './pages/StartChain/StartChain'
+import Exchange from './pages/Exchange/Exchange'
+import MyExchanges from './pages/MyExchanges/MyExchanges'
+import ExchangeDetail from './pages/ExchangeDetail/ExchangeDetail'
+import Donation from './pages/Donation/Donation'
+import BookRequests from './pages/BookRequests/BookRequests'
+import Wishlist from './pages/Wishlist/Wishlist'
+import Bookshelf from './pages/Bookshelf/Bookshelf'
+import AdminLogin from './pages/Admin/AdminLogin/AdminLogin'
+import AdminNGOs from './pages/Admin/AdminNGOs/AdminNGOs'
 import './App.css'
 
 function AppContent() {
@@ -47,11 +56,20 @@ function AppContent() {
             <Route path="/orders" element={<OrderHistory />} />
             <Route path="/tracking/:orderId?" element={<Tracking />} />
             <Route path="/inventory" element={<SellerInventory />} />
-            <Route path="/lending" element={<Lending />} />
             <Route path="/subscriptions" element={<Subscriptions />} />
             <Route path="/analytics" element={<Analytics />} />
+            <Route path="/community" element={<Community />} />
             <Route path="/circles/:circleId" element={<CircleDetail />} />
             <Route path="/start-chain" element={<StartChain />} />
+            <Route path="/exchange" element={<Exchange />} />
+            <Route path="/exchanges/my" element={<MyExchanges />} />
+            <Route path="/exchanges/:exchangeId" element={<ExchangeDetail />} />
+            <Route path="/donation" element={<Donation />} />
+            <Route path="/requests" element={<BookRequests />} />
+            <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/bookshelf" element={<Bookshelf />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/ngos" element={<AdminNGOs />} />
         </Routes>
       </Layout>
       <ToastContainer toasts={toasts} onClose={removeToast} />

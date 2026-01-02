@@ -31,3 +31,8 @@ output "ecs_task_role_arn" {
 
 
 
+
+
+
+
+

@@ -38,3 +38,8 @@ For Free Tier, switch to regular RDS PostgreSQL which is fully supported and doe
 
 
 
+
+
+
+
+

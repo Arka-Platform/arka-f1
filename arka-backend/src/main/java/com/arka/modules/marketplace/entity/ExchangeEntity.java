@@ -35,6 +35,12 @@ public class ExchangeEntity extends BaseEntity {
   @Column(nullable = false)
   private ExchangeStatus status = ExchangeStatus.PENDING;
 
+  @Column(name = "listed_condition", length = 50)
+  private String listedCondition; // Condition seller listed (NEW, LIKE_NEW, GOOD, FAIR, POOR)
+
+  @Column(name = "received_condition", length = 50)
+  private String receivedCondition; // Actual condition when buyer received
+
   protected ExchangeEntity() {
     // JPA
   }
@@ -94,7 +100,27 @@ public class ExchangeEntity extends BaseEntity {
   public void setStatus(ExchangeStatus status) {
     this.status = status;
   }
+
+  public String getListedCondition() {
+    return listedCondition;
+  }
+
+  public void setListedCondition(String listedCondition) {
+    this.listedCondition = listedCondition;
+  }
+
+  public String getReceivedCondition() {
+    return receivedCondition;
+  }
+
+  public void setReceivedCondition(String receivedCondition) {
+    this.receivedCondition = receivedCondition;
+  }
 }
+
+
+
+
 
 
 

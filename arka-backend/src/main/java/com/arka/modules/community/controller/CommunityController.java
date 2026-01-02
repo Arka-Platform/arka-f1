@@ -6,7 +6,6 @@ import com.arka.modules.community.dto.CommunityCircleResponse;
 import com.arka.modules.community.dto.CreateChainRequest;
 import com.arka.modules.community.service.CommunityService;
 import com.arka.modules.marketplace.dto.BookResponse;
-import com.arka.modules.marketplace.service.BookService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;

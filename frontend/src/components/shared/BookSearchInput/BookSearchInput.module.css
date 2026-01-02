@@ -1,0 +1,191 @@
+.bookSearchContainer {
+  position: relative;
+  width: 100%;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.label {
+  display: block;
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.required {
+  color: #ef4444;
+  margin-left: 0.25rem;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  padding-right: 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.loadingSpinner {
+  position: absolute;
+  right: 2.5rem;
+  color: #6b7280;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.clearButton {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.clearButton:hover {
+  color: #374151;
+}
+
+.suggestionsDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 0.25rem;
+}
+
+.suggestionItem {
+  width: 100%;
+  padding: 0.75rem;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.suggestionItem:hover,
+.suggestionItem.selected {
+  background: #f9fafb;
+}
+
+.suggestionItem:last-child {
+  border-bottom: none;
+}
+
+.suggestionContent {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.suggestionImage {
+  width: 48px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: #f3f4f6;
+}
+
+.suggestionText {
+  flex: 1;
+  min-width: 0;
+}
+
+.suggestionTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestionAuthor {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestionMeta {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestionIsbn {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-style: italic;
+  padding-top: 0.25rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+/* Scrollbar styling */
+.suggestionsDropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.suggestionsDropdown::-webkit-scrollbar-track {
+  background: #f9fafb;
+}
+
+.suggestionsDropdown::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.suggestionsDropdown::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+

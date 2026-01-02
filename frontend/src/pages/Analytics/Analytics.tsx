@@ -93,11 +93,11 @@ const Analytics: React.FC = () => {
             <div className={styles.financialGrid}>
               <div className={styles.financialCard}>
                 <div className={styles.financialLabel}>Total Spent</div>
-                <div className={styles.financialValue}>${userAnalytics.totalSpent.toFixed(2)}</div>
+                <div className={styles.financialValue}>₹{userAnalytics.totalSpent.toFixed(2)}</div>
               </div>
               <div className={styles.financialCard}>
                 <div className={styles.financialLabel}>Total Earned</div>
-                <div className={styles.financialValue}>${userAnalytics.totalEarned.toFixed(2)}</div>
+                <div className={styles.financialValue}>₹{userAnalytics.totalEarned.toFixed(2)}</div>
               </div>
             </div>
           </div>
@@ -160,11 +160,11 @@ const Analytics: React.FC = () => {
           <div className={styles.revenueSection}>
             <h3>Revenue</h3>
             <div className={styles.revenueCard}>
-              <div className={styles.revenueValue}>${platformInsights.totalRevenue.toFixed(2)}</div>
+              <div className={styles.revenueValue}>₹{platformInsights.totalRevenue.toFixed(2)}</div>
               <div className={styles.revenueLabel}>Total Revenue</div>
             </div>
             <div className={styles.revenueCard}>
-              <div className={styles.revenueValue}>${platformInsights.averageBookPrice.toFixed(2)}</div>
+              <div className={styles.revenueValue}>₹{platformInsights.averageBookPrice.toFixed(2)}</div>
               <div className={styles.revenueLabel}>Average Book Price</div>
             </div>
           </div>
@@ -200,7 +200,7 @@ const Analytics: React.FC = () => {
                     <div className={styles.genreStats}>
                       <span>{genre.bookCount} books</span>
                       <span>{genre.exchangeCount} exchanges</span>
-                      <span>${genre.averagePrice.toFixed(2)} avg</span>
+                      <span>₹{genre.averagePrice.toFixed(2)} avg</span>
                     </div>
                   </div>
                 ))}
@@ -216,7 +216,7 @@ const Analytics: React.FC = () => {
                 <div>New Books: {platformInsights.monthlyStats.newBooks}</div>
                 <div>Exchanges: {platformInsights.monthlyStats.exchanges}</div>
                 <div>Lendings: {platformInsights.monthlyStats.lendings}</div>
-                <div>Revenue: ${platformInsights.monthlyStats.revenue.toFixed(2)}</div>
+                <div>Revenue: ₹{platformInsights.monthlyStats.revenue.toFixed(2)}</div>
               </div>
             </div>
             <div className={styles.timeStatCard}>
@@ -226,7 +226,7 @@ const Analytics: React.FC = () => {
                 <div>New Books: {platformInsights.weeklyStats.newBooks}</div>
                 <div>Exchanges: {platformInsights.weeklyStats.exchanges}</div>
                 <div>Lendings: {platformInsights.weeklyStats.lendings}</div>
-                <div>Revenue: ${platformInsights.weeklyStats.revenue.toFixed(2)}</div>
+                <div>Revenue: ₹{platformInsights.weeklyStats.revenue.toFixed(2)}</div>
               </div>
             </div>
           </div>

@@ -33,3 +33,8 @@ public interface WastePaperRepository extends JpaRepository<WastePaperEntity, UU
 
 
 
+
+
+
+
+

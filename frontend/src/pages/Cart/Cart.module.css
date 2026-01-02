@@ -237,6 +237,80 @@
   text-decoration: underline;
 }
 
+/* Subscription Upsell Styles */
+.subscriptionUpsell {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.subscriptionUpsellHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.subscriptionUpsellHeader svg {
+  flex-shrink: 0;
+  color: white;
+}
+
+.subscriptionUpsellTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0;
+  color: white;
+}
+
+.subscriptionUpsellText {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0 0 1rem 0;
+  opacity: 0.95;
+  color: white;
+}
+
+.subscriptionUpsellText strong {
+  font-weight: 700;
+  color: white;
+}
+
+.subscriptionUpsellBenefits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.subscriptionUpsellBenefit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: white;
+}
+
+.subscriptionUpsellBenefit svg {
+  flex-shrink: 0;
+  color: white;
+}
+
+.subscriptionUpsellButton {
+  background-color: white;
+  color: #667eea;
+  border: none;
+}
+
+.subscriptionUpsellButton:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 @media (max-width: 1024px) {
   .content {
     grid-template-columns: 1fr;
@@ -266,6 +340,10 @@
     text-align: left;
   }
 }
+
+
+
+
 
 
 

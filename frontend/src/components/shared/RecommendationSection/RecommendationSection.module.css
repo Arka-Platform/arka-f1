@@ -4,9 +4,6 @@
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 1.5rem;
 }
 
@@ -17,29 +14,95 @@
   margin: 0;
 }
 
-.viewAll {
-  color: var(--color-primary);
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: opacity 0.2s ease;
+.carouselContainer {
+  position: relative;
+  width: 100%;
+  padding: 0 3rem; /* Add padding to accommodate navigation buttons */
 }
 
-.viewAll:hover {
-  opacity: 0.7;
-  text-decoration: underline;
+.booksCarousel {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  padding: 0.5rem 0;
+  scroll-padding: 0 2rem;
 }
 
-.booksGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
+.booksCarousel::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.bookCardWrapper {
+  flex: 0 0 auto;
+  width: 280px;
+  min-width: 280px;
+  height: 100%;
+  display: flex;
+}
+
+.navButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: white;
+  border: 2px solid var(--color-gray-light);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: var(--color-black);
+}
+
+.navButton:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.navButton:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.navButtonLeft {
+  left: 0;
+}
+
+.navButtonRight {
+  right: 0;
 }
 
 .loading {
   text-align: center;
   padding: 3rem;
   color: var(--color-gray-dark);
+}
+
+@media (max-width: 1024px) {
+  .carouselContainer {
+    padding: 0 2.5rem;
+  }
+
+  .navButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .bookCardWrapper {
+    width: 260px;
+    min-width: 260px;
+    height: 100%;
+  }
 }
 
 @media (max-width: 768px) {
@@ -51,11 +114,36 @@
     font-size: 1.5rem;
   }
 
-  .booksGrid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1.5rem;
+  .carouselContainer {
+    padding: 0; /* Remove padding on mobile since buttons are hidden */
+  }
+
+  .bookCardWrapper {
+    width: 240px;
+    min-width: 240px;
+    height: 100%;
+  }
+
+  .booksCarousel {
+    gap: 1rem;
+    scroll-padding: 0 1rem;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
+
+  .navButton {
+    display: none; /* Hide navigation buttons on mobile, use touch scrolling */
   }
 }
+
+@media (max-width: 480px) {
+  .bookCardWrapper {
+    width: 200px;
+    min-width: 200px;
+    height: 100%;
+  }
+}
+
+
 
 
 

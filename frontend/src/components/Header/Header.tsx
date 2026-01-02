@@ -1,150 +1,75 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
+import { booksApi, wishlistApi } from '../../utils/api'
 import Logo from '../shared/Logo/Logo'
 import UserMenu from '../shared/UserMenu/UserMenu'
 import styles from './Header.module.css'
 
-interface DropdownItem {
-  label: string
-  path: string
-  icon?: React.ReactNode
-  badge?: string
-}
-
-interface DropdownMenu {
-  label: string
-  defaultPath?: string
-  items: DropdownItem[]
-}
-
 const Header: React.FC = () => {
   const location = useLocation()
-  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+  const { isAuthenticated, user } = useAuth()
   const { getItemCount } = useCart()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const [activeGenreDropdown, setActiveGenreDropdown] = useState(false)
+  const [hoveredGenre, setHoveredGenre] = useState<string | null>(null)
+  const [genresWithSubcategories, setGenresWithSubcategories] = useState<Array<{ genre: string; subcategories: string[] }>>([])
+  const [loadingGenres, setLoadingGenres] = useState(true)
+  const [wishlistCount, setWishlistCount] = useState(0)
   const cartItemCount = getItemCount()
-  const dropdownRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
+  const genreDropdownRef = useRef<HTMLDivElement | null>(null)
 
-  // Define dropdown menus with default paths
-  const booksMenu: DropdownMenu = {
-    label: 'Books',
-    defaultPath: '/books',
-    items: [
-      {
-        label: 'Marketplace',
-        path: '/books',
-        icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-          </svg>
-        ),
-      },
-      {
-        label: 'Recommendations',
-        path: '/home',
-        icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-          </svg>
-        ),
-      },
-      {
-        label: 'My Inventory',
-        path: '/inventory',
-        icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <path d="M9 9h6v6H9z" />
-          </svg>
-        ),
-      },
-    ],
-  }
+  // Fetch genres with subcategories from API
+  useEffect(() => {
+    const loadGenres = async () => {
+      try {
+        setLoadingGenres(true)
+        const data = await booksApi.getGenresWithSubcategories()
+        setGenresWithSubcategories(data)
+      } catch (error) {
+        console.error('Error loading genres:', error)
+        setGenresWithSubcategories([]) // Set empty array on error
+      } finally {
+        setLoadingGenres(false)
+      }
+    }
+    loadGenres()
+  }, [])
 
-  const communityMenu: DropdownMenu = {
-    label: 'Community',
-    defaultPath: '/home',
-    items: [
-      {
-        label: 'Circles',
-        path: '/home',
-        icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
-        ),
-      },
-      {
-        label: 'Chain Stories',
-        path: '/home',
-        icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-            <polyline points="10 9 9 9 8 9" />
-          </svg>
-        ),
-      },
-    ],
-  }
-
-  const servicesMenu: DropdownMenu = {
-    label: 'Services',
-    defaultPath: '/lending',
-    items: [
-      {
-        label: 'Book Lending',
-        path: '/lending',
-        icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            <path d="M12 8v8" />
-            <path d="M8 12h8" />
-          </svg>
-        ),
-      },
-      {
-        label: 'Subscriptions',
-        path: '/subscriptions',
-        icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-            <polyline points="17 21 17 13 7 13 7 21" />
-            <polyline points="7 3 7 8 15 8" />
-          </svg>
-        ),
-      },
-      {
-        label: 'Recycling & Pickup',
-        path: '/recycling',
-        icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-            <line x1="10" y1="11" x2="10" y2="17" />
-            <line x1="14" y1="11" x2="14" y2="17" />
-          </svg>
-        ),
-      },
-    ],
-  }
-
-  const dropdownMenus = [booksMenu, communityMenu, servicesMenu]
+  // Load wishlist count
+  useEffect(() => {
+    const loadWishlistCount = async () => {
+      if (user?.id) {
+        try {
+          const response = await wishlistApi.getWishlistCount(user.id)
+          setWishlistCount(response.count)
+        } catch (error) {
+          console.error('Error loading wishlist count:', error)
+        }
+      } else {
+        setWishlistCount(0)
+      }
+    }
+    
+    loadWishlistCount()
+    
+    // Listen for wishlist updates from BookCard
+    const handleWishlistUpdate = () => {
+      loadWishlistCount()
+    }
+    
+    window.addEventListener('wishlistUpdated', handleWishlistUpdate)
+    return () => {
+      window.removeEventListener('wishlistUpdated', handleWishlistUpdate)
+    }
+  }, [user?.id])
 
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false)
-    setActiveDropdown(null)
+    setActiveGenreDropdown(false)
   }, [location.pathname])
 
   // Close dropdowns when clicking outside
@@ -152,19 +77,12 @@ const Header: React.FC = () => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node
       
-      Object.values(dropdownRefs.current).forEach((ref) => {
-        if (ref && !ref.contains(target)) {
-          // Don't close if clicking on a Link
-          const clickedElement = target as Element
-          if (!clickedElement.closest('a')) {
-            setActiveDropdown(null)
-          }
-        }
-      })
+      if (genreDropdownRef.current && !genreDropdownRef.current.contains(target)) {
+        setActiveGenreDropdown(false)
+      }
     }
 
-    if (activeDropdown) {
-      // Use a slight delay to allow Link navigation to register first
+    if (activeGenreDropdown) {
       const timer = setTimeout(() => {
         document.addEventListener('mousedown', handleClickOutside)
       }, 50)
@@ -174,7 +92,7 @@ const Header: React.FC = () => {
         document.removeEventListener('mousedown', handleClickOutside)
       }
     }
-  }, [activeDropdown])
+  }, [activeGenreDropdown])
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -196,114 +114,184 @@ const Header: React.FC = () => {
     setIsMobileMenuOpen(false)
   }
 
-  const toggleDropdown = (menuLabel: string) => {
-    setActiveDropdown(activeDropdown === menuLabel ? null : menuLabel)
+  const toggleGenreDropdown = () => {
+    setActiveGenreDropdown(!activeGenreDropdown)
+  }
+
+  const handleGenreClick = (genre: string) => {
+    navigate(`/books?genre=${encodeURIComponent(genre)}`)
+    setActiveGenreDropdown(false)
+    setHoveredGenre(null)
+    closeMobileMenu()
+  }
+
+  const handleSubcategoryClick = (genre: string, subcategory: string) => {
+    navigate(`/books?genre=${encodeURIComponent(genre)}&subcategory=${encodeURIComponent(subcategory)}`)
+    setActiveGenreDropdown(false)
+    setHoveredGenre(null)
+    closeMobileMenu()
   }
 
   const isActiveLink = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/')
   }
 
-  const isActiveMenu = (menu: DropdownMenu) => {
-    return menu.items.some((item) => isActiveLink(item.path))
-  }
-
   return (
     <>
       <header className={styles.header}>
         <div className={styles.container}>
-          <Link to="/home" className={styles.logoLink}>
-            <Logo size="medium" />
-          </Link>
+          <Logo size="medium" />
 
           {/* Desktop Navigation */}
           <nav className={styles.nav} aria-label="Main navigation">
-            {dropdownMenus.map((menu) => (
-              <div
-                key={menu.label}
-                className={styles.dropdownWrapper}
-                ref={(el) => {
-                  dropdownRefs.current[menu.label] = el
-                }}
-              >
-                <div className={styles.navButtonWrapper}>
-                  {menu.defaultPath ? (
-                    <Link
-                      to={menu.defaultPath}
-                      className={`${styles.navButtonLink} ${isActiveMenu(menu) ? styles.active : ''}`}
-                    >
-                      {menu.label}
-                    </Link>
-                  ) : (
-                    <span className={`${styles.navButton} ${isActiveMenu(menu) ? styles.active : ''}`}>
-                      {menu.label}
-                    </span>
-                  )}
-                  <button
-                    className={`${styles.dropdownToggle} ${activeDropdown === menu.label ? styles.open : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      e.preventDefault()
-                      toggleDropdown(menu.label)
-                    }}
-                    aria-expanded={activeDropdown === menu.label}
-                    aria-haspopup="true"
-                    aria-label={`${menu.label} menu`}
-                  >
-                    <svg
-                      className={`${styles.chevron} ${activeDropdown === menu.label ? styles.chevronOpen : ''}`}
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="M6 9l6 6 6-6" />
-                    </svg>
-                  </button>
-                </div>
-                {activeDropdown === menu.label && (
-                  <div className={styles.dropdown} onClick={(e) => e.stopPropagation()}>
-                    {menu.items.map((item) => (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`${styles.dropdownItem} ${isActiveLink(item.path) ? styles.dropdownItemActive : ''}`}
-                        onClick={(e) => {
-                          // Stop propagation to prevent dropdown wrapper from interfering
-                          e.stopPropagation()
-                          // Close dropdown immediately - navigation will happen via React Router
-                          setActiveDropdown(null)
-                        }}
-                      >
-                        <span className={styles.dropdownIcon}>{item.icon}</span>
-                        <span className={styles.dropdownLabel}>{item.label}</span>
-                        {item.badge && <span className={styles.badge}>{item.badge}</span>}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+            {/* Home */}
+            <Link
+              to="/home"
+              className={`${styles.navLink} ${isActiveLink('/home') ? styles.active : ''}`}
+            >
+              Home
+            </Link>
 
+            {/* Browse with Genres Dropdown */}
+            <div
+              className={styles.dropdownWrapper}
+              ref={genreDropdownRef}
+            >
+              <div className={styles.navButtonWrapper}>
+                <Link
+                  to="/books"
+                  className={`${styles.navButtonLink} ${isActiveLink('/books') ? styles.active : ''}`}
+                >
+                  Browse
+                </Link>
+                <button
+                  className={`${styles.dropdownToggle} ${activeGenreDropdown ? styles.open : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    toggleGenreDropdown()
+                  }}
+                  aria-expanded={activeGenreDropdown}
+                  aria-haspopup="true"
+                  aria-label="Genres menu"
+                >
+                  <svg
+                    className={`${styles.chevron} ${activeGenreDropdown ? styles.chevronOpen : ''}`}
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+              </div>
+              {activeGenreDropdown && (
+                <div className={`${styles.dropdown} ${styles.genreDropdown}`} onClick={(e) => e.stopPropagation()}>
+                  {loadingGenres ? (
+                    <div className={styles.loadingGenres}>Loading genres...</div>
+                  ) : genresWithSubcategories.length === 0 ? (
+                    <div className={styles.noGenres}>No genres available</div>
+                  ) : (
+                    <div className={styles.genreSubcategoryContainer}>
+                      <div className={styles.genreList}>
+                        {genresWithSubcategories.map((item) => (
+                          <div
+                            key={item.genre}
+                            className={`${styles.genreItem} ${hoveredGenre === item.genre ? styles.genreItemActive : ''}`}
+                            onMouseEnter={() => setHoveredGenre(item.genre)}
+                            onClick={() => handleGenreClick(item.genre)}
+                          >
+                            {item.genre}
+                            {item.subcategories.length > 0 && (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M9 18l6-6-6-6" />
+                              </svg>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {hoveredGenre && (
+                        <div className={styles.subcategoryList}>
+                          {genresWithSubcategories
+                            .find(item => item.genre === hoveredGenre)
+                            ?.subcategories.map((subcategory) => (
+                              <button
+                                key={subcategory}
+                                className={styles.subcategoryItem}
+                                onClick={() => handleSubcategoryClick(hoveredGenre, subcategory)}
+                              >
+                                {subcategory}
+                              </button>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Sell */}
+            <Link
+              to="/inventory"
+              className={`${styles.navLink} ${isActiveLink('/inventory') ? styles.active : ''}`}
+            >
+              Sell
+            </Link>
+
+            {/* Recycle */}
+            <Link
+              to="/recycling"
+              className={`${styles.navLink} ${isActiveLink('/recycling') ? styles.active : ''}`}
+            >
+              Recycle
+            </Link>
+
+            {/* Book Requests */}
+            <Link
+              to="/requests"
+              className={`${styles.navLink} ${isActiveLink('/requests') ? styles.active : ''}`}
+            >
+              Requests
+            </Link>
+
+            {/* Donation */}
+            <Link
+              to="/donation"
+              className={`${styles.navLink} ${isActiveLink('/donation') ? styles.active : ''}`}
+            >
+              Donate
+            </Link>
+
+            {/* Community */}
+            <Link
+              to="/community"
+              className={`${styles.navLink} ${isActiveLink('/community') || isActiveLink('/circles') || isActiveLink('/start-chain') ? styles.active : ''}`}
+            >
+              Community
+            </Link>
+
+            {/* Help */}
             <Link
               to="/contact"
               className={`${styles.navLink} ${isActiveLink('/contact') ? styles.active : ''}`}
             >
-              Contact
+              Help
             </Link>
           </nav>
 
           {/* Desktop Right Section */}
           <div className={styles.rightSection}>
+            {/* Wishlist - Heart Icon */}
             {isAuthenticated && (
-              <Link to="/analytics" className={styles.iconButton} aria-label="Analytics">
+              <Link to="/wishlist" className={styles.wishlistLink} aria-label="Wishlist">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="20" x2="18" y2="10" />
-                  <line x1="12" y1="20" x2="12" y2="4" />
-                  <line x1="6" y1="20" x2="6" y2="14" />
+                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
                 </svg>
+                {wishlistCount > 0 && <span className={styles.wishlistBadge}>{wishlistCount}</span>}
               </Link>
             )}
             <Link to="/cart" className={styles.cartLink} aria-label="Shopping cart">
@@ -360,48 +348,124 @@ const Header: React.FC = () => {
         aria-label="Mobile navigation"
       >
         <div className={styles.mobileMenuContent}>
-          {dropdownMenus.map((menu) => (
-            <div key={menu.label} className={styles.mobileMenuSection}>
-              <div className={styles.mobileMenuSectionTitle}>{menu.label}</div>
-              {menu.items.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`${styles.mobileNavLink} ${isActiveLink(item.path) ? styles.mobileNavLinkActive : ''}`}
-                  onClick={closeMobileMenu}
-                >
-                  <span className={styles.mobileNavIcon}>{item.icon}</span>
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          ))}
+          <Link
+            to="/home"
+            className={`${styles.mobileNavLink} ${isActiveLink('/home') ? styles.mobileNavLinkActive : ''}`}
+            onClick={closeMobileMenu}
+          >
+            Home
+          </Link>
+
+          <Link
+            to="/books"
+            className={`${styles.mobileNavLink} ${isActiveLink('/books') ? styles.mobileNavLinkActive : ''}`}
+            onClick={closeMobileMenu}
+          >
+            Browse
+          </Link>
+
+          {/* Mobile Genre Section */}
+          <div className={styles.mobileMenuSection}>
+            <div className={styles.mobileMenuSectionTitle}>Genres & Subgenres</div>
+            {loadingGenres ? (
+              <div className={styles.loadingGenres}>Loading genres...</div>
+            ) : genresWithSubcategories.length === 0 ? (
+              <div className={styles.noGenres}>No genres available</div>
+            ) : (
+              genresWithSubcategories.map((item) => (
+                <div key={item.genre} className={styles.mobileGenreCategory}>
+                  <button
+                    className={styles.mobileGenreItem}
+                    onClick={() => {
+                      handleGenreClick(item.genre)
+                      closeMobileMenu()
+                    }}
+                  >
+                    {item.genre}
+                  </button>
+                  {item.subcategories.length > 0 && (
+                    <div className={styles.mobileSubcategoryList}>
+                      {item.subcategories.map((subcategory) => (
+                        <button
+                          key={subcategory}
+                          className={styles.mobileSubcategoryItem}
+                          onClick={() => {
+                            handleSubcategoryClick(item.genre, subcategory)
+                            closeMobileMenu()
+                          }}
+                        >
+                          {subcategory}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          <Link
+            to="/inventory"
+            className={`${styles.mobileNavLink} ${isActiveLink('/inventory') ? styles.mobileNavLinkActive : ''}`}
+            onClick={closeMobileMenu}
+          >
+            Sell
+          </Link>
+
+          <Link
+            to="/recycling"
+            className={`${styles.mobileNavLink} ${isActiveLink('/recycling') ? styles.mobileNavLinkActive : ''}`}
+            onClick={closeMobileMenu}
+          >
+            Recycle
+          </Link>
+
+          <Link
+            to="/requests"
+            className={`${styles.mobileNavLink} ${isActiveLink('/requests') ? styles.mobileNavLinkActive : ''}`}
+            onClick={closeMobileMenu}
+          >
+            Requests
+          </Link>
+
+          <Link
+            to="/donation"
+            className={`${styles.mobileNavLink} ${isActiveLink('/donation') ? styles.mobileNavLinkActive : ''}`}
+            onClick={closeMobileMenu}
+          >
+            Donate
+          </Link>
+
+          <Link
+            to="/community"
+            className={`${styles.mobileNavLink} ${isActiveLink('/community') || isActiveLink('/circles') || isActiveLink('/start-chain') ? styles.mobileNavLinkActive : ''}`}
+            onClick={closeMobileMenu}
+          >
+            Community
+          </Link>
 
           <Link
             to="/contact"
             className={`${styles.mobileNavLink} ${isActiveLink('/contact') ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
-            Contact
+            Help
           </Link>
 
           {isAuthenticated && (
             <Link
-              to="/analytics"
-              className={`${styles.mobileNavLink} ${isActiveLink('/analytics') ? styles.mobileNavLinkActive : ''}`}
+              to="/wishlist"
+              className={`${styles.mobileNavLink} ${isActiveLink('/wishlist') ? styles.mobileNavLinkActive : ''}`}
               onClick={closeMobileMenu}
             >
               <span className={styles.mobileNavIcon}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="20" x2="18" y2="10" />
-                  <line x1="12" y1="20" x2="12" y2="4" />
-                  <line x1="6" y1="20" x2="6" y2="14" />
+                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
                 </svg>
               </span>
-              Analytics
+              Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
             </Link>
           )}
-
           <Link
             to="/cart"
             className={`${styles.mobileNavLink} ${isActiveLink('/cart') ? styles.mobileNavLinkActive : ''}`}

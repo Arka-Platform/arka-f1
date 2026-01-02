@@ -1,6 +1,8 @@
 package com.arka.modules.marketplace.service;
 
 import com.arka.common.result.Result;
+import com.arka.modules.bookshelf.dto.AddToBookshelfRequest;
+import com.arka.modules.bookshelf.service.BookshelfService;
 import com.arka.modules.marketplace.dto.ExchangeResponse;
 import com.arka.modules.marketplace.entity.BookEntity;
 import com.arka.modules.marketplace.entity.BookStatus;
@@ -41,16 +43,22 @@ public class ExchangeService {
   private final BookRepository bookRepository;
   private final UserRepository userRepository;
   private final CreditTransactionRepository creditTransactionRepository;
+  private final com.arka.modules.trustscore.service.TrustScoreService trustScoreService;
+  private final BookshelfService bookshelfService;
 
   public ExchangeService(
       ExchangeRepository exchangeRepository,
       BookRepository bookRepository,
       UserRepository userRepository,
-      CreditTransactionRepository creditTransactionRepository) {
+      CreditTransactionRepository creditTransactionRepository,
+      com.arka.modules.trustscore.service.TrustScoreService trustScoreService,
+      BookshelfService bookshelfService) {
     this.exchangeRepository = exchangeRepository;
     this.bookRepository = bookRepository;
     this.userRepository = userRepository;
     this.creditTransactionRepository = creditTransactionRepository;
+    this.trustScoreService = trustScoreService;
+    this.bookshelfService = bookshelfService;
   }
 
   /**
@@ -231,6 +239,27 @@ public class ExchangeService {
     exchange.setStatus(ExchangeStatus.COMPLETED);
     exchange = exchangeRepository.save(exchange);
 
+    // Track trust score: transaction completion
+    trustScoreService.recordTransactionCompletion(exchange.getSellerId());
+    trustScoreService.recordTransactionCompletion(exchange.getBuyerId());
+
+    // Track condition accuracy if both conditions are provided
+    if (exchange.getListedCondition() != null && exchange.getReceivedCondition() != null) {
+      trustScoreService.recordConditionAssessment(
+          exchange.getSellerId(),
+          exchange.getListedCondition(),
+          exchange.getReceivedCondition()
+      );
+    }
+
+    // Automatically add book to buyer's bookshelf
+    try {
+      bookshelfService.addToBookshelf(exchange.getBuyerId(), exchange.getBook().getId(), new AddToBookshelfRequest(null));
+    } catch (Exception e) {
+      // Silently fail if book is already in bookshelf or other error
+      // This prevents exchange completion from failing due to bookshelf issues
+    }
+
     return Result.success(toResponse(exchange, exchange.getBook()));
   }
 
@@ -280,6 +309,10 @@ public class ExchangeService {
 
     exchange.setStatus(ExchangeStatus.CANCELLED);
     exchange = exchangeRepository.save(exchange);
+
+    // Track trust score: transaction cancellation
+    trustScoreService.recordTransactionCancellation(exchange.getSellerId());
+    trustScoreService.recordTransactionCancellation(exchange.getBuyerId());
 
     return Result.success(toResponse(exchange, book));
   }

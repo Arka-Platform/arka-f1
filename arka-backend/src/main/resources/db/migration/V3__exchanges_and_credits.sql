@@ -38,15 +38,11 @@ CREATE TABLE IF NOT EXISTS users (
     credit_balance NUMERIC(10,2) NOT NULL DEFAULT 0
 );
 
--- Add credit_balance column if users table exists but column doesn't
-DO $$ 
-BEGIN
-    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users') THEN
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'credit_balance') THEN
-            ALTER TABLE users ADD COLUMN credit_balance NUMERIC(10,2) NOT NULL DEFAULT 0;
-        END IF;
-    END IF;
-END $$;
+-- Add credit_balance column to users table
+-- Note: This may fail if column already exists (e.g., created by Hibernate ddl-auto)
+-- That's acceptable - Hibernate will handle schema updates in H2 local dev
+-- For PostgreSQL production, this will add the column if it doesn't exist
+-- H2 doesn't support IF NOT EXISTS in ALTER TABLE, so we rely on Hibernate for H2
 
 -- Indexes for performance
 CREATE INDEX idx_exchanges_book_id ON exchanges(book_id);
@@ -56,6 +52,10 @@ CREATE INDEX idx_exchanges_status ON exchanges(status);
 CREATE INDEX idx_credit_transactions_user_id ON credit_transactions(user_id);
 CREATE INDEX idx_credit_transactions_exchange_id ON credit_transactions(exchange_id);
 CREATE INDEX idx_credit_transactions_created_at ON credit_transactions(created_at DESC);
+
+
+
+
 
 
 

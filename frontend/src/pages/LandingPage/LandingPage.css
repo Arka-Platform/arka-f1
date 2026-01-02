@@ -46,6 +46,63 @@
   margin: 0;
 }
 
+.key-info {
+  background-color: var(--color-white);
+  padding: 6rem 0;
+}
+
+.key-info-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 3rem 0;
+  text-align: center;
+}
+
+.key-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.info-card {
+  background: var(--color-gray-light);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.info-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.info-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 1rem 0;
+}
+
+.info-card-text {
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  color: var(--color-gray-dark);
+  margin: 0;
+  text-align: left;
+}
+
+.info-card-text strong {
+  color: var(--color-black);
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .lp-container { padding: 0 1rem; }
   .testimonials-title { font-size: 1.75rem; }

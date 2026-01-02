@@ -252,6 +252,86 @@
   line-height: 1.2;
 }
 
+/* Genre Dropdown Styles */
+.genreDropdown {
+  min-width: 500px;
+  max-width: 600px;
+  max-height: 500px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.genreSubcategoryContainer {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.genreList {
+  flex: 0 0 200px;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  max-height: 500px;
+  padding: 0.5rem 0;
+}
+
+.subcategoryList {
+  flex: 1;
+  padding: 0.75rem;
+  overflow-y: auto;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.genreItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-black);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  border-radius: 0;
+  border-left: 3px solid transparent;
+}
+
+.genreItem:hover,
+.genreItemActive {
+  background-color: rgba(33, 150, 243, 0.1);
+  color: var(--color-primary, #2196F3);
+  border-left-color: var(--color-primary, #2196F3);
+}
+
+.subcategoryItem {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-black);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  border-radius: 4px;
+}
+
+.subcategoryItem:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--color-primary, #2196F3);
+}
+
 .navLink {
   font-size: 0.9375rem;
   font-weight: 500;
@@ -307,6 +387,45 @@
 .iconButton:hover {
   background-color: rgba(0, 0, 0, 0.04);
   opacity: 1;
+}
+
+.wishlistLink {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--color-black);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.wishlistLink:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  opacity: 1;
+}
+
+.wishlistBadge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  padding: 0 5px;
+  line-height: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 2px solid white;
 }
 
 .cartLink {
@@ -612,6 +731,77 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+.mobileGenreCategory {
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
+
+.mobileGenreCategoryTitle {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 0.5rem;
+}
+
+.mobileSubcategoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-left: 1rem;
+  margin-top: 0.5rem;
+}
+
+.mobileSubcategoryItem {
+  padding: 0.5rem 0.75rem;
+  background: var(--color-white);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-black);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+}
+
+.mobileSubcategoryItem:hover {
+  background-color: rgba(33, 150, 243, 0.1);
+  color: var(--color-primary, #2196F3);
+  border-color: var(--color-primary, #2196F3);
+}
+
+.mobileGenreGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.mobileGenreItem {
+  padding: 0.75rem 1rem;
+  background: var(--color-white);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-black);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-family: inherit;
+}
+
+.mobileGenreItem:hover {
+  background: var(--color-primary, #2196F3);
+  color: white;
+  border-color: var(--color-primary, #2196F3);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+}
+
 .mobileUserSection {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
@@ -628,6 +818,15 @@
   .navLink {
     font-size: 0.875rem;
     padding: 0.5rem 0.75rem;
+  }
+
+  .genreDropdown {
+    min-width: 350px;
+    max-width: 400px;
+  }
+
+  .genreGrid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

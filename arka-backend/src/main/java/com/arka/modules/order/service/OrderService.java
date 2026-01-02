@@ -2,7 +2,10 @@ package com.arka.modules.order.service;
 
 import com.arka.common.exception.ResourceNotFoundException;
 import com.arka.common.result.Result;
+import com.arka.modules.bookshelf.dto.AddToBookshelfRequest;
+import com.arka.modules.bookshelf.service.BookshelfService;
 import com.arka.modules.marketplace.entity.BookEntity;
+import com.arka.modules.marketplace.entity.BookStatus;
 import com.arka.modules.marketplace.repository.BookRepository;
 import com.arka.modules.order.dto.CreateOrderRequest;
 import com.arka.modules.order.dto.OrderResponse;
@@ -24,10 +27,12 @@ import org.springframework.stereotype.Service;
 public class OrderService {
   private final OrderRepository orderRepository;
   private final BookRepository bookRepository;
+  private final BookshelfService bookshelfService;
 
-  public OrderService(OrderRepository orderRepository, BookRepository bookRepository) {
+  public OrderService(OrderRepository orderRepository, BookRepository bookRepository, BookshelfService bookshelfService) {
     this.orderRepository = orderRepository;
     this.bookRepository = bookRepository;
+    this.bookshelfService = bookshelfService;
   }
 
   @Transactional
@@ -35,6 +40,7 @@ public class OrderService {
     try {
       BigDecimal subtotal = BigDecimal.ZERO;
       List<OrderItemEntity> items = new ArrayList<>();
+      List<BookEntity> booksToReserve = new ArrayList<>();
 
       // Validate and create order items
       for (CreateOrderRequest.OrderItemRequest itemRequest : request.items()) {
@@ -42,12 +48,18 @@ public class OrderService {
         BookEntity book = bookRepository.findById(bookId)
             .orElseThrow(() -> new IllegalArgumentException("Book not found: " + itemRequest.bookId()));
 
+        // Validate book is available (PUBLISHED status)
+        if (book.getStatus() != BookStatus.PUBLISHED) {
+          return Result.failure("Book '" + book.getTitle() + "' is not available for purchase. Current status: " + book.getStatus());
+        }
+
         BigDecimal unitPrice = book.getCreditPrice();
         BigDecimal itemSubtotal = unitPrice.multiply(BigDecimal.valueOf(itemRequest.quantity()));
         subtotal = subtotal.add(itemSubtotal);
 
         OrderItemEntity item = new OrderItemEntity(bookId, itemRequest.quantity(), unitPrice);
         items.add(item);
+        booksToReserve.add(book);
       }
 
       BigDecimal pickupFee = BigDecimal.ONE; // Default pickup fee
@@ -68,6 +80,13 @@ public class OrderService {
       }
 
       OrderEntity saved = orderRepository.save(order);
+
+      // Reserve all books in the order (mark as RESERVED so they don't appear in marketplace)
+      for (BookEntity book : booksToReserve) {
+        book.setStatus(BookStatus.RESERVED);
+        bookRepository.save(book);
+      }
+
       return Result.success(toResponse(saved));
     } catch (Exception e) {
       return Result.failure("Failed to create order: " + e.getMessage());
@@ -195,6 +214,62 @@ public class OrderService {
     }
 
     return steps;
+  }
+
+  @Transactional
+  public Result<OrderResponse> updateOrderStatus(UUID orderId, UUID userId, OrderStatus newStatus) {
+    OrderEntity order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+    // Only order owner or admin can update status (for now, allow owner)
+    if (!order.getUserId().equals(userId)) {
+      return Result.failure("Access denied");
+    }
+
+    OrderStatus currentStatus = order.getStatus();
+    
+    // Validate status transition
+    if (currentStatus == OrderStatus.CANCELLED || currentStatus == OrderStatus.DELIVERED) {
+      return Result.failure("Cannot update status of " + currentStatus + " order");
+    }
+
+    // Handle status changes
+    if (newStatus == OrderStatus.DELIVERED) {
+      // Mark all books in the order as ARCHIVED (sold)
+      for (OrderItemEntity item : order.getItems()) {
+        BookEntity book = bookRepository.findById(item.getBookId()).orElse(null);
+        if (book != null && book.getStatus() == BookStatus.RESERVED) {
+          book.setStatus(BookStatus.ARCHIVED);
+          bookRepository.save(book);
+          
+          // Automatically add book to buyer's bookshelf
+          try {
+            bookshelfService.addToBookshelf(order.getUserId(), book.getId(), new AddToBookshelfRequest(null));
+          } catch (Exception e) {
+            // Silently fail if book is already in bookshelf or other error
+            // This prevents order completion from failing due to bookshelf issues
+          }
+        }
+      }
+    } else if (newStatus == OrderStatus.CANCELLED) {
+      // Restore books to PUBLISHED status so they appear in marketplace again
+      for (OrderItemEntity item : order.getItems()) {
+        BookEntity book = bookRepository.findById(item.getBookId()).orElse(null);
+        if (book != null && book.getStatus() == BookStatus.RESERVED) {
+          book.setStatus(BookStatus.PUBLISHED);
+          bookRepository.save(book);
+        }
+      }
+    }
+
+    order.setStatus(newStatus);
+    OrderEntity saved = orderRepository.save(order);
+    return Result.success(toResponse(saved));
+  }
+
+  @Transactional
+  public Result<OrderResponse> cancelOrder(UUID orderId, UUID userId) {
+    return updateOrderStatus(orderId, userId, OrderStatus.CANCELLED);
   }
 
   private String generateTrackingNumber() {

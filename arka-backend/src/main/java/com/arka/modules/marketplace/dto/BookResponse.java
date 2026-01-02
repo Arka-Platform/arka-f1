@@ -10,6 +10,8 @@ public record BookResponse(
     String author,
     String description,
     String genre,
+    String category,
+    String subcategory,
     BigDecimal price,
     String status,
     Instant createdAt,

@@ -1,4 +1,7 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { useAuth } from '../../../contexts/AuthContext'
+import { useToast } from '../../../contexts/ToastContext'
+import { wishlistApi, bookshelfApi } from '../../../utils/api'
 import styles from './BookCard.module.css'
 import Button from '../Button/Button'
 import { trackBookView } from '../../../utils/tracking'
@@ -34,9 +37,47 @@ const BookCard: React.FC<BookCardProps> = ({
   buttonText = 'Buy Now',
   onButtonClick,
 }) => {
+  const { user } = useAuth()
+  const { success, error: showError } = useToast()
   const viewStartTime = useRef<number>(Date.now())
   const hasTrackedView = useRef<boolean>(false)
+  const [isInWishlist, setIsInWishlist] = useState(false)
+  const [isToggling, setIsToggling] = useState(false)
+  const [isInBookshelf, setIsInBookshelf] = useState(false)
+  const [isTogglingBookshelf, setIsTogglingBookshelf] = useState(false)
   const coverImage = book.image || book.thumbnail
+
+  // Check if book is in wishlist
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      if (user?.id && book.id) {
+        try {
+          const response = await wishlistApi.checkInWishlist(user.id, book.id)
+          setIsInWishlist(response.isInWishlist)
+        } catch (error) {
+          // Silently fail - wishlist check is optional
+          console.error('Error checking wishlist status:', error)
+        }
+      }
+    }
+    checkWishlistStatus()
+  }, [user?.id, book.id])
+
+  // Check if book is in bookshelf
+  useEffect(() => {
+    const checkBookshelfStatus = async () => {
+      if (user?.id && book.id) {
+        try {
+          const response = await bookshelfApi.checkInBookshelf(user.id, book.id)
+          setIsInBookshelf(response.isInBookshelf)
+        } catch (error) {
+          // Silently fail - bookshelf check is optional
+          console.error('Error checking bookshelf status:', error)
+        }
+      }
+    }
+    checkBookshelfStatus()
+  }, [user?.id, book.id])
 
   // Track view when card is visible for more than 2 seconds
   useEffect(() => {
@@ -59,6 +100,67 @@ const BookCard: React.FC<BookCardProps> = ({
     }
   }
 
+  const handleWishlistToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent card click
+    
+    if (!user?.id) {
+      showError('Please log in to add books to your wishlist')
+      return
+    }
+
+    if (isToggling) return // Prevent double clicks
+
+    setIsToggling(true)
+    
+    try {
+      if (isInWishlist) {
+        await wishlistApi.removeFromWishlist(user.id, book.id)
+        setIsInWishlist(false)
+        success('Removed from wishlist')
+      } else {
+        await wishlistApi.addToWishlist(user.id, book.id)
+        setIsInWishlist(true)
+        success('Added to wishlist')
+      }
+      
+      // Trigger a custom event to update wishlist count in header
+      window.dispatchEvent(new CustomEvent('wishlistUpdated'))
+    } catch (err: any) {
+      showError(err.message || 'Failed to update wishlist')
+    } finally {
+      setIsToggling(false)
+    }
+  }
+
+  const handleBookshelfToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent card click
+    
+    if (!user?.id) {
+      showError('Please log in to add books to your bookshelf')
+      return
+    }
+
+    if (isTogglingBookshelf) return // Prevent double clicks
+
+    setIsTogglingBookshelf(true)
+    
+    try {
+      if (isInBookshelf) {
+        await bookshelfApi.removeFromBookshelf(user.id, book.id)
+        setIsInBookshelf(false)
+        success('Removed from bookshelf')
+      } else {
+        await bookshelfApi.addToBookshelf(user.id, book.id)
+        setIsInBookshelf(true)
+        success('Added to bookshelf')
+      }
+    } catch (err: any) {
+      showError(err.message || 'Failed to update bookshelf')
+    } finally {
+      setIsTogglingBookshelf(false)
+    }
+  }
+
   return (
     <div className={styles.bookCard} onClick={handleCardClick}>
       <div className={styles.imageContainer}>
@@ -71,6 +173,49 @@ const BookCard: React.FC<BookCardProps> = ({
               <rect x="50" y="30" width="100" height="140" fill="currentColor" opacity="0.3" />
             </svg>
           </div>
+        )}
+        {/* Wishlist Heart Icon */}
+        {user && (
+          <button
+            className={`${styles.wishlistButton} ${isInWishlist ? styles.wishlistButtonActive : ''} ${isToggling ? styles.wishlistButtonAnimating : ''}`}
+            onClick={handleWishlistToggle}
+            aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+            type="button"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill={isInWishlist ? '#ff6b6b' : 'none'}
+              stroke={isInWishlist ? '#ff6b6b' : 'currentColor'}
+              strokeWidth="2"
+              className={styles.heartIcon}
+            >
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
+            </svg>
+          </button>
+        )}
+        {/* Bookshelf Book Icon */}
+        {user && (
+          <button
+            className={`${styles.bookshelfButton} ${isInBookshelf ? styles.bookshelfButtonActive : ''} ${isTogglingBookshelf ? styles.bookshelfButtonAnimating : ''}`}
+            onClick={handleBookshelfToggle}
+            aria-label={isInBookshelf ? 'Remove from bookshelf' : 'Add to bookshelf'}
+            type="button"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill={isInBookshelf ? '#4CAF50' : 'none'}
+              stroke={isInBookshelf ? '#4CAF50' : 'currentColor'}
+              strokeWidth="2"
+              className={styles.bookIcon}
+            >
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+          </button>
         )}
       </div>
       <div className={styles.content}>
@@ -98,7 +243,7 @@ const BookCard: React.FC<BookCardProps> = ({
         <p className={styles.description}>{book.description}</p>
         {showPrice && book.price && (
           <p className={styles.price}>
-            {typeof book.price === 'number' ? `$${book.price.toFixed(2)}` : book.price}
+            {typeof book.price === 'number' ? `₹${book.price.toFixed(2)}` : book.price}
           </p>
         )}
         {showButton && (

@@ -3,6 +3,7 @@ package com.arka.modules.storage.service;
 import com.arka.common.result.Result;
 import java.io.InputStream;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,12 +18,12 @@ public class S3StorageService {
   private final S3Client s3Client;
   private final String bucketName;
 
-  public S3StorageService(S3Client s3Client, @Value("${app.aws.s3.bucket-name:}") String bucketName) {
+  public S3StorageService(@Autowired(required = false) S3Client s3Client, @Value("${app.aws.s3.bucket-name:}") String bucketName) {
     this.s3Client = s3Client;
     this.bucketName = bucketName;
   }
   
-  private boolean isS3Available() {
+  public boolean isS3Available() {
     return s3Client != null && bucketName != null && !bucketName.isEmpty();
   }
 

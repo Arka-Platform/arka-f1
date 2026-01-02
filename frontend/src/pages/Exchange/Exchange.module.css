@@ -1,0 +1,155 @@
+.exchange {
+  padding: 2rem 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin: 0 0 1rem 0;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--color-gray-dark);
+  margin: 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  align-items: center;
+}
+
+.searchInput {
+  flex: 1;
+  max-width: 400px;
+}
+
+.genreSelect {
+  width: 200px;
+}
+
+.myExchangesButton {
+  margin-left: auto;
+}
+
+.feeInfo {
+  background: var(--color-white);
+  border: 2px solid var(--color-primary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.feeInfo h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  color: var(--color-black);
+}
+
+.feeDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.feeRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-gray-light);
+}
+
+.feeRowTotal {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-primary-dark);
+  border-top: 2px solid var(--color-primary);
+  margin-top: 0.5rem;
+}
+
+.closeFeeButton {
+  width: 100%;
+}
+
+.loading,
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--color-gray-dark);
+}
+
+.emptyState p {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.booksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.bookWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.exchangeActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.exchangeButton {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .exchange {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchInput,
+  .genreSelect {
+    width: 100%;
+    max-width: none;
+  }
+
+  .myExchangesButton {
+    margin-left: 0;
+  }
+
+  .booksGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+
+
+

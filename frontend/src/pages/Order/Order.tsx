@@ -252,22 +252,22 @@ const Order: React.FC = () => {
                 <div key={item.id} className={styles.thumbnail} />
               ))}
             </div>
-            <p className={styles.cartTotal}>${subtotal.toFixed(2)}</p>
+            <p className={styles.cartTotal}>₹{subtotal.toFixed(2)}</p>
           </div>
 
           <div className={styles.summaryCard}>
             <h3 className={styles.summaryTitle}>Order Summary</h3>
             <div className={styles.summaryRow}>
               <span>{items.length} item{items.length !== 1 ? 's' : ''}</span>
-              <span>${subtotal.toFixed(2)}</span>
+              <span>₹{subtotal.toFixed(2)}</span>
             </div>
             <div className={styles.summaryRow}>
               <span>Pickup</span>
-              <span>${pickupFee.toFixed(2)}</span>
+              <span>₹{pickupFee.toFixed(2)}</span>
             </div>
             <div className={styles.summaryTotal}>
               <span>Total to pay:</span>
-              <span>${total.toFixed(2)}</span>
+              <span>₹{total.toFixed(2)}</span>
             </div>
           </div>
         </aside>

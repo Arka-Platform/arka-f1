@@ -118,7 +118,7 @@ const UserMenu: React.FC = () => {
             Analytics
           </Link>
           <Link
-            to="/lending"
+            to="/bookshelf"
             className={styles.dropdownItem}
             onClick={() => setIsOpen(false)}
             role="menuitem"
@@ -126,23 +126,24 @@ const UserMenu: React.FC = () => {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-              <path d="M12 8v8" />
-              <path d="M8 12h8" />
             </svg>
-            Book Lending
+            My Bookshelf
           </Link>
           <Link
             to="/subscriptions"
-            className={styles.dropdownItem}
+            className={`${styles.dropdownItem} ${styles.subscriptionItem}`}
             onClick={() => setIsOpen(false)}
             role="menuitem"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-              <polyline points="17 21 17 13 7 13 7 21" />
-              <polyline points="7 3 7 8 15 8" />
-            </svg>
-            Subscriptions
+            <div className={styles.subscriptionItemContent}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+              <span>Subscriptions</span>
+            </div>
+            <span className={styles.subscriptionBadge}>Save</span>
           </Link>
           <Link
             to="/orders"
