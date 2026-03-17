@@ -1,17 +1,54 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from './TrustScoreBadge.module.css'
+import { trustScoreApi } from '../../../utils/api'
 
 export interface TrustScoreBadgeProps {
-  trustScore: number
+  trustScore?: number
+  userId?: string
   size?: 'small' | 'medium' | 'large'
   showLabel?: boolean
 }
 
 const TrustScoreBadge: React.FC<TrustScoreBadgeProps> = ({
   trustScore,
+  userId,
   size = 'medium',
   showLabel = true,
 }) => {
+  const [resolvedScore, setResolvedScore] = useState<number | null>(
+    typeof trustScore === 'number' ? trustScore : null
+  )
+
+  useEffect(() => {
+    let cancelled = false
+
+    const resolve = async () => {
+      if (typeof trustScore === 'number') {
+        setResolvedScore(trustScore)
+        return
+      }
+      if (!userId) {
+        setResolvedScore(null)
+        return
+      }
+      try {
+        const data = await trustScoreApi.getTrustScore(userId)
+        if (!cancelled) setResolvedScore(data.trustScore)
+      } catch {
+        if (!cancelled) setResolvedScore(null)
+      }
+    }
+
+    resolve()
+    return () => {
+      cancelled = true
+    }
+  }, [trustScore, userId])
+
+  if (resolvedScore == null) {
+    return null
+  }
+
   const getScoreColor = (score: number): string => {
     if (score >= 80) return '#10b981' // Green
     if (score >= 60) return '#f59e0b' // Amber
@@ -26,9 +63,9 @@ const TrustScoreBadge: React.FC<TrustScoreBadgeProps> = ({
     return 'Poor'
   }
 
-  const scoreColor = getScoreColor(trustScore)
-  const scoreLabel = getScoreLabel(trustScore)
-  const roundedScore = Math.round(trustScore)
+  const scoreColor = getScoreColor(resolvedScore)
+  const scoreLabel = getScoreLabel(resolvedScore)
+  const roundedScore = Math.round(resolvedScore)
 
   return (
     <div className={`${styles.trustScoreBadge} ${styles[size]}`}>

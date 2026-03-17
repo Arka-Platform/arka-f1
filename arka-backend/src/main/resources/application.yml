@@ -5,14 +5,16 @@ server:
 spring:
   application:
     name: arka-backend
+
   servlet:
     multipart:
       max-file-size: 5MB
       max-request-size: 10MB
+
   datasource:
-    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:arka}}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -20,6 +22,7 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -28,11 +31,13 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: false
+
   flyway:
     enabled: true
     locations: classpath:db/migration
+
   mail:
-    host: ${SMTP_HOST:smtp.gmail.com}
+    host: ${SMTP_HOST:}
     port: ${SMTP_PORT:587}
     username: ${SMTP_USERNAME:}
     password: ${SMTP_PASSWORD:}
@@ -46,7 +51,7 @@ spring:
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
-  # Exclude OAuth2 auto-configuration - we'll configure it conditionally
+
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -54,40 +59,33 @@ spring:
 app:
   cors:
     allowed-origins:
-      - http://localhost:5173
+      - ${FRONTEND_URL:http://localhost:5173}
+
   jwt:
-    secret: ${JWT_SECRET:arka-secret-key-change-in-production-min-256-bits-long-please-use-a-strong-secret-key}
-    expiration: ${JWT_EXPIRATION:86400000}  # 24 hours in milliseconds
+    secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION:86400000}
+
   amazon-bestsellers:
-    enabled: true  # Enable Amazon bestsellers CSV import
-  aws:
-    s3:
-      bucket-name: ${AWS_S3_BUCKET_NAME:}
-      region: ${AWS_REGION:us-east-1}
-    rds:
-      host: ${AWS_RDS_HOST:}
-      port: ${AWS_RDS_PORT:5432}
-      database: ${AWS_RDS_DATABASE:arka}
-      username: ${AWS_RDS_USERNAME:}
-      password: ${AWS_RDS_PASSWORD:}
+    enabled: true
+
   oauth2:
     google:
       client-id: ${GOOGLE_CLIENT_ID:}
       client-secret: ${GOOGLE_CLIENT_SECRET:}
       redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}
+
   otp:
     email:
       enabled: true
       expiration-minutes: 10
       length: 6
     phone:
-      enabled: true
+      enabled: false
       expiration-minutes: 10
       length: 6
-      provider: ${SMS_PROVIDER:aws-sns}  # aws-sns or twilio
+      provider: ${SMS_PROVIDER:disabled}
+
   sms:
-    aws:
-      region: ${AWS_SNS_REGION:us-east-1}
     twilio:
       account-sid: ${TWILIO_ACCOUNT_SID:}
       auth-token: ${TWILIO_AUTH_TOKEN:}
@@ -97,7 +95,8 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,info,prometheus"
+        include: health,info,prometheus
+
   endpoint:
     health:
       probes:
@@ -109,84 +108,32 @@ logging:
     org.springframework.security: WARN
 
 ---
-# Production profile - AWS RDS
-spring:
-  config:
-    activate:
-      on-profile: prod
-  datasource:
-    url: jdbc:postgresql://${AWS_RDS_HOST}:${AWS_RDS_PORT:5432}/${AWS_RDS_DATABASE:arka}
-    username: ${AWS_RDS_USERNAME}
-    password: ${AWS_RDS_PASSWORD}  # Must be set
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 10
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-    show-sql: false
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
 
-app:
-  cors:
-    allowed-origins:
-      - ${FRONTEND_URL:http://localhost:5173}
-  amazon-bestsellers:
-    enabled: true
-  aws:
-    s3:
-      bucket-name: ${AWS_S3_BUCKET_NAME:}
-      region: ${AWS_REGION:us-east-1}
-    rds:
-      host: ${AWS_RDS_HOST:}
-      port: ${AWS_RDS_PORT:5432}
-      database: ${AWS_RDS_DATABASE:arka}
-      username: ${AWS_RDS_USERNAME:}
-      password: ${AWS_RDS_PASSWORD:}
-
----
-# Local development - H2 in-memory database
 spring:
   config:
     activate:
       on-profile: local
+
   datasource:
     url: jdbc:h2:mem:arka_local;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
     username: sa
     password: sa
     driver-class-name: org.h2.Driver
+
   jpa:
     hibernate:
-      ddl-auto: update  # Auto-update schema from entities for local dev (creates missing tables)
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+
   flyway:
-    enabled: true  # Enable Flyway to run migrations
-    continue-on-error: true  # Continue even if some migrations fail (e.g., column already exists)
+    enabled: true
+    continue-on-error: true
 
 app:
   cors:
     allowed-origins:
       - http://localhost:5173
       - http://localhost:3000
-  amazon-bestsellers:
-    enabled: true
-
-
-
-
-
-
-
-
-
-
-
+      

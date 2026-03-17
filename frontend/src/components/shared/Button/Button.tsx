@@ -1,12 +1,15 @@
 import React from 'react'
 import styles from './Button.module.css'
 
-interface ButtonProps {
+export interface ButtonProps {
   children: React.ReactNode
   onClick?: () => void
   type?: 'button' | 'submit' | 'reset'
-  variant?: 'primary' | 'secondary' | 'outline'
+  variant?: 'primary' | 'secondary' | 'outline' | 'danger'
   fullWidth?: boolean
+  size?: 'small' | 'medium'
+  /** Backwards-compatible alias for size="small" */
+  small?: boolean
   disabled?: boolean
   loading?: boolean
   className?: string
@@ -18,16 +21,19 @@ const Button: React.FC<ButtonProps> = ({
   type = 'button',
   variant = 'primary',
   fullWidth = false,
+  size = 'medium',
+  small = false,
   disabled = false,
   loading = false,
   className = '',
 }) => {
+  const resolvedSize: 'small' | 'medium' = small ? 'small' : size
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`${styles.button} ${styles[variant]} ${fullWidth ? styles.fullWidth : ''} ${loading ? styles.loading : ''} ${className}`}
+      className={`${styles.button} ${styles[variant]} ${styles[resolvedSize]} ${fullWidth ? styles.fullWidth : ''} ${loading ? styles.loading : ''} ${className}`}
     >
       {loading && (
         <span className={styles.spinner} aria-hidden="true">

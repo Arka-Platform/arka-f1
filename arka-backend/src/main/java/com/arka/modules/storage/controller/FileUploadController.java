@@ -2,10 +2,8 @@ package com.arka.modules.storage.controller;
 
 import com.arka.common.result.Result;
 import com.arka.modules.storage.service.LocalFileStorageService;
-import com.arka.modules.storage.service.S3StorageService;
 import java.util.Map;
 import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,13 +20,9 @@ public class FileUploadController {
       "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"
   );
 
-  private final S3StorageService s3StorageService;
   private final LocalFileStorageService localFileStorageService;
 
-  public FileUploadController(
-      @Autowired(required = false) S3StorageService s3StorageService,
-      LocalFileStorageService localFileStorageService) {
-    this.s3StorageService = s3StorageService;
+  public FileUploadController(LocalFileStorageService localFileStorageService) {
     this.localFileStorageService = localFileStorageService;
   }
 
@@ -39,18 +33,9 @@ public class FileUploadController {
       return validationResult;
     }
 
-    // Try S3 first, fallback to local storage
-    Result<String> result = null;
-    if (s3StorageService != null && s3StorageService.isS3Available()) {
-      result = s3StorageService.uploadBookImage(file);
-      // If S3 fails, fallback to local storage
-      if (result instanceof Result.Failure) {
-        result = localFileStorageService.uploadBookImage(file);
-      }
-    } else {
-      // S3 not available, use local storage
-      result = localFileStorageService.uploadBookImage(file);
-    }
+    // AWS/S3 removed. For production, prefer a dedicated object storage provider (or direct client uploads).
+    // This endpoint remains as a local-dev fallback.
+    Result<String> result = localFileStorageService.uploadBookImage(file);
 
     return switch (result) {
       case Result.Success<String> success -> ResponseEntity.ok(Map.of("url", success.value()));
@@ -65,18 +50,9 @@ public class FileUploadController {
       return validationResult;
     }
 
-    // Try S3 first, fallback to local storage
-    Result<String> result = null;
-    if (s3StorageService != null && s3StorageService.isS3Available()) {
-      result = s3StorageService.uploadStatusImage(file);
-      // If S3 fails, fallback to local storage
-      if (result instanceof Result.Failure) {
-        result = localFileStorageService.uploadStatusImage(file);
-      }
-    } else {
-      // S3 not available, use local storage
-      result = localFileStorageService.uploadStatusImage(file);
-    }
+    // AWS/S3 removed. For production, prefer a dedicated object storage provider (or direct client uploads).
+    // This endpoint remains as a local-dev fallback.
+    Result<String> result = localFileStorageService.uploadStatusImage(file);
 
     return switch (result) {
       case Result.Success<String> success -> ResponseEntity.ok(Map.of("url", success.value()));

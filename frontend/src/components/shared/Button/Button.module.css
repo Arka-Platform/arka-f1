@@ -43,6 +43,25 @@
   color: var(--color-white);
 }
 
+.danger {
+  background-color: #ef4444;
+  color: var(--color-white);
+}
+
+.danger:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.small {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  border-radius: 6px;
+}
+
+.medium {
+  /* default sizing is defined in .button */
+}
+
 .fullWidth {
   width: 100%;
 }

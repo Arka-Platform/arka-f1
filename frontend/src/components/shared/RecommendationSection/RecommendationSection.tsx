@@ -133,6 +133,11 @@ const RecommendationSection: React.FC<RecommendationSectionProps> = ({
     <section className={styles.section}>
       <div className={styles.header}>
         <h2 className={styles.title}>{title}</h2>
+        {showViewAll && (
+          <a className={styles.viewAll} href="/books">
+            View all
+          </a>
+        )}
       </div>
       <div className={styles.carouselContainer}>
         {canScrollLeft && (

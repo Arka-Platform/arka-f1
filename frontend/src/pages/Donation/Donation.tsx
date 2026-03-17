@@ -4,7 +4,7 @@ import { useToast } from '../../contexts/ToastContext'
 import Input from '../../components/shared/Input/Input'
 import Select from '../../components/shared/Select/Select'
 import Button from '../../components/shared/Button/Button'
-import { donationsApi, NGOResponse, DonationRequest, DonationResponse } from '../../utils/api'
+import { donationsApi, NGOResponse, DonationRequest } from '../../utils/api'
 import styles from './Donation.module.css'
 
 interface NGOCardProps {

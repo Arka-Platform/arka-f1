@@ -76,10 +76,6 @@ const MyExchanges: React.FC = () => {
     return user?.id === exchange.sellerId
   }
 
-  const isBuyer = (exchange: ExchangeResponse) => {
-    return user?.id === exchange.buyerId
-  }
-
   return (
     <div className={styles.myExchanges}>
       <div className={styles.header}>

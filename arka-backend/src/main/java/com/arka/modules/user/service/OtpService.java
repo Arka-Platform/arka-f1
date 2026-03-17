@@ -13,11 +13,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.sns.SnsClient;
-import software.amazon.awssdk.services.sns.model.PublishRequest;
-import software.amazon.awssdk.services.sns.model.SnsException;
 
 @Service
 public class OtpService {
@@ -30,8 +25,6 @@ public class OtpService {
   private final int expirationMinutes;
   private final boolean emailEnabled;
   private final boolean phoneEnabled;
-  private final String smsProvider;
-  private final SnsClient snsClient;
 
   public OtpService(
       OtpRepository otpRepository,
@@ -39,30 +32,13 @@ public class OtpService {
       @Value("${app.otp.email.length:6}") int otpLength,
       @Value("${app.otp.email.expiration-minutes:10}") int expirationMinutes,
       @Value("${app.otp.email.enabled:true}") boolean emailEnabled,
-      @Value("${app.otp.phone.enabled:true}") boolean phoneEnabled,
-      @Value("${app.otp.phone.provider:aws-sns}") String smsProvider,
-      @Value("${app.sms.aws.region:us-east-1}") String awsRegion) {
+      @Value("${app.otp.phone.enabled:false}") boolean phoneEnabled) {
     this.otpRepository = otpRepository;
     this.mailSender = mailSender;
     this.otpLength = otpLength;
     this.expirationMinutes = expirationMinutes;
     this.emailEnabled = emailEnabled;
     this.phoneEnabled = phoneEnabled;
-    this.smsProvider = smsProvider;
-    
-    // Initialize SNS client if AWS SNS is enabled
-    SnsClient tempSnsClient = null;
-    if ("aws-sns".equals(smsProvider)) {
-      try {
-        tempSnsClient = SnsClient.builder()
-            .region(Region.of(awsRegion))
-            .credentialsProvider(DefaultCredentialsProvider.create())
-            .build();
-      } catch (Exception e) {
-        log.warn("Failed to initialize SNS client: {}", e.getMessage());
-      }
-    }
-    this.snsClient = tempSnsClient;
   }
 
   /**
@@ -112,30 +88,8 @@ public class OtpService {
       throw new IllegalStateException("Phone OTP is disabled");
     }
 
-    String otpCode = generateOtp();
-    LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(expirationMinutes);
-
-    // Invalidate previous unused OTPs
-    otpRepository.findLatestUnusedOtp(phoneNumber, "phone")
-        .ifPresent(otp -> otp.setUsed(true));
-
-    // Create new OTP
-    OtpEntity otp = new OtpEntity(phoneNumber, otpCode, "phone", expiresAt);
-    otpRepository.save(otp);
-
-    // Send SMS
-    try {
-      if ("aws-sns".equals(smsProvider) && snsClient != null) {
-        sendSmsViaAwsSns(phoneNumber, otpCode);
-      } else {
-        log.warn("SMS provider not configured or not available");
-        throw new IllegalStateException("SMS service not available");
-      }
-      log.info("OTP sent to phone: {}", phoneNumber);
-    } catch (Exception e) {
-      log.error("Failed to send OTP SMS to {}: {}", phoneNumber, e.getMessage());
-      throw new RuntimeException("Failed to send OTP SMS", e);
-    }
+    // AWS (SNS) removed. If you want SMS OTP, implement a provider like Twilio.
+    throw new IllegalStateException("SMS OTP not configured. Add an SMS provider (e.g. Twilio).");
   }
 
   /**
@@ -167,20 +121,6 @@ public class OtpService {
       otp.append(random.nextInt(10));
     }
     return otp.toString();
-  }
-
-  private void sendSmsViaAwsSns(String phoneNumber, String otpCode) {
-    try {
-      String message = "Your Arka verification code is: " + otpCode + ". Valid for " + expirationMinutes + " minutes.";
-      PublishRequest request = PublishRequest.builder()
-          .phoneNumber(phoneNumber)
-          .message(message)
-          .build();
-      snsClient.publish(request);
-    } catch (SnsException e) {
-      log.error("AWS SNS error: {}", e.getMessage());
-      throw new RuntimeException("Failed to send SMS via AWS SNS", e);
-    }
   }
 }
 

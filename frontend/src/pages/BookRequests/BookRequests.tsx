@@ -20,7 +20,7 @@ interface RequestCardProps {
   onSelectMatch?: (requestId: string, match: MatchResponse) => void
 }
 
-const RequestCard: React.FC<RequestCardProps> = ({ request, onFulfill, onCancel, isOwner, showMatches = false, onSelectMatch }) => {
+const RequestCard: React.FC<RequestCardProps> = ({ request, onFulfill, onCancel, isOwner, onSelectMatch }) => {
   const [matches, setMatches] = useState<MatchResponse[]>([])
   const [previousMatchCount, setPreviousMatchCount] = useState(0)
   const [showMatchDetails, setShowMatchDetails] = useState(false)

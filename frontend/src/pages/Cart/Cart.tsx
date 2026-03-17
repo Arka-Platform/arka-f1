@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../../contexts/CartContext'
 import { useAuth } from '../../contexts/AuthContext'
-import { subscriptionsApi, SubscriptionResponse } from '../../utils/api'
+import { subscriptionsApi } from '../../utils/api'
 import Button from '../../components/shared/Button/Button'
 import styles from './Cart.module.css'
 
@@ -139,7 +139,7 @@ const Cart: React.FC = () => {
                 </div>
                 <p className={styles.subscriptionUpsellText}>
                   Get 3 books per month for just <strong>₹9.99</strong> with our Basic Plan. 
-                  Save up to <strong>₹{Math.max(0, (total * 0.3).toFixed(0))}</strong> on similar purchases!
+                  Save up to <strong>₹{Math.max(0, Math.round(total * 0.3))}</strong> on similar purchases!
                 </p>
                 <div className={styles.subscriptionUpsellBenefits}>
                   <div className={styles.subscriptionUpsellBenefit}>

@@ -111,7 +111,7 @@ const Exchange: React.FC = () => {
   const handleBookClick = (bookId: string) => {
     const book = books.find(b => b.id === bookId)
     if (book && book.price) {
-      handleCalculateFee(book.price)
+      handleCalculateFee(Number(book.price))
     }
   }
 
@@ -194,8 +194,9 @@ const Exchange: React.FC = () => {
             <div key={book.id} className={styles.bookWrapper}>
               <BookCard
                 book={book}
-                onAddToCart={() => {}}
-                onViewDetails={() => handleBookClick(book.id)}
+                showButton
+                buttonText="Calculate Fee"
+                onButtonClick={() => handleBookClick(book.id)}
               />
               <div className={styles.exchangeActions}>
                 {book.price && (

@@ -277,10 +277,10 @@ const BooksMarketplace: React.FC = () => {
   const { user, register } = useAuth()
   const { success, error: showError } = useToast()
   const { addToCart } = useCart()
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   
   // Book browsing state
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '')
+  const [searchQuery] = useState(searchParams.get('search') || '')
   const [books, setBooks] = useState<Book[]>([])
   const [booksLoading, setBooksLoading] = useState(true)
   const [booksError, setBooksError] = useState<string | null>(null)

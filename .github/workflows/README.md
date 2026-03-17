@@ -5,7 +5,7 @@ This directory contains GitHub Actions workflows for building, testing, and depl
 ## Available Workflows
 
 ### 1. Test Docker Build (`test-docker-build.yml`)
-**Purpose:** Build and test the Docker image without pushing to ECR
+**Purpose:** Build and test the Docker image (no AWS push)
 
 **Triggers:**
 - Manual trigger (workflow_dispatch)
@@ -51,30 +51,26 @@ This directory contains GitHub Actions workflows for building, testing, and depl
 - You want to check image size
 - You don't need runtime testing
 
-### 3. Build and Push to ECR (`deploy-to-ecr.yml`)
-**Purpose:** Build Docker image and push to AWS ECR
+### 3. Build and Push to ECR (`deploy-to-ecr.yml`) (removed)
+**Purpose:** Removed (AWS is no longer used)
 
 **Triggers:**
 - Manual trigger (workflow_dispatch)
 - Push to dev/main/master (when code changes)
 - Pull requests (when code changes)
 
-**What it does:**
-- Builds the Docker image
-- Pushes to ECR with commit SHA tag
-- Pushes latest tag
-- Uses IAM role for authentication
+**What it did:**
+- Built the Docker image
+- Pushed to ECR (removed)
 
 **Use this when:**
-- You want to deploy to AWS
-- You need the image in ECR for Terraform deployment
+- N/A (removed)
 
-### 4. Build and Push to ECR (Simple) (`deploy-to-ecr-simple.yml`)
-**Purpose:** Same as above but uses AWS access keys instead of IAM role
+### 4. Build and Push to ECR (Simple) (`deploy-to-ecr-simple.yml`) (removed)
+**Purpose:** Removed (AWS is no longer used)
 
 **Use this when:**
-- IAM role authentication is not set up
-- You prefer using access keys
+- N/A (removed)
 
 ## Workflow Comparison
 
@@ -82,8 +78,8 @@ This directory contains GitHub Actions workflows for building, testing, and depl
 |----------|-------|--------------|------------|-------|
 | test-docker-build | ✅ | ✅ | ❌ | Medium |
 | test-docker-build-only | ✅ | ❌ | ❌ | Fast |
-| deploy-to-ecr | ✅ | ❌ | ✅ | Medium |
-| deploy-to-ecr-simple | ✅ | ❌ | ✅ | Medium |
+| deploy-to-ecr | ❌ | ❌ | ❌ | N/A |
+| deploy-to-ecr-simple | ❌ | ❌ | ❌ | N/A |
 
 ## Recommended Workflow
 
@@ -93,7 +89,8 @@ This directory contains GitHub Actions workflows for building, testing, and depl
 
 2. **Before Deployment:**
    - Use `test-docker-build` to verify everything works
-   - Then use `deploy-to-ecr` or `deploy-to-ecr-simple` to push to ECR
+   - Deploy frontend to Vercel (see `VERCEL_DEPLOYMENT.md`)
+   - Deploy backend to Render (see `RENDER_DEPLOYMENT.md`)
 
 3. **For Pull Requests:**
    - All workflows run automatically on PRs
@@ -129,9 +126,7 @@ After a workflow runs:
 - Check if application starts correctly
 
 ### Push to ECR Fails
-- Verify AWS credentials are set correctly
-- Check ECR repository exists
-- Verify IAM permissions
+- Removed workflows: ECR/ECS/Terraform deployment was deleted when migrating to Vercel + Render.
 
 ## Local Testing Alternative
 

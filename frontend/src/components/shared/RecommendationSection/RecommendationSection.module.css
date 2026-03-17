@@ -14,6 +14,17 @@
   margin: 0;
 }
 
+.viewAll {
+  color: var(--color-black);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.viewAll:hover {
+  border-bottom-color: currentColor;
+}
+
 .carouselContainer {
   position: relative;
   width: 100%;

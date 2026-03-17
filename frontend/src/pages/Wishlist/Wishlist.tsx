@@ -88,15 +88,17 @@ const Wishlist: React.FC = () => {
           {wishlist.map((item) => (
             <div key={item.wishlistId} className={styles.wishlistItem}>
               <BookCard
-                id={item.bookId}
-                title={item.bookTitle}
-                author={item.bookAuthor}
-                genre={item.bookGenre || undefined}
-                price={item.bookPrice}
-                imageUrl={item.bookImageUrl || undefined}
-                status={item.bookStatus}
-                ownerId={item.bookOwnerId}
-                ownerName={item.bookOwnerName}
+                book={{
+                  id: item.bookId,
+                  title: item.bookTitle,
+                  description: '',
+                  author: item.bookAuthor,
+                  genre: item.bookGenre || undefined,
+                  price: item.bookPrice,
+                  image: item.bookImageUrl || undefined,
+                  status: item.bookStatus,
+                }}
+                showButton={false}
               />
               <div className={styles.itemActions}>
                 {item.notes && (
