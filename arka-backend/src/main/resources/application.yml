@@ -25,7 +25,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -136,4 +136,3 @@ app:
     allowed-origins:
       - http://localhost:5173
       - http://localhost:3000
-      
