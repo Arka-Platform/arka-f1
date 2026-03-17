@@ -60,6 +60,9 @@ app:
   cors:
     allowed-origins:
       - ${FRONTEND_URL:http://localhost:5173}
+    # For Vercel preview deploys (optional):
+    # allowed-origin-patterns:
+    #   - https://*.vercel.app
 
   jwt:
     secret: ${JWT_SECRET}

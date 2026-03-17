@@ -12,7 +12,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @ConfigurationProperties(prefix = "app.cors")
 public class CorsConfig {
 
-  private List<String> allowedOrigins = List.of("http://localhost:5173");
+  private List<String> allowedOrigins = List.of("https://arka-f1-pphj.vercel.app");
+  private List<String> allowedOriginPatterns = List.of();
 
   public List<String> getAllowedOrigins() {
     return allowedOrigins;
@@ -22,10 +23,22 @@ public class CorsConfig {
     this.allowedOrigins = allowedOrigins;
   }
 
+  public List<String> getAllowedOriginPatterns() {
+    return allowedOriginPatterns;
+  }
+
+  public void setAllowedOriginPatterns(List<String> allowedOriginPatterns) {
+    this.allowedOriginPatterns = allowedOriginPatterns;
+  }
+
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(allowedOrigins);
+    if (allowedOriginPatterns != null && !allowedOriginPatterns.isEmpty()) {
+      configuration.setAllowedOriginPatterns(allowedOriginPatterns);
+    } else {
+      configuration.setAllowedOrigins(allowedOrigins);
+    }
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);
