@@ -57,12 +57,7 @@ spring:
       - org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
 
 app:
-  cors:
-    allowed-origins:
-      - ${FRONTEND_URL:http://localhost:5173}
-    # For Vercel preview deploys (optional):
-    # allowed-origin-patterns:
-    #   - https://*.vercel.app
+  # CORS is controlled solely via the `FRONTEND_URL` environment variable (single allowed origin).
 
   jwt:
     secret: ${JWT_SECRET}

@@ -1,6 +1,7 @@
 package com.arka.config;
 
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,35 +13,19 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @ConfigurationProperties(prefix = "app.cors")
 public class CorsConfig {
 
-  private List<String> allowedOrigins = List.of("https://arka-f1-pphj.vercel.app");
-  private List<String> allowedOriginPatterns = List.of();
-
-  public List<String> getAllowedOrigins() {
-    return allowedOrigins;
-  }
-
-  public void setAllowedOrigins(List<String> allowedOrigins) {
-    this.allowedOrigins = allowedOrigins;
-  }
-
-  public List<String> getAllowedOriginPatterns() {
-    return allowedOriginPatterns;
-  }
-
-  public void setAllowedOriginPatterns(List<String> allowedOriginPatterns) {
-    this.allowedOriginPatterns = allowedOriginPatterns;
-  }
+  @Value("${FRONTEND_URL:http://localhost:5173}")
+  private String frontendUrl;
 
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
-    if (allowedOriginPatterns != null && !allowedOriginPatterns.isEmpty()) {
-      configuration.setAllowedOriginPatterns(allowedOriginPatterns);
-    } else {
-      configuration.setAllowedOrigins(allowedOrigins);
+    if (frontendUrl == null || frontendUrl.isBlank()) {
+      throw new IllegalStateException("FRONTEND_URL must be set to enable CORS safely");
     }
+
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(List.of(frontendUrl.trim()));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-    configuration.setAllowedHeaders(List.of("*"));
+    configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
     configuration.setAllowCredentials(true);
     configuration.setMaxAge(3600L);
 
