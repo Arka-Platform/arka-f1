@@ -25,7 +25,7 @@ const OTPVerification: React.FC = () => {
     setIsLoading(true)
     try {
       // Supabase OTP verification
-      const { data, error } = await fetch(
+      const { error } = await fetch(
         `${process.env.REACT_APP_SUPABASE_URL}/auth/v1/verify`,
         {
           method: 'POST',

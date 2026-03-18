@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data: _data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
       await fetchUser()
     } finally {
@@ -102,7 +102,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const loginWithPhone = async (phone: string) => {
     setIsLoading(true)
     try {
-      const { data, error } = await supabase.auth.signInWithOtp({ phone })
+      const { data: _data, error } = await supabase.auth.signInWithOtp({ phone })
       if (error) throw error
       // OTP will be sent to phone; user verifies externally
     } finally {

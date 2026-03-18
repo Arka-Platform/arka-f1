@@ -98,7 +98,8 @@ const Donation: React.FC = () => {
     loadNGOs()
     if (user) {
       setDonorName(`${user.firstName} ${user.lastName}`)
-      setDonorEmail(user.email)
+      setDonorEmail(user.email || '')
+      setDonorPhone(user.donorPhone || '')
     }
   }, [user])
 
