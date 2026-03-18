@@ -49,55 +49,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Fetch current user from Supabase
   const fetchUser = async () => {
-    const sessionResponse = await supabase.auth.getSession()
-    const session = sessionResponse.data.session
+    setIsLoading(true)
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const session = sessionData.session
 
-    if (!session) {
-      setUser(null)
-      setIsLoading(false)
-      return
-    }
+      if (!session) {
+        setUser(null)
+        return
+      }
 
-    const supabaseUser = session.user
+      const supabaseUser = session.user
 
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', supabaseUser.id)
-      .single()
+      // Map user_metadata from Supabase Auth
+      const metadata = supabaseUser.user_metadata as any
 
-    if (error) {
-      console.error('Error fetching user:', error)
-      setUser(null)
-    } else if (data) {
-      // Map snake_case DB fields to camelCase User interface
       setUser({
-        id: data.id,
-        email: data.email,
-        firstName: data.first_name,
-        lastName: data.last_name,
-        phoneNumber: data.phone_number,
-        avatar: data.avatar,
-        isAdmin: data.is_admin,
-        creditBalance: data.credit_balance,
+        id: supabaseUser.id,
+        email: supabaseUser.email,
+        firstName: metadata?.first_name || '',
+        lastName: metadata?.last_name || '',
+        phoneNumber: supabaseUser.phone,
+        avatar: supabaseUser.user_metadata?.avatar || '',
+        isAdmin: supabaseUser.user_metadata?.is_admin || false,
+        creditBalance: supabaseUser.user_metadata?.credit_balance || 0,
       })
+    } catch (err) {
+      console.error('Error fetching user:', err)
+      setUser(null)
+    } finally {
+      setIsLoading(false)
     }
-
-    setIsLoading(false)
   }
 
   useEffect(() => {
     fetchUser()
 
-  // Listen to auth state changes
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-    fetchUser()
-  })
+    // Listen to auth state changes
+    const { subscription } = supabase.auth.onAuthStateChange(() => {
+      fetchUser()
+    })
 
-  // Cleanup on unmount
-  return () => {
-    subscription.unsubscribe()
-  }
+    // Cleanup on unmount
+    return () => subscription.unsubscribe()
   }, [])
 
   // Email/password login
@@ -136,7 +130,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
-  // Signup (email/password)
+  // Signup (email/password) — safe version using only Auth
   const register = async ({ firstName, lastName, email, password }: RegisterData) => {
     setIsLoading(true)
     try {
@@ -149,29 +143,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       })
       if (error) throw error
 
-      // Insert into users table
-      if (data.user) {
-        const { error: insertError } = await supabase.from('users').insert([
-          {
-            id: data.user.id,
-            email,
-            first_name: firstName,
-            last_name: lastName,
-            email_verified: false,
-            phone_verified: false,
-            credit_balance: 0,
-            is_admin: false,
-          },
-        ])
-        if (insertError) throw insertError
-      }
-
+      // Don't manually insert into "users" table to avoid infinite recursion
       await fetchUser()
     } finally {
       setIsLoading(false)
     }
   }
 
+  // Logout
   const logout = async () => {
     setIsLoading(true)
     try {
@@ -182,6 +161,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
+  // Refresh user
   const refreshUser = async () => {
     setIsLoading(true)
     await fetchUser()
