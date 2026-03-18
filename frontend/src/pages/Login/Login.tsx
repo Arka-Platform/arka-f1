@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../../lib/supabaseClient'
+import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Input from '../../components/shared/Input/Input'
 import Button from '../../components/shared/Button/Button'
@@ -8,21 +8,20 @@ import styles from './Login.module.css'
 
 const Login: React.FC = () => {
   const navigate = useNavigate()
+  const { login, loginWithPhone, loginWithGoogle, isAuthenticated, isLoading } = useAuth()
   const { success, error: showError } = useToast()
 
   const [formData, setFormData] = useState({
     emailOrPhone: '',
     password: '',
   })
-  const [errors, setErrors] = useState<{ emailOrPhone?: string; password?: string }>({})
-  const [isLoading, setIsLoading] = useState(false)
 
-  // Redirect if already logged in
+  const [errors, setErrors] = useState<{ emailOrPhone?: string; password?: string }>({})
+
+  // Redirect if already authenticated
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate('/home')
-    })
-  }, [navigate])
+    if (isAuthenticated) navigate('/home')
+  }, [isAuthenticated, navigate])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -34,17 +33,15 @@ const Login: React.FC = () => {
   const validateForm = () => {
     const newErrors: { emailOrPhone?: string; password?: string } = {}
 
-    if (!formData.emailOrPhone) {
-      newErrors.emailOrPhone = 'Email or phone is required'
-    } else if (
+    if (!formData.emailOrPhone) newErrors.emailOrPhone = 'Email or phone is required'
+    else if (
       !/\S+@\S+\.\S+/.test(formData.emailOrPhone) &&
       !/^\+\d{10,15}$/.test(formData.emailOrPhone)
     ) {
-      newErrors.emailOrPhone = 'Enter a valid email or phone number (with +countrycode)'
+      newErrors.emailOrPhone = 'Enter a valid email or phone (+countrycode)'
     }
 
-    if (!formData.password && !/^\+\d{10,15}$/.test(formData.emailOrPhone)) {
-      // Password only required if email login
+    if (!/^\+\d{10,15}$/.test(formData.emailOrPhone) && !formData.password) {
       newErrors.password = 'Password is required for email login'
     }
 
@@ -56,46 +53,27 @@ const Login: React.FC = () => {
     e.preventDefault()
     if (!validateForm()) return
 
-    setIsLoading(true)
     try {
-      let data, error
       if (/^\+\d{10,15}$/.test(formData.emailOrPhone)) {
-        // Phone login via OTP
-        ;({ data, error } = await supabase.auth.signInWithOtp({
-          phone: formData.emailOrPhone,
-        }))
-        if (error) throw error
-        success('OTP sent to your phone. Check your messages!')
+        await loginWithPhone(formData.emailOrPhone)
+        success('OTP sent to your phone!')
       } else {
-        // Email/password login
-        ;({ data, error } = await supabase.auth.signInWithPassword({
-          email: formData.emailOrPhone,
-          password: formData.password,
-        }))
-        if (error) throw error
-        success('Welcome back! You have successfully logged in.')
-        navigate('/home')
+        await login(formData.emailOrPhone, formData.password)
+        success('Logged in successfully!')
       }
     } catch (err) {
       console.error(err)
-      showError('Login failed. Please check your credentials and try again.')
-    } finally {
-      setIsLoading(false)
+      showError('Login failed. Check your credentials or try again.')
     }
   }
 
   const handleGoogleLogin = async () => {
     try {
-      setIsLoading(true)
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-      })
-      if (error) throw error
+      await loginWithGoogle()
+      success('Redirecting to Google login...')
     } catch (err) {
       console.error(err)
       showError('Google login failed. Please try again.')
-    } finally {
-      setIsLoading(false)
     }
   }
 

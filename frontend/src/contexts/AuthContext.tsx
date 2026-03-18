@@ -1,21 +1,27 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { api } from '../utils/api'
+import { supabase } from '../lib/supabaseClient'
 
 interface User {
   id: string
-  email: string
+  email: string | null
   firstName: string
   lastName: string
+  phoneNumber?: string
   avatar?: string
+  isAdmin?: boolean
+  creditBalance?: number
 }
 
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<void>
-  logout: () => void
-  register: (userData: RegisterData) => Promise<void>
   isLoading: boolean
+  login: (email: string, password: string) => Promise<void>
+  loginWithPhone: (phone: string) => Promise<void>
+  loginWithGoogle: () => Promise<void>
+  register: (userData: RegisterData) => Promise<void>
+  logout: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 interface RegisterData {
@@ -29,9 +35,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider')
   return context
 }
 
@@ -43,82 +47,132 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Check for existing session on mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem('arka_user')
-    const storedToken = localStorage.getItem('arka_token')
-    if (storedUser && storedToken) {
-      try {
-        setUser(JSON.parse(storedUser))
-      } catch (error) {
-        console.error('Error parsing stored user:', error)
-        localStorage.removeItem('arka_user')
-        localStorage.removeItem('arka_token')
-      }
+  // Fetch current user from Supabase
+  const fetchUser = async () => {
+    const session = await supabase.auth.getSession()
+    if (!session.data.session) {
+      setUser(null)
+      setIsLoading(false)
+      return
+    }
+
+    const supabaseUser = session.data.session.user
+
+    const { data, error } = await supabase
+      .from<User>('users')
+      .select('*')
+      .eq('id', supabaseUser.id)
+      .single()
+
+    if (error) {
+      console.error('Error fetching user:', error)
+      setUser(null)
+    } else {
+      setUser(data)
     }
     setIsLoading(false)
+  }
+
+  useEffect(() => {
+    fetchUser()
+
+    // Listen to auth state changes
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      fetchUser()
+    })
+
+    return () => {
+      listener.subscription.unsubscribe()
+    }
   }, [])
 
+  // Email/password login
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      const response = await api.post<{
-        token: string
-        userId: string
-        email: string
-        firstName: string
-        lastName: string
-      }>('/api/v1/users/login', { email, password })
-      
-      const userData: User = {
-        id: response.userId,
-        email: response.email,
-        firstName: response.firstName,
-        lastName: response.lastName,
-      }
-      
-      setUser(userData)
-      localStorage.setItem('arka_user', JSON.stringify(userData))
-      localStorage.setItem('arka_token', response.token)
-    } catch (error) {
-      throw error
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw error
+      await fetchUser()
     } finally {
       setIsLoading(false)
     }
   }
 
-  const register = async (userData: RegisterData) => {
+  // Phone login (OTP)
+  const loginWithPhone = async (phone: string) => {
     setIsLoading(true)
     try {
-      const response = await api.post<{
-        token: string
-        userId: string
-        email: string
-        firstName: string
-        lastName: string
-      }>('/api/v1/users/register', userData)
-      
-      const newUser: User = {
-        id: response.userId,
-        email: response.email,
-        firstName: response.firstName,
-        lastName: response.lastName,
-      }
-      
-      setUser(newUser)
-      localStorage.setItem('arka_user', JSON.stringify(newUser))
-      localStorage.setItem('arka_token', response.token)
-    } catch (error) {
-      throw error
+      const { data, error } = await supabase.auth.signInWithOtp({ phone })
+      if (error) throw error
+      // OTP will be sent to phone; user verifies externally
     } finally {
       setIsLoading(false)
     }
   }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem('arka_user')
-    localStorage.removeItem('arka_token')
+  // Google login
+  const loginWithGoogle = async () => {
+    setIsLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' })
+      if (error) throw error
+      // Redirect handled by Supabase
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Signup (email/password)
+  const register = async ({ firstName, lastName, email, password }: RegisterData) => {
+    setIsLoading(true)
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { first_name: firstName, last_name: lastName },
+        },
+      })
+      if (error) throw error
+
+      // Insert user into 'users' table
+      if (data.user) {
+        const { error: insertError } = await supabase.from('users').insert([
+          {
+            id: data.user.id,
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            password_hash: password, // store hashed if using custom hashing
+            email_verified: false,
+            phone_verified: false,
+            credit_balance: 0,
+            is_admin: false,
+          },
+        ])
+        if (insertError) throw insertError
+      }
+
+      await fetchUser()
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const logout = async () => {
+    setIsLoading(true)
+    try {
+      await supabase.auth.signOut()
+      setUser(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const refreshUser = async () => {
+    setIsLoading(true)
+    await fetchUser()
+    setIsLoading(false)
   }
 
   return (
@@ -126,15 +180,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       value={{
         user,
         isAuthenticated: !!user,
-        login,
-        logout,
-        register,
         isLoading,
+        login,
+        loginWithPhone,
+        loginWithGoogle,
+        register,
+        logout,
+        refreshUser,
       }}
     >
       {children}
     </AuthContext.Provider>
   )
 }
-
-
