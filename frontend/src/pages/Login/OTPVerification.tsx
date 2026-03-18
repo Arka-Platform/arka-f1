@@ -26,12 +26,12 @@ const OTPVerification: React.FC = () => {
     try {
       // Supabase OTP verification
       const { error } = await fetch(
-        `${process.env.REACT_APP_SUPABASE_URL}/auth/v1/verify`,
+        `${process.env.VITE_SUPABASE_URL}/auth/v1/verify`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            apikey: process.env.REACT_APP_SUPABASE_ANON_KEY || '',
+            apikey: process.env.VITE_SUPABASE_ANON_KEY || '',
           },
           body: JSON.stringify({
             phone: phoneNumber,
