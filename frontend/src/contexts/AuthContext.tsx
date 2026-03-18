@@ -49,17 +49,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Fetch current user from Supabase
   const fetchUser = async () => {
-    const session = await supabase.auth.getSession()
-    if (!session.data.session) {
+    const sessionResponse = await supabase.auth.getSession()
+    const session = sessionResponse.data.session
+
+    if (!session) {
       setUser(null)
       setIsLoading(false)
       return
     }
 
-    const supabaseUser = session.data.session.user
+    const supabaseUser = session.user
 
     const { data, error } = await supabase
-      .from<User>('users')
+      .from('users')
       .select('*')
       .eq('id', supabaseUser.id)
       .single()
@@ -67,9 +69,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (error) {
       console.error('Error fetching user:', error)
       setUser(null)
-    } else {
-      setUser(data)
+    } else if (data) {
+      // Map snake_case DB fields to camelCase User interface
+      setUser({
+        id: data.id,
+        email: data.email,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        phoneNumber: data.phone_number,
+        avatar: data.avatar,
+        isAdmin: data.is_admin,
+        creditBalance: data.credit_balance,
+      })
     }
+
     setIsLoading(false)
   }
 
@@ -77,20 +90,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     fetchUser()
 
     // Listen to auth state changes
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+    const { subscription } = supabase.auth.onAuthStateChange(() => {
       fetchUser()
     })
 
-    return () => {
-      listener.subscription.unsubscribe()
-    }
+    return () => subscription.unsubscribe()
   }, [])
 
   // Email/password login
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      const { data: _data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
       await fetchUser()
     } finally {
@@ -102,9 +113,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const loginWithPhone = async (phone: string) => {
     setIsLoading(true)
     try {
-      const { data: _data, error } = await supabase.auth.signInWithOtp({ phone })
+      const { error } = await supabase.auth.signInWithOtp({ phone })
       if (error) throw error
-      // OTP will be sent to phone; user verifies externally
+      // OTP sent; verification occurs externally
     } finally {
       setIsLoading(false)
     }
@@ -135,7 +146,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       })
       if (error) throw error
 
-      // Insert user into 'users' table
+      // Insert into users table
       if (data.user) {
         const { error: insertError } = await supabase.from('users').insert([
           {
@@ -143,7 +154,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             email,
             first_name: firstName,
             last_name: lastName,
-            password_hash: password, // store hashed if using custom hashing
             email_verified: false,
             phone_verified: false,
             credit_balance: 0,

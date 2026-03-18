@@ -99,7 +99,7 @@ const Donation: React.FC = () => {
     if (user) {
       setDonorName(`${user.firstName} ${user.lastName}`)
       setDonorEmail(user.email || '')
-      setDonorPhone(user.donorPhone || '')
+      setDonorPhone(user.phoneNumber || '')
     }
   }, [user])
 
