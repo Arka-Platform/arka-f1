@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { supabase, Session } from '../lib/supabaseClient'
+import { supabase, } from '../lib/supabaseClient'
+import type { Session } from '@supabase/supabase-js'
 
 interface User {
   id: string
@@ -47,7 +48,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Fetch current user from Supabase
   const fetchUser = async () => {
     setIsLoading(true)
     try {
@@ -60,8 +60,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       const supabaseUser = session.user
-
-      // Map user_metadata safely
       const metadata = supabaseUser.user_metadata as Record<string, any> | undefined
 
       setUser({
@@ -85,13 +83,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     fetchUser()
 
-    // Listen to auth state changes
-    const listener = supabase.auth.onAuthStateChange((_event, _session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, _session) => {
       fetchUser()
     })
 
-    // Cleanup on unmount
-    return () => listener.subscription.unsubscribe()
+    return () => authListener.subscription.unsubscribe()
   }, [])
 
   const login = async (email: string, password: string) => {
