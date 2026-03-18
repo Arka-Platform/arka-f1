@@ -89,12 +89,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     fetchUser()
 
-    // Listen to auth state changes
-    const { subscription } = supabase.auth.onAuthStateChange(() => {
-      fetchUser()
-    })
+  // Listen to auth state changes
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    fetchUser()
+  })
 
-    return () => subscription.unsubscribe()
+  // Cleanup on unmount
+  return () => {
+    subscription.unsubscribe()
   }, [])
 
   // Email/password login
