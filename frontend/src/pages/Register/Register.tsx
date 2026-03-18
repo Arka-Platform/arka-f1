@@ -4,34 +4,34 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Input from '../../components/shared/Input/Input'
 import Button from '../../components/shared/Button/Button'
-import styles from './Register.module.css'
+import styles from './Signup.module.css'
 
-const Register: React.FC = () => {
+const Signup: React.FC = () => {
   const navigate = useNavigate()
-  const { register } = useAuth()
+  const { register, loginWithPhone, loginWithGoogle, isAuthenticated, isLoading } = useAuth()
   const { success, error: showError } = useToast()
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: '',
+    emailOrPhone: '',
     password: '',
-    confirmPassword: '',
   })
+
   const [errors, setErrors] = useState<{
     firstName?: string
     lastName?: string
-    email?: string
+    emailOrPhone?: string
     password?: string
-    confirmPassword?: string
   }>({})
-  const [isLoading, setIsLoading] = useState(false)
 
-  // Note: Do not auto-redirect authenticated users from Register;
-  // successful registration explicitly navigates to /preferences
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) navigate('/home')
+  }, [isAuthenticated, navigate])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
     if (errors[field as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }))
     }
@@ -40,30 +40,21 @@ const Register: React.FC = () => {
   const validateForm = () => {
     const newErrors: typeof errors = {}
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required'
+    if (!formData.firstName) newErrors.firstName = 'First name is required'
+    if (!formData.lastName) newErrors.lastName = 'Last name is required'
+
+    if (!formData.emailOrPhone) newErrors.emailOrPhone = 'Email or phone is required'
+    else if (
+      !/\S+@\S+\.\S+/.test(formData.emailOrPhone) &&
+      !/^\+\d{10,15}$/.test(formData.emailOrPhone)
+    ) {
+      newErrors.emailOrPhone = 'Enter a valid email or phone (+countrycode)'
     }
 
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required'
-    }
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required'
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid'
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password.length < 6) {
+    if (!/^\+\d{10,15}$/.test(formData.emailOrPhone) && !formData.password) {
+      newErrors.password = 'Password is required for email signup'
+    } else if (formData.password && formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters'
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
     }
 
     setErrors(newErrors)
@@ -74,95 +65,107 @@ const Register: React.FC = () => {
     e.preventDefault()
     if (!validateForm()) return
 
-    setIsLoading(true)
     try {
-      await register({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-      })
-      success('Account created successfully! Please set your preferences.')
-      navigate('/preferences')
+      if (/^\+\d{10,15}$/.test(formData.emailOrPhone)) {
+        await loginWithPhone(formData.emailOrPhone)
+        success('OTP sent to your phone!')
+      } else {
+        await register({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.emailOrPhone,
+          password: formData.password,
+        })
+        success('Account created successfully!')
+        navigate('/home')
+      }
     } catch (err) {
-      showError('Registration failed. Please try again.')
-    } finally {
-      setIsLoading(false)
+      console.error(err)
+      showError('Signup failed. Please try again.')
+    }
+  }
+
+  const handleGoogleSignup = async () => {
+    try {
+      await loginWithGoogle()
+      success('Redirecting to Google...')
+    } catch (err) {
+      console.error(err)
+      showError('Google signup failed.')
     }
   }
 
   return (
-    <div className={styles.register}>
+    <div className={styles.signup}>
       <div className={styles.container}>
-        <div className={styles.registerCard}>
-          <h1 className={styles.title}>Create Account</h1>
-          <p className={styles.subtitle}>Join Arka and start your sustainable reading journey.</p>
+        <div className={styles.signupCard}>
+          <h1 className={styles.title}>Sign Up</h1>
+          <p className={styles.subtitle}>Create your account to get started.</p>
 
           <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.nameRow}>
+            <Input
+              label="First Name"
+              type="text"
+              placeholder="Enter your first name"
+              value={formData.firstName}
+              onChange={(e) => handleInputChange('firstName', e.target.value)}
+              error={errors.firstName}
+              fullWidth
+              required
+            />
+
+            <Input
+              label="Last Name"
+              type="text"
+              placeholder="Enter your last name"
+              value={formData.lastName}
+              onChange={(e) => handleInputChange('lastName', e.target.value)}
+              error={errors.lastName}
+              fullWidth
+              required
+            />
+
+            <Input
+              label="Email or Phone (+countrycode)"
+              type="text"
+              placeholder="Enter your email or phone"
+              value={formData.emailOrPhone}
+              onChange={(e) => handleInputChange('emailOrPhone', e.target.value)}
+              error={errors.emailOrPhone}
+              fullWidth
+              required
+            />
+
+            {!/^\+\d{10,15}$/.test(formData.emailOrPhone) && (
               <Input
-                label="First Name"
-                placeholder="Enter your first name"
-                value={formData.firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
-                error={errors.firstName}
+                label="Password"
+                type="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                error={errors.password}
                 fullWidth
                 required
               />
-              <Input
-                label="Last Name"
-                placeholder="Enter your last name"
-                value={formData.lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
-                error={errors.lastName}
-                fullWidth
-                required
-              />
-            </div>
-
-            <Input
-              label="Email"
-              type="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              error={errors.email}
-              fullWidth
-              required
-            />
-
-            <Input
-              label="Password"
-              type="password"
-              placeholder="Create a password"
-              value={formData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
-              error={errors.password}
-              fullWidth
-              required
-            />
-
-            <Input
-              label="Confirm Password"
-              type="password"
-              placeholder="Confirm your password"
-              value={formData.confirmPassword}
-              onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-              error={errors.confirmPassword}
-              fullWidth
-              required
-            />
+            )}
 
             <Button type="submit" variant="primary" fullWidth loading={isLoading} disabled={isLoading}>
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? 'Signing up...' : 'Sign Up'}
             </Button>
 
             <div className={styles.divider}>
               <span>or</span>
             </div>
 
-            <Button type="button" variant="outline" fullWidth>
-              Continue with Google
+            <Button
+              type="button"
+              variant="outline"
+              fullWidth
+              onClick={handleGoogleSignup}
+              disabled={isLoading}
+              loading={isLoading}
+            >
+              {isLoading ? 'Redirecting...' : 'Continue with Google'}
             </Button>
 
             <p className={styles.loginText}>
@@ -178,5 +181,4 @@ const Register: React.FC = () => {
   )
 }
 
-export default Register
-
+export default Signup
