@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../lib/supabaseClient'
 import { useToast } from '../../contexts/ToastContext'
 import Input from '../../components/shared/Input/Input'
 import Button from '../../components/shared/Button/Button'
@@ -8,43 +8,44 @@ import styles from './Login.module.css'
 
 const Login: React.FC = () => {
   const navigate = useNavigate()
-  const { login, isAuthenticated } = useAuth()
   const { success, error: showError } = useToast()
+
   const [formData, setFormData] = useState({
-    email: '',
+    emailOrPhone: '',
     password: '',
   })
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [errors, setErrors] = useState<{ emailOrPhone?: string; password?: string }>({})
   const [isLoading, setIsLoading] = useState(false)
 
-  // Redirect if already authenticated
-  React.useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/home')
-    }
-  }, [isAuthenticated, navigate])
+  // Redirect if already logged in
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) navigate('/home')
+    })
+  }, [navigate])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
     if (errors[field as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }))
     }
   }
 
   const validateForm = () => {
-    const newErrors: { email?: string; password?: string } = {}
+    const newErrors: { emailOrPhone?: string; password?: string } = {}
 
-    if (!formData.email) {
-      newErrors.email = 'Email is required'
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid'
+    if (!formData.emailOrPhone) {
+      newErrors.emailOrPhone = 'Email or phone is required'
+    } else if (
+      !/\S+@\S+\.\S+/.test(formData.emailOrPhone) &&
+      !/^\+\d{10,15}$/.test(formData.emailOrPhone)
+    ) {
+      newErrors.emailOrPhone = 'Enter a valid email or phone number (with +countrycode)'
     }
 
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
+    if (!formData.password && !/^\+\d{10,15}$/.test(formData.emailOrPhone)) {
+      // Password only required if email login
+      newErrors.password = 'Password is required for email login'
     }
 
     setErrors(newErrors)
@@ -57,11 +58,42 @@ const Login: React.FC = () => {
 
     setIsLoading(true)
     try {
-      await login(formData.email, formData.password)
-      success('Welcome back! You have successfully logged in.')
-      navigate('/home')
+      let data, error
+      if (/^\+\d{10,15}$/.test(formData.emailOrPhone)) {
+        // Phone login via OTP
+        ;({ data, error } = await supabase.auth.signInWithOtp({
+          phone: formData.emailOrPhone,
+        }))
+        if (error) throw error
+        success('OTP sent to your phone. Check your messages!')
+      } else {
+        // Email/password login
+        ;({ data, error } = await supabase.auth.signInWithPassword({
+          email: formData.emailOrPhone,
+          password: formData.password,
+        }))
+        if (error) throw error
+        success('Welcome back! You have successfully logged in.')
+        navigate('/home')
+      }
     } catch (err) {
+      console.error(err)
       showError('Login failed. Please check your credentials and try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true)
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      })
+      if (error) throw error
+    } catch (err) {
+      console.error(err)
+      showError('Google login failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -76,26 +108,28 @@ const Login: React.FC = () => {
 
           <form onSubmit={handleSubmit} className={styles.form}>
             <Input
-              label="Email"
-              type="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              error={errors.email}
+              label="Email or Phone (+countrycode)"
+              type="text"
+              placeholder="Enter your email or phone"
+              value={formData.emailOrPhone}
+              onChange={(e) => handleInputChange('emailOrPhone', e.target.value)}
+              error={errors.emailOrPhone}
               fullWidth
               required
             />
 
-            <Input
-              label="Password"
-              type="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
-              error={errors.password}
-              fullWidth
-              required
-            />
+            {!/^\+\d{10,15}$/.test(formData.emailOrPhone) && (
+              <Input
+                label="Password"
+                type="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                error={errors.password}
+                fullWidth
+                required
+              />
+            )}
 
             <div className={styles.forgotPassword}>
               <Link to="/forgot-password" className={styles.forgotLink}>
@@ -111,8 +145,15 @@ const Login: React.FC = () => {
               <span>or</span>
             </div>
 
-            <Button type="button" variant="outline" fullWidth>
-              Continue with Google
+            <Button
+              type="button"
+              variant="outline"
+              fullWidth
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              loading={isLoading}
+            >
+              {isLoading ? 'Redirecting...' : 'Continue with Google'}
             </Button>
 
             <p className={styles.signupText}>
@@ -129,4 +170,3 @@ const Login: React.FC = () => {
 }
 
 export default Login
-
