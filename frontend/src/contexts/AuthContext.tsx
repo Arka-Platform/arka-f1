@@ -97,6 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Cleanup on unmount
   return () => {
     subscription.unsubscribe()
+  }
   }, [])
 
   // Email/password login
