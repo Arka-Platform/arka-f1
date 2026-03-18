@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { supabase } from '../lib/supabaseClient'
+import { supabase, Session } from '../lib/supabaseClient'
 
 interface User {
   id: string
   email: string | null
   firstName: string
   lastName: string
-  phoneNumber?: string
-  avatar?: string
+  phoneNumber?: string | null
+  avatar?: string | null
   isAdmin?: boolean
   creditBalance?: number
 }
@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true)
     try {
       const { data: sessionData } = await supabase.auth.getSession()
-      const session = sessionData.session
+      const session: Session | null = sessionData.session ?? null
 
       if (!session) {
         setUser(null)
@@ -61,18 +61,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       const supabaseUser = session.user
 
-      // Map user_metadata from Supabase Auth
-      const metadata = supabaseUser.user_metadata as any
+      // Map user_metadata safely
+      const metadata = supabaseUser.user_metadata as Record<string, any> | undefined
 
       setUser({
         id: supabaseUser.id,
-        email: supabaseUser.email,
-        firstName: metadata?.first_name || '',
-        lastName: metadata?.last_name || '',
-        phoneNumber: supabaseUser.phone,
-        avatar: supabaseUser.user_metadata?.avatar || '',
-        isAdmin: supabaseUser.user_metadata?.is_admin || false,
-        creditBalance: supabaseUser.user_metadata?.credit_balance || 0,
+        email: supabaseUser.email ?? null,
+        firstName: metadata?.first_name ?? '',
+        lastName: metadata?.last_name ?? '',
+        phoneNumber: supabaseUser.phone ?? null,
+        avatar: metadata?.avatar ?? null,
+        isAdmin: metadata?.is_admin ?? false,
+        creditBalance: metadata?.credit_balance ?? 0,
       })
     } catch (err) {
       console.error('Error fetching user:', err)
@@ -86,15 +86,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     fetchUser()
 
     // Listen to auth state changes
-    const { subscription } = supabase.auth.onAuthStateChange(() => {
+    const listener = supabase.auth.onAuthStateChange((_event, _session) => {
       fetchUser()
     })
 
     // Cleanup on unmount
-    return () => subscription.unsubscribe()
+    return () => listener.subscription.unsubscribe()
   }, [])
 
-  // Email/password login
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
@@ -106,35 +105,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
-  // Phone login (OTP)
   const loginWithPhone = async (phone: string) => {
     setIsLoading(true)
     try {
       const { error } = await supabase.auth.signInWithOtp({ phone })
       if (error) throw error
-      // OTP sent; verification occurs externally
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Google login
   const loginWithGoogle = async () => {
     setIsLoading(true)
     try {
       const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' })
       if (error) throw error
-      // Redirect handled by Supabase
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Signup (email/password) — safe version using only Auth
   const register = async ({ firstName, lastName, email, password }: RegisterData) => {
     setIsLoading(true)
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -142,15 +136,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         },
       })
       if (error) throw error
-
-      // Don't manually insert into "users" table to avoid infinite recursion
       await fetchUser()
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Logout
   const logout = async () => {
     setIsLoading(true)
     try {
@@ -161,7 +152,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
-  // Refresh user
   const refreshUser = async () => {
     setIsLoading(true)
     await fetchUser()
