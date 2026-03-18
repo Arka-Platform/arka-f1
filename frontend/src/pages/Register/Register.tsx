@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Input from '../../components/shared/Input/Input'
 import Button from '../../components/shared/Button/Button'
-import styles from './Signup.module.css'
+import styles from './Register.module.css'
 
 const Signup: React.FC = () => {
   const navigate = useNavigate()
