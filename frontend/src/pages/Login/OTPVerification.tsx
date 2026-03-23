@@ -9,16 +9,21 @@ import styles from './Login.module.css'
 const OTPVerification: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { verifyPhoneOtp } = useAuth()
+  const { verifyPhoneOtp, verifyEmailOtp } = useAuth()
   const { success, error: showError } = useToast()
-  const phoneNumber = (location.state as { phoneNumber: string })?.phoneNumber || ''
+  const otpContext =
+    (location.state as { channel?: 'phone' | 'email'; value?: string } | null) ?? null
+  const channel = otpContext?.channel
+  const value = otpContext?.value ?? ''
+  const isPhone = channel === 'phone'
+  const isEmail = channel === 'email'
 
   const [otp, setOtp] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
   const handleVerify = async () => {
-    if (!phoneNumber) {
-      showError('Phone number missing. Please try again.')
+    if (!isPhone && !isEmail) {
+      showError('OTP context missing. Please try again.')
       navigate('/login', { replace: true })
       return
     }
@@ -30,8 +35,13 @@ const OTPVerification: React.FC = () => {
 
     setIsLoading(true)
     try {
-      await verifyPhoneOtp(phoneNumber, otp)
-      success('Phone verified successfully!')
+      if (isPhone) {
+        await verifyPhoneOtp(value, otp)
+        success('Phone verified successfully!')
+      } else {
+        await verifyEmailOtp(value, otp)
+        success('Email verified successfully!')
+      }
       navigate('/home')
     } catch (err: unknown) {
       console.error(err)
@@ -48,7 +58,7 @@ const OTPVerification: React.FC = () => {
         <div className={styles.loginCard}>
           <h1 className={styles.title}>Verify OTP</h1>
           <p className={styles.subtitle}>
-            Enter the OTP sent to <strong>{phoneNumber}</strong>
+            Enter the OTP sent to <strong>{value}</strong>
           </p>
 
           <div className={styles.form}>

@@ -9,7 +9,7 @@ import styles from './Login.module.css'
 const Login: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { login, loginWithPhone, loginWithGoogle, isAuthenticated, isLoading } = useAuth()
+  const { login, loginWithPhone, loginWithEmailOtp, loginWithGoogle, isAuthenticated, isLoading } = useAuth()
   const { success, error: showError } = useToast()
 
   const [formData, setFormData] = useState({
@@ -48,10 +48,6 @@ const Login: React.FC = () => {
       newErrors.emailOrPhone = 'Enter a valid email or phone (+countrycode)'
     }
 
-    if (!/^\+\d{10,15}$/.test(formData.emailOrPhone) && !formData.password) {
-      newErrors.password = 'Password is required for email login'
-    }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -65,11 +61,19 @@ const Login: React.FC = () => {
         await loginWithPhone(formData.emailOrPhone)
         success('OTP sent to your phone!')
         navigate('/otp-verification', {
-          state: { phoneNumber: formData.emailOrPhone },
+          state: { channel: 'phone', value: formData.emailOrPhone },
         })
       } else {
-        await login(formData.emailOrPhone, formData.password)
-        success('Logged in successfully!')
+        if (formData.password.trim()) {
+          await login(formData.emailOrPhone, formData.password)
+          success('Logged in successfully!')
+        } else {
+          await loginWithEmailOtp(formData.emailOrPhone)
+          success('OTP sent to your email. Please check your inbox.')
+          navigate('/otp-verification', {
+            state: { channel: 'email', value: formData.emailOrPhone },
+          })
+        }
       }
     } catch (err) {
       console.error(err)
@@ -109,14 +113,13 @@ const Login: React.FC = () => {
 
             {!/^\+\d{10,15}$/.test(formData.emailOrPhone) && (
               <Input
-                label="Password"
+                label="Password (optional for email OTP login)"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="Enter password or leave blank to use email OTP"
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 error={errors.password}
                 fullWidth
-                required
               />
             )}
 

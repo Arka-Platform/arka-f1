@@ -22,6 +22,7 @@ interface AuthContextType {
   loginWithPhone: (phone: string) => Promise<void>
   loginWithEmailOtp: (email: string, firstName?: string, lastName?: string) => Promise<void>
   verifyPhoneOtp: (phone: string, token: string) => Promise<void>
+  verifyEmailOtp: (email: string, token: string) => Promise<void>
   loginWithGoogle: () => Promise<void>
   register: (userData: RegisterData) => Promise<void>
   logout: () => Promise<void>
@@ -205,6 +206,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
+  const verifyEmailOtp = async (email: string, token: string) => {
+    setIsLoading(true)
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email',
+      })
+      if (error) throw error
+      await fetchUser()
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const loginWithGoogle = async () => {
     if (googleOauthInFlightRef.current) return
     setIsLoading(true)
@@ -282,6 +298,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         loginWithPhone,
         loginWithEmailOtp,
         verifyPhoneOtp,
+        verifyEmailOtp,
         loginWithGoogle,
         register,
         logout,

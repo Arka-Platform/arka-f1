@@ -81,7 +81,7 @@ const Signup: React.FC = () => {
         await loginWithPhone(formData.emailOrPhone)
         success('OTP sent to your phone!')
         navigate('/otp-verification', {
-          state: { phoneNumber: formData.emailOrPhone },
+          state: { channel: 'phone', value: formData.emailOrPhone },
         })
       } else {
         if (formData.password.trim()) {
@@ -96,9 +96,8 @@ const Signup: React.FC = () => {
         } else {
           await loginWithEmailOtp(formData.emailOrPhone, formData.firstName, formData.lastName)
           success('OTP sent to your email. Please check your inbox.')
-          navigate('/login', {
-            replace: true,
-            state: { prefillEmailOrPhone: formData.emailOrPhone },
+          navigate('/otp-verification', {
+            state: { channel: 'email', value: formData.emailOrPhone },
           })
         }
       }
