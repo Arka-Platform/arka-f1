@@ -15,6 +15,7 @@ import ContactUs from './pages/ContactUs/ContactUs'
 import Login from './pages/Login/Login'
 import Register from './pages/Register/Register'
 import OAuthCallback from './pages/Login/OAuthCallback'
+import OTPVerification from './pages/Login/OTPVerification'
 import Preferences from './pages/Preferences/Preferences'
 import Account from './pages/Account/Account'
 import OrderHistory from './pages/OrderHistory/OrderHistory'
@@ -53,6 +54,7 @@ function AppContent() {
           <Route path="/contact" element={<ContactUs />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/otp-verification" element={<OTPVerification />} />
             <Route path="/auth/callback" element={<OAuthCallback />} />
             <Route path="/preferences" element={<Preferences />} />
             <Route path="/account" element={<Account />} />

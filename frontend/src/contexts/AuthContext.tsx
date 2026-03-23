@@ -20,6 +20,7 @@ interface AuthContextType {
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   loginWithPhone: (phone: string) => Promise<void>
+  verifyPhoneOtp: (phone: string, token: string) => Promise<void>
   loginWithGoogle: () => Promise<void>
   register: (userData: RegisterData) => Promise<void>
   logout: () => Promise<void>
@@ -169,6 +170,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
+  const verifyPhoneOtp = async (phone: string, token: string) => {
+    setIsLoading(true)
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        phone,
+        token,
+        type: 'sms',
+      })
+      if (error) throw error
+      await fetchUser()
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const loginWithGoogle = async () => {
     if (googleOauthInFlightRef.current) return
     setIsLoading(true)
@@ -244,6 +260,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isLoading,
         login,
         loginWithPhone,
+        verifyPhoneOtp,
         loginWithGoogle,
         register,
         logout,

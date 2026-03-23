@@ -6,6 +6,19 @@ import Input from '../../components/shared/Input/Input'
 import Button from '../../components/shared/Button/Button'
 import styles from './Register.module.css'
 
+function isExistingAccountError(err: unknown): boolean {
+  const code = typeof err === 'object' && err !== null && 'code' in err ? String((err as any).code) : ''
+  const message =
+    typeof err === 'object' && err !== null && 'message' in err ? String((err as any).message).toLowerCase() : ''
+
+  return (
+    code === 'user_already_exists' ||
+    message.includes('already registered') ||
+    message.includes('already exists') ||
+    message.includes('user already')
+  )
+}
+
 const Signup: React.FC = () => {
   const navigate = useNavigate()
   const { register, loginWithPhone, loginWithGoogle, isAuthenticated, isLoading } = useAuth()
@@ -69,6 +82,9 @@ const Signup: React.FC = () => {
       if (/^\+\d{10,15}$/.test(formData.emailOrPhone)) {
         await loginWithPhone(formData.emailOrPhone)
         success('OTP sent to your phone!')
+        navigate('/otp-verification', {
+          state: { phoneNumber: formData.emailOrPhone },
+        })
       } else {
         await register({
           firstName: formData.firstName,
@@ -81,6 +97,14 @@ const Signup: React.FC = () => {
       }
     } catch (err) {
       console.error(err)
+      if (isExistingAccountError(err)) {
+        showError('Account already exists. Please log in.')
+        navigate('/login', {
+          replace: true,
+          state: { prefillEmailOrPhone: formData.emailOrPhone },
+        })
+        return
+      }
       showError('Signup failed. Please try again.')
     }
   }

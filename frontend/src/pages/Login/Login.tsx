@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Input from '../../components/shared/Input/Input'
@@ -7,6 +7,7 @@ import Button from '../../components/shared/Button/Button'
 import styles from './Login.module.css'
 
 const Login: React.FC = () => {
+  const location = useLocation()
   const navigate = useNavigate()
   const { login, loginWithPhone, loginWithGoogle, isAuthenticated, isLoading } = useAuth()
   const { success, error: showError } = useToast()
@@ -22,6 +23,12 @@ const Login: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated) navigate('/home')
   }, [isAuthenticated, navigate])
+
+  useEffect(() => {
+    const prefill = (location.state as { prefillEmailOrPhone?: string } | null)?.prefillEmailOrPhone
+    if (!prefill) return
+    setFormData((prev) => ({ ...prev, emailOrPhone: prefill }))
+  }, [location.state])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -57,6 +64,9 @@ const Login: React.FC = () => {
       if (/^\+\d{10,15}$/.test(formData.emailOrPhone)) {
         await loginWithPhone(formData.emailOrPhone)
         success('OTP sent to your phone!')
+        navigate('/otp-verification', {
+          state: { phoneNumber: formData.emailOrPhone },
+        })
       } else {
         await login(formData.emailOrPhone, formData.password)
         success('Logged in successfully!')

@@ -9,7 +9,7 @@ import styles from './Login.module.css'
 const OTPVerification: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { refreshUser } = useAuth()
+  const { verifyPhoneOtp } = useAuth()
   const { success, error: showError } = useToast()
   const phoneNumber = (location.state as { phoneNumber: string })?.phoneNumber || ''
 
@@ -17,6 +17,12 @@ const OTPVerification: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleVerify = async () => {
+    if (!phoneNumber) {
+      showError('Phone number missing. Please try again.')
+      navigate('/login', { replace: true })
+      return
+    }
+
     if (!otp) {
       showError('Please enter the OTP')
       return
@@ -24,30 +30,13 @@ const OTPVerification: React.FC = () => {
 
     setIsLoading(true)
     try {
-      // Supabase OTP verification
-      const { error } = await fetch(
-        `${process.env.VITE_SUPABASE_URL}/auth/v1/verify`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: process.env.VITE_SUPABASE_ANON_KEY || '',
-          },
-          body: JSON.stringify({
-            phone: phoneNumber,
-            token: otp,
-          }),
-        }
-      ).then((res) => res.json())
-
-      if (error) throw new Error(error.message || 'OTP verification failed')
-
+      await verifyPhoneOtp(phoneNumber, otp)
       success('Phone verified successfully!')
-      await refreshUser()
       navigate('/home')
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      showError(err.message || 'Failed to verify OTP')
+      const message = err instanceof Error ? err.message : 'Failed to verify OTP'
+      showError(message)
     } finally {
       setIsLoading(false)
     }
