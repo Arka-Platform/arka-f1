@@ -41,6 +41,18 @@ export async function syncSupabasePublicUser(user: SupabaseUserLike | null | und
   const userId = user.id ?? null
   if (!userId) return
 
+  // Prefer server-side idempotent bootstrap first (works with strict RLS).
+  try {
+    const { error: ensureError } = await supabase.rpc('ensure_user_profile')
+    if (ensureError) {
+      // eslint-disable-next-line no-console
+      console.warn('[supabaseProfileSync] ensure_user_profile rpc failed; continuing', { userId, ensureError })
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('[supabaseProfileSync] ensure_user_profile rpc threw; continuing', { userId, err })
+  }
+
   const email = user.email ?? null
   const phone = user.phone ?? null
   const metadata = toRecord(user.user_metadata)
