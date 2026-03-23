@@ -9,7 +9,7 @@ const Home: React.FC = () => {
   const [searchText, setSearchText] = useState('')
 
   const handleBookSelect = (book: BookResponse) => {
-    navigate(`/books?q=${encodeURIComponent(book.title)}`)
+    navigate(`/books?search=${encodeURIComponent(book.title)}`)
   }
 
   const quickActions = [

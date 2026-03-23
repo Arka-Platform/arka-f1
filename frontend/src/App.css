@@ -2,4 +2,56 @@
   width: 100%;
 }
 
+:root {
+  --vibe-bg: #f5efe4;
+  --vibe-surface: #fdf8ed;
+  --vibe-surface-strong: #fff8e8;
+  --vibe-border: #d6c3a0;
+  --vibe-text: #2f2418;
+  --vibe-muted: #6f5a42;
+  --vibe-accent-start: #7a4a2f;
+  --vibe-accent-end: #5a2f1c;
+}
+
+.vibePage {
+  min-height: calc(100vh - 80px);
+  background:
+    radial-gradient(circle at 10% 10%, rgba(122, 74, 47, 0.08), transparent 32%),
+    radial-gradient(circle at 85% 0%, rgba(90, 47, 28, 0.1), transparent 36%),
+    var(--vibe-bg);
+}
+
+.vibeContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.vibeQuickLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.vibeQuickLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--vibe-border);
+  color: var(--vibe-text);
+  background: var(--vibe-surface-strong);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vibeQuickLink:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(71, 46, 27, 0.12);
+}
+
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import BookCard, { Book } from '../../components/shared/BookCard/BookCard'
@@ -717,7 +717,16 @@ const BooksMarketplace: React.FC = () => {
   }
 
   return (
-    <div className={styles.marketplace}>
+    <div className={`${styles.marketplace} vibePage`}>
+      <div className="vibeContainer">
+        <div className="vibeQuickLinks">
+          <Link to="/home" className="vibeQuickLink">Home</Link>
+          <Link to="/exchange" className="vibeQuickLink">Swap Books</Link>
+          <Link to="/wishlist" className="vibeQuickLink">Wishlist</Link>
+          <Link to="/bookshelf" className="vibeQuickLink">My Library</Link>
+          <Link to="/requests" className="vibeQuickLink">Requests</Link>
+        </div>
+      </div>
       {/* Pick Your Next Read - Search Bar Feature */}
       {!showMatchSelection && (
         <>

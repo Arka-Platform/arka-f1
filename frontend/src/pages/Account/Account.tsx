@@ -165,7 +165,7 @@ const Account: React.FC = () => {
 
   if (loading) {
     return (
-      <div className={styles.account}>
+      <div className={`${styles.account} vibePage`}>
         <div className={styles.container}>
           <div className={styles.loading}>Loading account...</div>
         </div>
@@ -176,8 +176,15 @@ const Account: React.FC = () => {
   // If user is not authenticated, show message
   if (!user) {
     return (
-      <div className={styles.account}>
+      <div className={`${styles.account} vibePage`}>
         <div className={styles.container}>
+          <div className="vibeQuickLinks">
+            <Link to="/home" className="vibeQuickLink">Home</Link>
+            <Link to="/books" className="vibeQuickLink">Nearby Finds</Link>
+            <Link to="/exchange" className="vibeQuickLink">Swap Books</Link>
+            <Link to="/wishlist" className="vibeQuickLink">Wishlist</Link>
+            <Link to="/bookshelf" className="vibeQuickLink">My Library</Link>
+          </div>
           <div className={styles.authPrompt}>
             <p>Please log in to view your account.</p>
             <Link to="/login" className={styles.loginButton}>Log In</Link>
@@ -188,8 +195,15 @@ const Account: React.FC = () => {
   }
 
   return (
-    <div className={styles.account}>
+    <div className={`${styles.account} vibePage`}>
       <div className={styles.container}>
+        <div className="vibeQuickLinks">
+          <Link to="/home" className="vibeQuickLink">Home</Link>
+          <Link to="/books" className="vibeQuickLink">Nearby Finds</Link>
+          <Link to="/exchange" className="vibeQuickLink">Swap Books</Link>
+          <Link to="/wishlist" className="vibeQuickLink">Wishlist</Link>
+          <Link to="/bookshelf" className="vibeQuickLink">My Library</Link>
+        </div>
         <h1 className={styles.pageTitle}>My Account</h1>
 
         <div className={styles.content}>

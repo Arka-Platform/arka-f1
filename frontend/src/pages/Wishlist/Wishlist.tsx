@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { wishlistApi, WishlistItemResponse } from '../../utils/api'
@@ -50,7 +51,13 @@ const Wishlist: React.FC = () => {
 
   if (!user) {
     return (
-      <div className={styles.wishlist}>
+      <div className={`${styles.wishlist} vibePage`}>
+        <div className="vibeQuickLinks">
+          <Link to="/home" className="vibeQuickLink">Home</Link>
+          <Link to="/books" className="vibeQuickLink">Nearby Finds</Link>
+          <Link to="/exchange" className="vibeQuickLink">Swap Books</Link>
+          <Link to="/bookshelf" className="vibeQuickLink">My Library</Link>
+        </div>
         <div className={styles.authPrompt}>
           <h2>Please log in to view your wishlist</h2>
           <p>Sign in to save books you want to read later.</p>
@@ -60,7 +67,13 @@ const Wishlist: React.FC = () => {
   }
 
   return (
-    <div className={styles.wishlist}>
+    <div className={`${styles.wishlist} vibePage`}>
+      <div className="vibeQuickLinks">
+        <Link to="/home" className="vibeQuickLink">Home</Link>
+        <Link to="/books" className="vibeQuickLink">Nearby Finds</Link>
+        <Link to="/exchange" className="vibeQuickLink">Swap Books</Link>
+        <Link to="/bookshelf" className="vibeQuickLink">My Library</Link>
+      </div>
       <div className={styles.header}>
         <h1 className={styles.title}>My Wishlist</h1>
         <p className={styles.subtitle}>
