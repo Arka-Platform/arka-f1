@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
+import { getOtpCooldownRemainingSeconds, markOtpSentNow } from '../../utils/otpRateLimit'
 import Input from '../../components/shared/Input/Input'
 import Button from '../../components/shared/Button/Button'
 import styles from './Login.module.css'
@@ -60,12 +61,20 @@ const OTPVerification: React.FC = () => {
       return
     }
 
+    const waitSeconds = getOtpCooldownRemainingSeconds(isPhone ? 'phone' : 'email', value)
+    if (waitSeconds > 0) {
+      showError(`Please wait ${waitSeconds}s before requesting another OTP.`)
+      return
+    }
+
     setIsResending(true)
     try {
       if (isPhone) {
         await loginWithPhone(value)
+        markOtpSentNow('phone', value)
       } else {
         await loginWithEmailOtp(value, { mode: 'signin' })
+        markOtpSentNow('email', value)
       }
       success('OTP sent again.')
     } catch (err: unknown) {

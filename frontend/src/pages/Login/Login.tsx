@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
+import { getOtpCooldownRemainingSeconds, markOtpSentNow } from '../../utils/otpRateLimit'
 import Input from '../../components/shared/Input/Input'
 import Button from '../../components/shared/Button/Button'
 import styles from './Login.module.css'
@@ -18,6 +19,11 @@ const Login: React.FC = () => {
   })
 
   const [errors, setErrors] = useState<{ emailOrPhone?: string; password?: string }>({})
+
+  const isRateLimitError = (err: unknown) => {
+    const message = err instanceof Error ? err.message.toLowerCase() : ''
+    return message.includes('rate limit')
+  }
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -58,7 +64,13 @@ const Login: React.FC = () => {
 
     try {
       if (/^\+\d{10,15}$/.test(formData.emailOrPhone)) {
+        const waitSeconds = getOtpCooldownRemainingSeconds('phone', formData.emailOrPhone)
+        if (waitSeconds > 0) {
+          showError(`Please wait ${waitSeconds}s before requesting another OTP.`)
+          return
+        }
         await loginWithPhone(formData.emailOrPhone)
+        markOtpSentNow('phone', formData.emailOrPhone)
         success('OTP sent to your phone!')
         navigate('/otp-verification', {
           state: { channel: 'phone', value: formData.emailOrPhone },
@@ -68,7 +80,13 @@ const Login: React.FC = () => {
           await login(formData.emailOrPhone, formData.password)
           success('Logged in successfully!')
         } else {
+          const waitSeconds = getOtpCooldownRemainingSeconds('email', formData.emailOrPhone)
+          if (waitSeconds > 0) {
+            showError(`Please wait ${waitSeconds}s before requesting another OTP.`)
+            return
+          }
           await loginWithEmailOtp(formData.emailOrPhone, { mode: 'signin' })
+          markOtpSentNow('email', formData.emailOrPhone)
           success('OTP sent to your email. Please check your inbox.')
           navigate('/otp-verification', {
             state: { channel: 'email', value: formData.emailOrPhone },
@@ -77,6 +95,10 @@ const Login: React.FC = () => {
       }
     } catch (err) {
       console.error(err)
+      if (isRateLimitError(err)) {
+        showError('Too many OTP requests. Please wait a minute and try again.')
+        return
+      }
       showError('Login failed. Check your credentials or try again.')
     }
   }
