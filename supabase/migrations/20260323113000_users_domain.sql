@@ -107,9 +107,13 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+    v_email TEXT;
 BEGIN
+    v_email := COALESCE(NEW.email, CONCAT(NEW.id::text, '@placeholder.local'));
+
     INSERT INTO public.users (id, email, created_at, updated_at)
-    VALUES (NEW.id, NEW.email, COALESCE(NEW.created_at, NOW()), NOW())
+    VALUES (NEW.id, v_email, COALESCE(NEW.created_at, NOW()), NOW())
     ON CONFLICT (id) DO NOTHING;
     RETURN NEW;
 END;
@@ -120,8 +124,8 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP TRIGGER IF EXISTS on_auth_user_updated ON auth.users;
 DROP TRIGGER IF EXISTS on_auth_user_mirrored ON auth.users;
 
-CREATE TRIGGER on_auth_user_created
-AFTER INSERT ON auth.users
+CREATE TRIGGER on_auth_user_mirrored
+AFTER INSERT OR UPDATE OF email ON auth.users
 FOR EACH ROW
 EXECUTE FUNCTION public.handle_auth_user_mirror();
 
@@ -140,7 +144,7 @@ BEGIN
     END IF;
 
     INSERT INTO public.users (id, email)
-    SELECT au.id, au.email
+    SELECT au.id, COALESCE(au.email, CONCAT(au.id::text, '@placeholder.local'))
     FROM auth.users au
     WHERE au.id = v_uid
     ON CONFLICT (id) DO NOTHING;
@@ -206,6 +210,6 @@ BEGIN
 END $$;
 
 INSERT INTO public.users (id, email, created_at, updated_at)
-SELECT au.id, au.email, COALESCE(au.created_at, NOW()), NOW()
+SELECT au.id, COALESCE(au.email, CONCAT(au.id::text, '@placeholder.local')), COALESCE(au.created_at, NOW()), NOW()
 FROM auth.users au
 ON CONFLICT (id) DO NOTHING;

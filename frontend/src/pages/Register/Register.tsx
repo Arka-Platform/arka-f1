@@ -21,7 +21,7 @@ function isExistingAccountError(err: unknown): boolean {
 
 const Signup: React.FC = () => {
   const navigate = useNavigate()
-  const { register, loginWithPhone, loginWithGoogle, isAuthenticated, isLoading } = useAuth()
+  const { register, loginWithPhone, loginWithEmailOtp, loginWithGoogle, isAuthenticated, isLoading } = useAuth()
   const { success, error: showError } = useToast()
 
   const [formData, setFormData] = useState({
@@ -64,9 +64,7 @@ const Signup: React.FC = () => {
       newErrors.emailOrPhone = 'Enter a valid email or phone (+countrycode)'
     }
 
-    if (!/^\+\d{10,15}$/.test(formData.emailOrPhone) && !formData.password) {
-      newErrors.password = 'Password is required for email signup'
-    } else if (formData.password && formData.password.length < 6) {
+    if (formData.password && formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters'
     }
 
@@ -86,14 +84,23 @@ const Signup: React.FC = () => {
           state: { phoneNumber: formData.emailOrPhone },
         })
       } else {
-        await register({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.emailOrPhone,
-          password: formData.password,
-        })
-        success('Account created successfully!')
-        navigate('/home')
+        if (formData.password.trim()) {
+          await register({
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.emailOrPhone,
+            password: formData.password,
+          })
+          success('Account created successfully!')
+          navigate('/home')
+        } else {
+          await loginWithEmailOtp(formData.emailOrPhone, formData.firstName, formData.lastName)
+          success('OTP sent to your email. Please check your inbox.')
+          navigate('/login', {
+            replace: true,
+            state: { prefillEmailOrPhone: formData.emailOrPhone },
+          })
+        }
       }
     } catch (err) {
       console.error(err)
@@ -163,14 +170,13 @@ const Signup: React.FC = () => {
 
             {!/^\+\d{10,15}$/.test(formData.emailOrPhone) && (
               <Input
-                label="Password"
+                label="Password (optional for email OTP signup)"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="Enter password or leave blank to use email OTP"
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 error={errors.password}
                 fullWidth
-                required
               />
             )}
 
