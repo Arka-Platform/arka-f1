@@ -73,7 +73,8 @@ const Login: React.FC = () => {
       success('Redirecting to Google login...')
     } catch (err) {
       console.error(err)
-      showError('Google login failed. Please try again.')
+      const message = err instanceof Error ? err.message : undefined
+      showError(message || 'Google login failed. Please try again.')
     }
   }
 

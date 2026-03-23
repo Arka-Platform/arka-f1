@@ -91,7 +91,8 @@ const Signup: React.FC = () => {
       success('Redirecting to Google...')
     } catch (err) {
       console.error(err)
-      showError('Google signup failed.')
+      const message = err instanceof Error ? err.message : undefined
+      showError(message || 'Google signup failed.')
     }
   }
 

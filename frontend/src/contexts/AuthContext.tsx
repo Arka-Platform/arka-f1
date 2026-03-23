@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react'
 import { supabase, } from '../lib/supabaseClient'
 import type { Session } from '@supabase/supabase-js'
+import { fetchSupabasePublicUserById, syncSupabasePublicUser } from '../utils/supabaseProfileSync'
 
 interface User {
   id: string
@@ -47,6 +48,10 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const profileSyncInFlightRef = useRef<Promise<void> | null>(null)
+  const lastProfileSyncedUserIdRef = useRef<string | null>(null)
+  const latestUserIdRef = useRef<string | null>(null)
+  const googleOauthInFlightRef = useRef(false)
 
   const fetchUser = async () => {
     setIsLoading(true)
@@ -56,11 +61,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (!session) {
         setUser(null)
+        lastProfileSyncedUserIdRef.current = null
+        profileSyncInFlightRef.current = null
+        latestUserIdRef.current = null
         return
       }
 
       const supabaseUser = session.user
       const metadata = supabaseUser.user_metadata as Record<string, any> | undefined
+      latestUserIdRef.current = supabaseUser.id
 
       setUser({
         id: supabaseUser.id,
@@ -72,6 +81,55 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isAdmin: metadata?.is_admin ?? false,
         creditBalance: metadata?.credit_balance ?? 0,
       })
+
+      // Best-effort profile sync: never block auth UX.
+      // Prevent redundant syncs for the same user within a session, and avoid races.
+      const userId = supabaseUser.id
+      if (
+        userId &&
+        lastProfileSyncedUserIdRef.current !== userId &&
+        !profileSyncInFlightRef.current
+      ) {
+        // eslint-disable-next-line no-console
+        console.info('[AuthContext] syncing Supabase public.user', { userId })
+        profileSyncInFlightRef.current = (async () => {
+          try {
+            await syncSupabasePublicUser(supabaseUser)
+            lastProfileSyncedUserIdRef.current = userId
+
+            // Hydrate some fields if the public user table is readable.
+            // This is best-effort: failures should not break auth UX.
+            const publicUser = await fetchSupabasePublicUserById(userId)
+            if (!publicUser) return
+
+            if (latestUserIdRef.current !== userId) return
+
+            setUser((prev) => {
+              if (!prev) return prev
+              return {
+                ...prev,
+                firstName: (publicUser.first_name ?? prev.firstName ?? '').toString(),
+                lastName: (publicUser.last_name ?? prev.lastName ?? '').toString(),
+                email: publicUser.email ?? prev.email ?? null,
+                phoneNumber: publicUser.phone ?? prev.phoneNumber ?? null,
+                avatar: publicUser.avatar_url ?? prev.avatar ?? null,
+                isAdmin: publicUser.is_admin ?? prev.isAdmin ?? false,
+                creditBalance: (() => {
+                  const raw = publicUser.credit_balance
+                  if (raw === undefined || raw === null) return prev.creditBalance ?? 0
+                  const n = Number(raw)
+                  return Number.isFinite(n) ? n : prev.creditBalance ?? 0
+                })(),
+              }
+            })
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.error('[AuthContext] Supabase public.user sync/hydrate failed', { userId, err })
+          } finally {
+            profileSyncInFlightRef.current = null
+          }
+        })()
+      }
     } catch (err) {
       console.error('Error fetching user:', err)
       setUser(null)
@@ -112,12 +170,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }
 
   const loginWithGoogle = async () => {
+    if (googleOauthInFlightRef.current) return
     setIsLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' })
+      // Avoid starting OAuth again if we already have a valid Supabase session.
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (sessionData.session?.user?.id) return
+
+      const normalizeRedirectTo = (value: string) => {
+        // Allow both absolute and pathname-only values.
+        if (value.startsWith('http://') || value.startsWith('https://')) return value
+        if (value.startsWith('/')) return `${window.location.origin}${value}`
+        return value
+      }
+
+      // Use an absolute redirectTo so localhost vs production ports match Supabase config.
+      const redirectToDefault = `${window.location.origin}/auth/callback`
+      const redirectToOverride = import.meta.env.VITE_SUPABASE_OAUTH_REDIRECT_TO as string | undefined
+      const redirectTo = redirectToOverride
+        ? normalizeRedirectTo(redirectToOverride)
+        : redirectToDefault
+
+      googleOauthInFlightRef.current = true
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo },
+      })
       if (error) throw error
     } finally {
       setIsLoading(false)
+      googleOauthInFlightRef.current = false
     }
   }
 

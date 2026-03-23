@@ -4,6 +4,7 @@ import { CartProvider } from './contexts/CartContext'
 import { ToastProvider, useToast } from './contexts/ToastContext'
 import Layout from './components/Layout/Layout'
 import ToastContainer from './components/shared/ToastContainer/ToastContainer'
+import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
 import LandingPage from './pages/LandingPage/LandingPage'
 import Home from './pages/Home/Home'
 import BooksMarketplace from './pages/BooksMarketplace/BooksMarketplace'
@@ -13,6 +14,7 @@ import Order from './pages/Order/Order'
 import ContactUs from './pages/ContactUs/ContactUs'
 import Login from './pages/Login/Login'
 import Register from './pages/Register/Register'
+import OAuthCallback from './pages/Login/OAuthCallback'
 import Preferences from './pages/Preferences/Preferences'
 import Account from './pages/Account/Account'
 import OrderHistory from './pages/OrderHistory/OrderHistory'
@@ -51,6 +53,7 @@ function AppContent() {
           <Route path="/contact" element={<ContactUs />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/auth/callback" element={<OAuthCallback />} />
             <Route path="/preferences" element={<Preferences />} />
             <Route path="/account" element={<Account />} />
             <Route path="/orders" element={<OrderHistory />} />
@@ -84,7 +87,9 @@ function App() {
         <CartProvider>
           <ToastProvider>
             <div className="app">
-              <AppContent />
+              <ErrorBoundary>
+                <AppContent />
+              </ErrorBoundary>
             </div>
           </ToastProvider>
         </CartProvider>
