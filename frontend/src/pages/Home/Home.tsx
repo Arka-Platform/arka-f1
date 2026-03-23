@@ -1,30 +1,84 @@
-import React from 'react'
-import AdBanner from '../../components/shared/AdBanner/AdBanner'
-import FeatureSlider from '../../components/shared/FeatureSlider/FeatureSlider'
-import RecommendationSection from '../../components/shared/RecommendationSection/RecommendationSection'
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import BookSearchInput from '../../components/shared/BookSearchInput/BookSearchInput'
+import type { BookResponse } from '../../utils/api'
 import styles from './Home.module.css'
 
 const Home: React.FC = () => {
+  const navigate = useNavigate()
+  const [searchText, setSearchText] = useState('')
+
+  const handleBookSelect = (book: BookResponse) => {
+    navigate(`/books?q=${encodeURIComponent(book.title)}`)
+  }
+
+  const quickActions = [
+    { title: 'Swap Books', subtitle: 'List & exchange', route: '/exchange', icon: '🔁' },
+    { title: 'Nearby Finds', subtitle: 'Books around you', route: '/books', icon: '📍' },
+    { title: 'Wishlist', subtitle: 'Saved for later', route: '/wishlist', icon: '💛' },
+    { title: 'My Library', subtitle: 'Owned & swapped', route: '/bookshelf', icon: '📚' },
+  ]
+
   return (
     <div className={styles.home}>
-      {/* Ad Banner */}
-      <AdBanner />
+      <section className={styles.hero}>
+        <div className={styles.overlay}>
+          <h1 className={styles.title}>Explore &amp; Exchange Books</h1>
+          <p className={styles.subtitle}>Discover stories from around the world</p>
 
-      {/* Feature Slider */}
-      <FeatureSlider />
+          <div className={styles.searchWrap}>
+            <BookSearchInput
+              value={searchText}
+              onChange={setSearchText}
+              onBookSelect={handleBookSelect}
+              placeholder="Search for books or genres..."
+              fullWidth
+            />
+          </div>
 
-      {/* Recommendations Section */}
-      <RecommendationSection
-        title="Recommended for You"
-        type="personalized"
-        limit={6}
-      />
-      
-      <RecommendationSection
-        title="Popular This Week"
-        type="popular"
-        limit={6}
-      />
+          <div className={styles.actionsGrid}>
+            {quickActions.map((action) => (
+              <button
+                key={action.title}
+                type="button"
+                className={styles.actionCard}
+                onClick={() => navigate(action.route)}
+              >
+                <span className={styles.actionIcon} aria-hidden>
+                  {action.icon}
+                </span>
+                <span className={styles.actionText}>
+                  <span className={styles.actionTitle}>{action.title}</span>
+                  <span className={styles.actionSubtitle}>{action.subtitle}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.featuredSection}>
+        <div className={styles.featuredHeader}>
+          <h2>Featured Picks for You</h2>
+          <button type="button" className={styles.seeAllBtn} onClick={() => navigate('/books')}>
+            See All
+          </button>
+        </div>
+        <div className={styles.featuredGrid}>
+          <article className={`${styles.featuredCard} ${styles.cardAncient}`} onClick={() => navigate('/books')}>
+            <div className={styles.featuredContent}>
+              <h3>Lost Cities of the Past</h3>
+              <p>History and archaeology treasures</p>
+            </div>
+          </article>
+          <article className={`${styles.featuredCard} ${styles.cardFantasy}`} onClick={() => navigate('/books')}>
+            <div className={styles.featuredContent}>
+              <h3>Epic Fantasy Adventures</h3>
+              <p>Castles, dragons, and quests</p>
+            </div>
+          </article>
+        </div>
+      </section>
     </div>
   )
 }
