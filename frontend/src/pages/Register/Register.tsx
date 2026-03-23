@@ -117,9 +117,10 @@ const Signup: React.FC = () => {
             lastName: formData.lastName,
           })
           markOtpSentNow('email', formData.emailOrPhone)
-          success('OTP sent to your email. Please check your inbox.')
-          navigate('/otp-verification', {
-            state: { channel: 'email', value: formData.emailOrPhone },
+          success('Magic link sent. Please check your email and open the link.')
+          navigate('/login', {
+            replace: true,
+            state: { prefillEmailOrPhone: formData.emailOrPhone },
           })
         }
       }

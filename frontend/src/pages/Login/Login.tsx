@@ -87,10 +87,7 @@ const Login: React.FC = () => {
           }
           await loginWithEmailOtp(formData.emailOrPhone, { mode: 'signin' })
           markOtpSentNow('email', formData.emailOrPhone)
-          success('OTP sent to your email. Please check your inbox.')
-          navigate('/otp-verification', {
-            state: { channel: 'email', value: formData.emailOrPhone },
-          })
+          success('Magic link sent. Please check your email and open the link.')
         }
       }
     } catch (err) {

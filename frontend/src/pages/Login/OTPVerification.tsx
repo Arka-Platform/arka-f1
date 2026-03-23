@@ -10,7 +10,7 @@ import styles from './Login.module.css'
 const OTPVerification: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { verifyPhoneOtp, verifyEmailOtp, loginWithPhone, loginWithEmailOtp } = useAuth()
+  const { verifyPhoneOtp, loginWithPhone } = useAuth()
   const { success, error: showError } = useToast()
   const otpContext =
     (location.state as { channel?: 'phone' | 'email'; value?: string } | null) ?? null
@@ -30,6 +30,12 @@ const OTPVerification: React.FC = () => {
       return
     }
 
+    if (isEmail) {
+      showError('Email sign-in uses magic link. Please open the link from your email inbox.')
+      navigate('/login', { replace: true })
+      return
+    }
+
     if (!otp) {
       showError('Please enter the OTP')
       return
@@ -37,13 +43,8 @@ const OTPVerification: React.FC = () => {
 
     setIsLoading(true)
     try {
-      if (isPhone) {
-        await verifyPhoneOtp(value, otp)
-        success('Phone verified successfully!')
-      } else {
-        await verifyEmailOtp(value, otp)
-        success('Email verified successfully!')
-      }
+      await verifyPhoneOtp(value, otp)
+      success('Phone verified successfully!')
       navigate('/home')
     } catch (err: unknown) {
       console.error(err)
@@ -61,7 +62,7 @@ const OTPVerification: React.FC = () => {
       return
     }
 
-    const waitSeconds = getOtpCooldownRemainingSeconds(isPhone ? 'phone' : 'email', value)
+    const waitSeconds = getOtpCooldownRemainingSeconds('phone', value)
     if (waitSeconds > 0) {
       showError(`Please wait ${waitSeconds}s before requesting another OTP.`)
       return
@@ -69,13 +70,8 @@ const OTPVerification: React.FC = () => {
 
     setIsResending(true)
     try {
-      if (isPhone) {
-        await loginWithPhone(value)
-        markOtpSentNow('phone', value)
-      } else {
-        await loginWithEmailOtp(value, { mode: 'signin' })
-        markOtpSentNow('email', value)
-      }
+      await loginWithPhone(value)
+      markOtpSentNow('phone', value)
       success('OTP sent again.')
     } catch (err: unknown) {
       console.error(err)
@@ -94,21 +90,19 @@ const OTPVerification: React.FC = () => {
           <p className={styles.subtitle}>
             Enter the OTP sent to <strong>{value}</strong>
           </p>
-          {isEmail && (
-            <p className={styles.subtitle}>
-              You can use either the one-time code or the magic link from your email.
-            </p>
-          )}
+          {isEmail && <p className={styles.subtitle}>Email login uses magic link; OTP code is not required.</p>}
 
           <div className={styles.form}>
-            <Input
-              label="OTP"
-              type="text"
-              placeholder="Enter OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              fullWidth
-            />
+            {isPhone && (
+              <Input
+                label="OTP"
+                type="text"
+                placeholder="Enter OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                fullWidth
+              />
+            )}
 
             <Button
               type="button"
@@ -118,18 +112,20 @@ const OTPVerification: React.FC = () => {
               loading={isLoading}
               disabled={isLoading}
             >
-              {isLoading ? 'Verifying...' : 'Verify OTP'}
+              {isLoading ? 'Verifying...' : isPhone ? 'Verify OTP' : 'Back to Login'}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              fullWidth
-              onClick={handleResend}
-              loading={isResending}
-              disabled={isResending || isLoading}
-            >
-              {isResending ? 'Resending...' : 'Resend OTP'}
-            </Button>
+            {isPhone && (
+              <Button
+                type="button"
+                variant="outline"
+                fullWidth
+                onClick={handleResend}
+                loading={isResending}
+                disabled={isResending || isLoading}
+              >
+                {isResending ? 'Resending...' : 'Resend OTP'}
+              </Button>
+            )}
           </div>
         </div>
       </div>
