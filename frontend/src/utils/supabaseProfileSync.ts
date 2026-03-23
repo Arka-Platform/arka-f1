@@ -4,12 +4,7 @@ type SupabaseUserLike = {
   id?: string | null
 }
 
-// By requirement: use `public.users` as the canonical "profile" row.
-// Table name can be overridden per environment.
-const USERS_TABLE =
-  (import.meta.env.VITE_SUPABASE_USERS_TABLE as string | undefined) ??
-  (import.meta.env.VITE_SUPABASE_PROFILE_TABLE as string | undefined) ??
-  'users'
+const USERS_TABLE = 'users'
 
 /**
  * Ensure a Supabase public user row exists for the given auth user.
