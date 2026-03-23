@@ -8,6 +8,67 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- ---------------------------------------------------------------------------
+-- Core catalog table dependency
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.books (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ,
+    title TEXT NOT NULL,
+    author TEXT NOT NULL,
+    description TEXT,
+    genre TEXT,
+    category TEXT,
+    subcategory TEXT,
+    credit_price NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (credit_price >= 0),
+    owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    status TEXT NOT NULL DEFAULT 'AVAILABLE'
+);
+
+ALTER TABLE public.books
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS title TEXT,
+    ADD COLUMN IF NOT EXISTS author TEXT,
+    ADD COLUMN IF NOT EXISTS description TEXT,
+    ADD COLUMN IF NOT EXISTS genre TEXT,
+    ADD COLUMN IF NOT EXISTS category TEXT,
+    ADD COLUMN IF NOT EXISTS subcategory TEXT,
+    ADD COLUMN IF NOT EXISTS credit_price NUMERIC(12,2) NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS owner_id UUID,
+    ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'AVAILABLE';
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conname = 'books_credit_price_non_negative_chk'
+    ) THEN
+        ALTER TABLE public.books
+            ADD CONSTRAINT books_credit_price_non_negative_chk
+            CHECK (credit_price >= 0);
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'books_owner_id_auth_fkey'
+    ) THEN
+        ALTER TABLE public.books
+            ADD CONSTRAINT books_owner_id_auth_fkey
+            FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+    END IF;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_books_created_at ON public.books(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_books_title_author ON public.books(title, author);
+CREATE INDEX IF NOT EXISTS idx_books_genre ON public.books(genre);
+CREATE INDEX IF NOT EXISTS idx_books_category ON public.books(category);
+CREATE INDEX IF NOT EXISTS idx_books_subcategory ON public.books(subcategory);
+
+-- ---------------------------------------------------------------------------
 -- users profile table (auth.users is identity source of truth)
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.users (
