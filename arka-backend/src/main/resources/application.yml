@@ -57,7 +57,7 @@ spring:
       - org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
 
 app:
-  # CORS is controlled solely via the `FRONTEND_URL` environment variable (single allowed origin).
+  # CORS is controlled via FRONTEND_URLS (comma-separated) or FRONTEND_URL (single origin fallback).
 
   jwt:
     secret: ${JWT_SECRET}
@@ -130,7 +130,5 @@ spring:
     continue-on-error: true
 
 app:
-  cors:
-    allowed-origins:
-      - http://localhost:5173
-      - http://localhost:3000
+  # Local CORS defaults are provided by FRONTEND_URLS fallback:
+  # http://localhost:5173,http://localhost:3000

@@ -4,6 +4,9 @@ import com.arka.modules.user.dto.AuthResponse;
 import com.arka.modules.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -15,9 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/auth")
 public class OAuthController {
   private final OAuthService oauthService;
+  private final String frontendUrl;
 
-  public OAuthController(OAuthService oauthService) {
+  public OAuthController(
+      OAuthService oauthService,
+      @Value("${FRONTEND_URL:http://localhost:5173}") String frontendUrl) {
     this.oauthService = oauthService;
+    this.frontendUrl = frontendUrl;
   }
 
   /**
@@ -29,21 +36,13 @@ public class OAuthController {
       HttpServletResponse response) throws IOException {
     try {
       AuthResponse authResponse = oauthService.processOAuthLogin(oauth2User, "google");
-      
-      // Redirect to frontend with token
-      String frontendUrl = System.getenv("FRONTEND_URL") != null 
-          ? System.getenv("FRONTEND_URL") 
-          : "http://localhost:5173";
-      
+
       response.sendRedirect(frontendUrl + "/auth/callback?token=" + authResponse.token() + 
           "&userId=" + authResponse.userId() + 
           "&email=" + authResponse.email());
     } catch (Exception e) {
-      String frontendUrl = System.getenv("FRONTEND_URL") != null 
-          ? System.getenv("FRONTEND_URL") 
-          : "http://localhost:5173";
       response.sendRedirect(frontendUrl + "/auth/error?message=" + 
-          java.net.URLEncoder.encode(e.getMessage(), "UTF-8"));
+          URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8));
     }
   }
 
