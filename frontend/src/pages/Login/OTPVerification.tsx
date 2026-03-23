@@ -9,7 +9,7 @@ import styles from './Login.module.css'
 const OTPVerification: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { verifyPhoneOtp, verifyEmailOtp } = useAuth()
+  const { verifyPhoneOtp, verifyEmailOtp, loginWithPhone, loginWithEmailOtp } = useAuth()
   const { success, error: showError } = useToast()
   const otpContext =
     (location.state as { channel?: 'phone' | 'email'; value?: string } | null) ?? null
@@ -20,6 +20,7 @@ const OTPVerification: React.FC = () => {
 
   const [otp, setOtp] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isResending, setIsResending] = useState(false)
 
   const handleVerify = async () => {
     if (!isPhone && !isEmail) {
@@ -52,6 +53,30 @@ const OTPVerification: React.FC = () => {
     }
   }
 
+  const handleResend = async () => {
+    if (!value) {
+      showError('Missing destination. Please retry login.')
+      navigate('/login', { replace: true })
+      return
+    }
+
+    setIsResending(true)
+    try {
+      if (isPhone) {
+        await loginWithPhone(value)
+      } else {
+        await loginWithEmailOtp(value, { mode: 'signin' })
+      }
+      success('OTP sent again.')
+    } catch (err: unknown) {
+      console.error(err)
+      const message = err instanceof Error ? err.message : 'Failed to resend OTP'
+      showError(message)
+    } finally {
+      setIsResending(false)
+    }
+  }
+
   return (
     <div className={styles.login}>
       <div className={styles.container}>
@@ -60,6 +85,11 @@ const OTPVerification: React.FC = () => {
           <p className={styles.subtitle}>
             Enter the OTP sent to <strong>{value}</strong>
           </p>
+          {isEmail && (
+            <p className={styles.subtitle}>
+              You can use either the one-time code or the magic link from your email.
+            </p>
+          )}
 
           <div className={styles.form}>
             <Input
@@ -80,6 +110,16 @@ const OTPVerification: React.FC = () => {
               disabled={isLoading}
             >
               {isLoading ? 'Verifying...' : 'Verify OTP'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              fullWidth
+              onClick={handleResend}
+              loading={isResending}
+              disabled={isResending || isLoading}
+            >
+              {isResending ? 'Resending...' : 'Resend OTP'}
             </Button>
           </div>
         </div>

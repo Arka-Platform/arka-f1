@@ -94,7 +94,11 @@ const Signup: React.FC = () => {
           success('Account created successfully!')
           navigate('/home')
         } else {
-          await loginWithEmailOtp(formData.emailOrPhone, formData.firstName, formData.lastName)
+          await loginWithEmailOtp(formData.emailOrPhone, {
+            mode: 'signup',
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+          })
           success('OTP sent to your email. Please check your inbox.')
           navigate('/otp-verification', {
             state: { channel: 'email', value: formData.emailOrPhone },

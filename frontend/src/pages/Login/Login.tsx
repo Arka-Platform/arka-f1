@@ -68,7 +68,7 @@ const Login: React.FC = () => {
           await login(formData.emailOrPhone, formData.password)
           success('Logged in successfully!')
         } else {
-          await loginWithEmailOtp(formData.emailOrPhone)
+          await loginWithEmailOtp(formData.emailOrPhone, { mode: 'signin' })
           success('OTP sent to your email. Please check your inbox.')
           navigate('/otp-verification', {
             state: { channel: 'email', value: formData.emailOrPhone },

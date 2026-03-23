@@ -20,7 +20,14 @@ interface AuthContextType {
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   loginWithPhone: (phone: string) => Promise<void>
-  loginWithEmailOtp: (email: string, firstName?: string, lastName?: string) => Promise<void>
+  loginWithEmailOtp: (
+    email: string,
+    options?: {
+      mode?: 'signin' | 'signup'
+      firstName?: string
+      lastName?: string
+    }
+  ) => Promise<void>
   verifyPhoneOtp: (phone: string, token: string) => Promise<void>
   verifyEmailOtp: (email: string, token: string) => Promise<void>
   loginWithGoogle: () => Promise<void>
@@ -172,13 +179,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
-  const loginWithEmailOtp = async (email: string, firstName?: string, lastName?: string) => {
+  const loginWithEmailOtp = async (
+    email: string,
+    options?: {
+      mode?: 'signin' | 'signup'
+      firstName?: string
+      lastName?: string
+    }
+  ) => {
+    const mode = options?.mode ?? 'signin'
+    const firstName = options?.firstName
+    const lastName = options?.lastName
+
     setIsLoading(true)
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: true,
+          shouldCreateUser: mode === 'signup',
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             ...(firstName ? { first_name: firstName } : {}),
             ...(lastName ? { last_name: lastName } : {}),
