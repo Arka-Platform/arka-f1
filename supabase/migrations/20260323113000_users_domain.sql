@@ -114,7 +114,10 @@ BEGIN
 
     INSERT INTO public.users (id, email, created_at, updated_at)
     VALUES (NEW.id, v_email, COALESCE(NEW.created_at, NOW()), NOW())
-    ON CONFLICT (id) DO NOTHING;
+    ON CONFLICT (id) DO UPDATE
+    SET
+        email = EXCLUDED.email,
+        updated_at = NOW();
     RETURN NEW;
 END;
 $$;
@@ -174,6 +177,17 @@ BEGIN
         CREATE POLICY users_insert_auth_internal
             ON public.users
             FOR INSERT
+            WITH CHECK (current_user IN ('supabase_auth_admin', 'postgres', 'service_role'));
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE schemaname = 'public' AND tablename = 'users' AND policyname = 'users_update_auth_internal'
+    ) THEN
+        CREATE POLICY users_update_auth_internal
+            ON public.users
+            FOR UPDATE
+            USING (current_user IN ('supabase_auth_admin', 'postgres', 'service_role'))
             WITH CHECK (current_user IN ('supabase_auth_admin', 'postgres', 'service_role'));
     END IF;
 
