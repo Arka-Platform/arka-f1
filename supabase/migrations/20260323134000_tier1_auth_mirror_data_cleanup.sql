@@ -1,8 +1,5 @@
--- Fix: OAuth "Database error saving new user"
--- Root cause pattern: conflicts in public.users during auth.users trigger insert.
--- This migration is safe to re-run and hardens mirror behavior.
+-- Tier 1 auth mirror: cleanup legacy profile conflicts before trigger sync.
 
--- 1) auth.users is source-of-truth: remove orphan public.users rows that cannot map.
 DELETE FROM public.users u
 WHERE NOT EXISTS (
     SELECT 1
@@ -10,8 +7,6 @@ WHERE NOT EXISTS (
     WHERE au.id = u.id
 );
 
--- 2) Deduplicate by email (case-insensitive), keeping the oldest row.
--- This protects future index creation/read patterns and avoids ambiguous profile records.
 WITH ranked AS (
     SELECT
         ctid,
@@ -27,18 +22,13 @@ USING ranked r
 WHERE u.ctid = r.ctid
   AND r.rn > 1;
 
--- 3) Remove strict unique email index from public.users.
--- Email uniqueness is already enforced by auth.users and this index can block OAuth
--- in legacy-drift scenarios.
 DROP INDEX IF EXISTS public.users_email_unique_idx;
 DROP INDEX IF EXISTS public.users_email_unique;
 
--- Keep a lookup index for profile hydration/search.
 CREATE INDEX IF NOT EXISTS idx_users_email_lookup
     ON public.users (LOWER(email))
     WHERE email IS NOT NULL;
 
--- 4) Recreate mirror function in a resilient, idempotent way.
 CREATE OR REPLACE FUNCTION public.handle_auth_user_upsert()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -89,7 +79,6 @@ ON auth.users
 FOR EACH ROW
 EXECUTE FUNCTION public.handle_auth_user_upsert();
 
--- 5) Backfill in case any auth rows still missed profile hydration.
 INSERT INTO public.users (
     id,
     email,
