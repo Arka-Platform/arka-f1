@@ -25,16 +25,12 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: false
-
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
 
   mail:
     host: ${SMTP_HOST:}
@@ -120,14 +116,10 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-
-  flyway:
-    enabled: true
-    continue-on-error: true
 
 app:
   # Local CORS defaults are provided by FRONTEND_URLS fallback:
