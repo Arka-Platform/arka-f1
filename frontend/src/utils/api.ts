@@ -408,22 +408,45 @@ export const booksApi = {
     }
   },
   
-  search: (query: string) =>
-    api.get<BookResponse[]>(`/api/v1/books?search=${encodeURIComponent(query)}`),
+  search: async (query: string) => booksApi.list({ search: query }),
 };
 
 // File Upload API functions
 export const uploadApi = {
-  uploadBookImage: (file: File) =>
-    api.uploadFile<{ url: string }>('/api/v1/upload/book-image', file),
+  uploadBookImage: async (file: File) => {
+    const bucket = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'uploads'
+    const ext = file.name.includes('.') ? file.name.split('.').pop() : 'bin'
+    const path = `book-images/${crypto.randomUUID()}.${ext}`
+    const { error } = await supabase.storage.from(bucket).upload(path, file, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: file.type || undefined,
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path)
+    if (!data?.publicUrl) throw new ApiError('Failed to generate image URL', 500)
+    return { url: data.publicUrl }
+  },
   
-  uploadStatusImage: (file: File) =>
-    api.uploadFile<{ url: string }>('/api/v1/upload/status-image', file),
+  uploadStatusImage: async (file: File) => {
+    const bucket = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'uploads'
+    const ext = file.name.includes('.') ? file.name.split('.').pop() : 'bin'
+    const path = `status-images/${crypto.randomUUID()}.${ext}`
+    const { error } = await supabase.storage.from(bucket).upload(path, file, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: file.type || undefined,
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path)
+    if (!data?.publicUrl) throw new ApiError('Failed to generate image URL', 500)
+    return { url: data.publicUrl }
+  },
 };
 
 // Recycling API functions
 export const recyclingApi = {
-  list: async () => [],
+  list: async (_params?: { search?: string; category?: string }): Promise<WastePaperResponse[]> => [],
 };
 
 // Donation API functions
@@ -738,13 +761,13 @@ export const demandApi = {
     return data as unknown as BookRequestResponse
   },
   
-  getMatchesForRequest: async () => [],
+  getMatchesForRequest: async (_requestId: string, _requesterId?: string): Promise<MatchResponse[]> => [],
   
-  getMatchesForBook: async () => [],
+  getMatchesForBook: async (_bookId: string, _sellerId?: string): Promise<RequestMatchResponse[]> => [],
   
-  getAutoFillSuggestions: async () => ({ recentSearches: [], suggestedGenres: [], recentlyViewedBooks: [], popularGenres: [] }),
+  getAutoFillSuggestions: async (_userId?: string): Promise<AutoFillSuggestions> => ({ recentSearches: [], suggestedGenres: [], recentlyViewedBooks: [], popularGenres: [] }),
   
-  getQuickSuggestions: async () => [],
+  getQuickSuggestions: async (_query: string, _limit: number = 5): Promise<BookRequestResponse[]> => [],
   
   getRecentlyServedRequests: async (limit?: number) => {
     const rows = await demandApi.getOpenRequests()
@@ -753,7 +776,7 @@ export const demandApi = {
   
   getWeeklyStats: async () => ({ openRequests: 0, completedThisWeek: 0, createdThisWeek: 0 }),
   
-  getMostRequestedBooks: async () => [],
+  getMostRequestedBooks: async (_limit: number = 10): Promise<Array<{ title: string; author: string; requestCount: number }>> => [],
 };
 
 export interface WeeklyStats {
@@ -888,19 +911,19 @@ export const exchangesApi = {
     return (data ?? []) as unknown as ExchangeResponse[]
   },
   
-  confirm: async (exchangeId: string) => {
+  confirm: async (exchangeId: string, _userId?: string) => {
     const { data, error } = await supabase.from('exchanges').select('*').eq('id', exchangeId).single()
     if (error) throw new ApiError(asErrorMessage(error), 500, error)
     return data as unknown as ExchangeResponse
   },
   
-  complete: async (exchangeId: string) => {
+  complete: async (exchangeId: string, _userId?: string) => {
     const { data, error } = await supabase.from('exchanges').select('*').eq('id', exchangeId).single()
     if (error) throw new ApiError(asErrorMessage(error), 500, error)
     return data as unknown as ExchangeResponse
   },
   
-  cancel: async (exchangeId: string) => {
+  cancel: async (exchangeId: string, _userId?: string) => {
     const { data, error } = await supabase.from('exchanges').select('*').eq('id', exchangeId).single()
     if (error) throw new ApiError(asErrorMessage(error), 500, error)
     return data as unknown as ExchangeResponse
