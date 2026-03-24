@@ -14,7 +14,7 @@ const Home: React.FC = () => {
 
   const quickActions = [
     { title: 'Swap Books', subtitle: 'List & exchange', route: '/exchange', icon: '🔁' },
-    { title: 'Nearby Finds', subtitle: 'Books around you', route: '/books', icon: '📍' },
+    { title: 'Nearby Finds', subtitle: 'Books around you', route: '/books?nearby=1', icon: '📍' },
     { title: 'Wishlist', subtitle: 'Saved for later', route: '/wishlist', icon: '💛' },
     { title: 'My Library', subtitle: 'Owned & swapped', route: '/bookshelf', icon: '📚' },
   ]

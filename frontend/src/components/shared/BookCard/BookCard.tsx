@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useToast } from '../../../contexts/ToastContext'
 import { wishlistApi, bookshelfApi } from '../../../utils/api'
@@ -37,6 +38,7 @@ const BookCard: React.FC<BookCardProps> = ({
   buttonText = 'Buy Now',
   onButtonClick,
 }) => {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { success, error: showError } = useToast()
   const viewStartTime = useRef<number>(Date.now())
@@ -220,6 +222,13 @@ const BookCard: React.FC<BookCardProps> = ({
       </div>
       <div className={styles.content}>
         <h3 className={styles.title}>{book.title}</h3>
+        <Button
+          variant="secondary"
+          fullWidth
+          onClick={() => navigate(`/books/${book.id}`)}
+        >
+          View Details
+        </Button>
         {book.author && <p className={styles.author}>by {book.author}</p>}
         {book.genre && (
           <span className={styles.genre}>{book.genre}</span>

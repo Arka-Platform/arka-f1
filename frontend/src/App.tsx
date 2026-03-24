@@ -8,6 +8,7 @@ import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
 import LandingPage from './pages/LandingPage/LandingPage'
 import Home from './pages/Home/Home'
 import BooksMarketplace from './pages/BooksMarketplace/BooksMarketplace'
+import BookDetails from './pages/BookDetails/BookDetails'
 import Recycling from './pages/Recycling/Recycling'
 import Cart from './pages/Cart/Cart'
 import Order from './pages/Order/Order'
@@ -47,6 +48,7 @@ function AppContent() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<Home />} />
           <Route path="/books" element={<BooksMarketplace />} />
+          <Route path="/books/:bookId" element={<BookDetails />} />
           <Route path="/recycling" element={<Recycling />} />
           <Route path="/pickup" element={<Recycling />} />
           <Route path="/cart" element={<Cart />} />

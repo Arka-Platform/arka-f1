@@ -23,11 +23,13 @@ const ContactUs: React.FC = () => {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate API call - in production, this would call a backend endpoint
     try {
-      // TODO: Replace with actual API call when backend endpoint is available
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      success('Thank you for your message! We will get back to you soon.')
+      const subject = encodeURIComponent(`[Arka Support] ${formData.subject}`)
+      const body = encodeURIComponent(
+        `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
+      )
+      window.location.href = `mailto:contact@ecobookhub.com?subject=${subject}&body=${body}`
+      success('Mail composer opened. Send your message to contact support.')
       setFormData({ name: '', email: '', subject: '', message: '' })
     } catch (err) {
       showError('Failed to send message. Please try again.')

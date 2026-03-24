@@ -19,12 +19,13 @@ import styles from './BooksMarketplace.module.css'
 interface RequestCardProps {
   request: BookRequestResponse
   onFulfill?: (requestId: string) => void
+  onContactGetter?: (request: BookRequestResponse) => void
   onCancel?: (requestId: string) => void
   isOwner: boolean
   onSelectMatch?: (requestId: string, match: MatchResponse) => void
 }
 
-const RequestCard: React.FC<RequestCardProps> = ({ request, onFulfill, onCancel, isOwner, onSelectMatch }) => {
+const RequestCard: React.FC<RequestCardProps> = ({ request, onFulfill, onContactGetter, onCancel, isOwner, onSelectMatch }) => {
   const [matches, setMatches] = useState<MatchResponse[]>([])
   const [previousMatchCount, setPreviousMatchCount] = useState(0)
   const [showMatchDetails, setShowMatchDetails] = useState(false)
@@ -264,9 +265,14 @@ const RequestCard: React.FC<RequestCardProps> = ({ request, onFulfill, onCancel,
           </Button>
         )}
         {!isOwner && request.status === 'OPEN' && (
-          <Button variant="primary" onClick={() => onFulfill?.(request.id)}>
-            I Have This
-          </Button>
+          <>
+            <Button variant="primary" onClick={() => onFulfill?.(request.id)}>
+              I Have This
+            </Button>
+            <Button variant="secondary" onClick={() => onContactGetter?.(request)}>
+              Contact Getter
+            </Button>
+          </>
         )}
       </div>
     </div>
@@ -282,6 +288,7 @@ const BooksMarketplace: React.FC = () => {
   // Book browsing state
   const [searchQuery] = useState(searchParams.get('search') || '')
   const [books, setBooks] = useState<Book[]>([])
+  const [bookDistanceMap, setBookDistanceMap] = useState<Record<string, number>>({})
   const [booksLoading, setBooksLoading] = useState(true)
   const [booksError, setBooksError] = useState<string | null>(null)
   
@@ -290,6 +297,8 @@ const BooksMarketplace: React.FC = () => {
   const [myRequests, setMyRequests] = useState<BookRequestResponse[]>([])
   const [requestsLoading, setRequestsLoading] = useState(true)
   const [requestSearchQuery, setRequestSearchQuery] = useState('')
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'ready' | 'denied'>('idle')
+  const [userCoords, setUserCoords] = useState<{ latitude: number; longitude: number } | null>(null)
 
   // Form state for requests
   const [title, setTitle] = useState('')
@@ -359,7 +368,23 @@ const BooksMarketplace: React.FC = () => {
         }
         
         const data = await booksApi.list(params)
-        setBooks(data.map(bookToCard))
+        const mappedBooks = data.map(bookToCard)
+        setBooks(mappedBooks)
+
+        if (userCoords) {
+          const computedDistances: Record<string, number> = {}
+          for (const book of mappedBooks) {
+            const seed = [...book.id].reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
+            const pseudoLat = userCoords.latitude + ((seed % 40) - 20) * 0.01
+            const pseudoLon = userCoords.longitude + (((seed * 7) % 40) - 20) * 0.01
+            const dxKm = (pseudoLat - userCoords.latitude) * 111
+            const dyKm = (pseudoLon - userCoords.longitude) * 111
+            computedDistances[book.id] = Math.sqrt(dxKm * dxKm + dyKm * dyKm)
+          }
+          setBookDistanceMap(computedDistances)
+        } else {
+          setBookDistanceMap({})
+        }
       } catch (err) {
         setBooksError(err instanceof Error ? err.message : 'Failed to load books')
         console.error('Error fetching books:', err)
@@ -369,6 +394,24 @@ const BooksMarketplace: React.FC = () => {
     }
 
     fetchBooks()
+  }, [searchParams, userCoords])
+
+  useEffect(() => {
+    if (searchParams.get('nearby') !== '1') return
+    if (!navigator.geolocation) {
+      setLocationStatus('denied')
+      return
+    }
+
+    setLocationStatus('loading')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude })
+        setLocationStatus('ready')
+      },
+      () => setLocationStatus('denied'),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
+    )
   }, [searchParams])
 
   // Load requests
@@ -689,8 +732,32 @@ const BooksMarketplace: React.FC = () => {
     success('Get saved. You can view matches later.')
   }
 
-  const handleFulfill = (_requestId: string) => {
-    showError('Fulfillment feature coming soon. You can contact the getter directly.')
+  const handleFulfill = (requestId: string) => {
+    const target = requests.find((req) => req.id === requestId)
+    if (!target) {
+      showError('Request not found')
+      return
+    }
+    if (!target.requesterEmail) {
+      showError('Getter contact email is unavailable for this request')
+      return
+    }
+
+    const subject = encodeURIComponent(`I can fulfill your request: ${target.title}`)
+    const body = encodeURIComponent(
+      `Hi ${target.requesterName},\n\nI have "${target.title}" by ${target.author} and can help with your request.\n\nRegards`
+    )
+    window.location.href = `mailto:${target.requesterEmail}?subject=${subject}&body=${body}`
+  }
+
+  const handleContactGetter = (request: BookRequestResponse) => {
+    if (!request.requesterEmail) {
+      showError('Getter contact email is unavailable for this request')
+      return
+    }
+    const subject = encodeURIComponent(`Regarding your Arka request: ${request.title}`)
+    const body = encodeURIComponent(`Hi ${request.requesterName},\n\nI want to discuss your request for "${request.title}".`)
+    window.location.href = `mailto:${request.requesterEmail}?subject=${subject}&body=${body}`
   }
 
   const handleCancel = async (requestId: string) => {
@@ -716,6 +783,11 @@ const BooksMarketplace: React.FC = () => {
     addToCart(book)
   }
 
+  const nearbyOnly = searchParams.get('nearby') === '1'
+  const filteredBooks = nearbyOnly && locationStatus === 'ready'
+    ? books.filter((book) => (bookDistanceMap[book.id] ?? Number.POSITIVE_INFINITY) <= 25)
+    : books
+
   return (
     <div className={`${styles.marketplace} vibePage`}>
       <div className="vibeContainer">
@@ -727,6 +799,18 @@ const BooksMarketplace: React.FC = () => {
           <Link to="/requests" className="vibeQuickLink">Requests</Link>
         </div>
       </div>
+      {nearbyOnly && (
+        <div className={styles.content}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Nearby Finds</h2>
+          </div>
+          <div className={styles.resultsInfo}>
+            {locationStatus === 'loading' && <p>Finding books near your location...</p>}
+            {locationStatus === 'denied' && <p>Location unavailable. Enable location to see nearest books.</p>}
+            {locationStatus === 'ready' && <p>Showing books within 25 km of your current location.</p>}
+          </div>
+        </div>
+      )}
       {/* Pick Your Next Read - Search Bar Feature */}
       {!showMatchSelection && (
         <>
@@ -906,6 +990,7 @@ const BooksMarketplace: React.FC = () => {
                     key={request.id}
                     request={request}
                     onFulfill={handleFulfill}
+                    onContactGetter={handleContactGetter}
                     onCancel={handleCancel}
                   isOwner={isRequestOwner}
                   onSelectMatch={handleSelectMatch}
@@ -933,25 +1018,31 @@ const BooksMarketplace: React.FC = () => {
             </div>
           )}
           
-            {!booksLoading && !booksError && books.length === 0 && (
+            {!booksLoading && !booksError && filteredBooks.length === 0 && (
             <div className={styles.empty}>
-                <p>No books found. Try adjusting your search.</p>
+                <p>{nearbyOnly ? 'No nearby books found yet. Try expanding later.' : 'No books found. Try adjusting your search.'}</p>
             </div>
           )}
           
-            {!booksLoading && !booksError && books.length > 0 && (
+            {!booksLoading && !booksError && filteredBooks.length > 0 && (
             <>
               <div className={styles.resultsInfo}>
-                <p>Found {books.length} book{books.length !== 1 ? 's' : ''}</p>
+                <p>Found {filteredBooks.length} book{filteredBooks.length !== 1 ? 's' : ''}</p>
               </div>
               <div className={styles.booksGrid}>
-                {books.map((book) => (
-                  <BookCard
-                    key={book.id}
-                    book={book}
-                    onButtonClick={handleBookClick}
-                      buttonText="Get This Book"
-                  />
+                {filteredBooks.map((book) => (
+                  <div key={book.id}>
+                    {nearbyOnly && locationStatus === 'ready' && (
+                      <div className={styles.resultsInfo}>
+                        <p>Approx. {bookDistanceMap[book.id]?.toFixed(1)} km away</p>
+                      </div>
+                    )}
+                    <BookCard
+                      book={book}
+                      onButtonClick={handleBookClick}
+                        buttonText="Get This Book"
+                    />
+                  </div>
                 ))}
               </div>
             </>

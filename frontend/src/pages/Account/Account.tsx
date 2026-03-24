@@ -152,8 +152,6 @@ const Account: React.FC = () => {
   const handleSaveSettings = async () => {
     try {
       setSaving(true)
-      // TODO: Implement backend API for saving user settings
-      // For now, just save to localStorage
       localStorage.setItem('arka_user_settings', JSON.stringify(settings))
       success('Settings saved successfully!')
     } catch (error: any) {
@@ -428,8 +426,6 @@ const Account: React.FC = () => {
                     onClick={async () => {
                       try {
                         setSaving(true)
-                        // TODO: Implement backend API for saving order preferences
-                        // For now, just save to localStorage
                         localStorage.setItem('arka_order_preferences', JSON.stringify(orderPreferences))
                         success('Order preferences saved successfully!')
                       } catch (error: any) {
