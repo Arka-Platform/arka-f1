@@ -305,6 +305,48 @@ function mapSupabaseBook(row: SupabaseBookRow): BookResponse {
   }
 }
 
+type LegacyBookRow = {
+  id: string
+  title: string
+  author: string
+  description?: string | null
+  genre?: string | null
+  category?: string | null
+  subcategory?: string | null
+  price?: number | null
+  status?: string | null
+  createdAt?: string | null
+  isbn?: string | null
+  publisher?: string | null
+  publicationYear?: number | null
+  imageUrl?: string | null
+  thumbnailUrl?: string | null
+  averageRating?: number | null
+  ratingsCount?: number | null
+}
+
+function mapLegacyBook(row: LegacyBookRow): BookResponse {
+  return {
+    id: row.id,
+    title: row.title,
+    author: row.author,
+    description: row.description ?? '',
+    genre: row.genre ?? null,
+    category: row.category ?? null,
+    subcategory: row.subcategory ?? null,
+    price: row.price ?? null,
+    status: row.status ?? 'AVAILABLE',
+    createdAt: row.createdAt ?? new Date().toISOString(),
+    isbn: row.isbn ?? null,
+    publisher: row.publisher ?? null,
+    publicationYear: row.publicationYear ?? null,
+    imageUrl: row.imageUrl ?? null,
+    thumbnailUrl: row.thumbnailUrl ?? null,
+    averageRating: row.averageRating ?? null,
+    ratingsCount: row.ratingsCount ?? null,
+  }
+}
+
 function asErrorMessage(error: unknown): string {
   if (error && typeof error === 'object' && 'message' in error) {
     return String((error as { message?: string }).message ?? 'Supabase error')
@@ -332,7 +374,18 @@ export const booksApi = {
 
       const { data, error } = await query
       if (error) throw error
-      return (data ?? []).map((row) => mapSupabaseBook(row as SupabaseBookRow))
+      const mapped = (data ?? []).map((row) => mapSupabaseBook(row as SupabaseBookRow))
+      if (mapped.length > 0 || params?.search || params?.genre || params?.subcategory) {
+        return mapped
+      }
+
+      // Fallback for environments where catalog data exists in backend API.
+      const url = `${API_BASE_URL}/api/v1/books?page=${params?.page ?? 0}&size=${params?.size ?? 40}`
+      const legacy = await fetch(url, { method: 'GET' })
+      if (!legacy.ok) return mapped
+      const legacyRows = (await legacy.json()) as LegacyBookRow[]
+      if (!Array.isArray(legacyRows)) return mapped
+      return legacyRows.map(mapLegacyBook)
     } catch (error) {
       throw new ApiError(asErrorMessage(error), 500, error)
     }

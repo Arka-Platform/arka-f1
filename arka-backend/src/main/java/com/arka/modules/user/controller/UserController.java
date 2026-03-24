@@ -45,9 +45,7 @@ public class UserController {
       Authentication authentication,
       @org.springframework.security.core.annotation.AuthenticationPrincipal String authenticatedUserId) {
     UUID requesterId = UUID.fromString(authenticatedUserId);
-    boolean isAdmin = authentication != null
-        && authentication.getAuthorities().stream()
-            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    boolean isAdmin = hasAdminRole(authentication);
     if (!isAdmin && !requesterId.equals(id)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN)
           .body(java.util.Map.of("error", "Forbidden"));
@@ -63,9 +61,7 @@ public class UserController {
       @org.springframework.security.core.annotation.AuthenticationPrincipal String authenticatedUserId,
       @Valid @RequestBody com.arka.modules.user.dto.UpdateUserRequest request) {
     UUID requesterId = UUID.fromString(authenticatedUserId);
-    boolean isAdmin = authentication != null
-        && authentication.getAuthorities().stream()
-            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    boolean isAdmin = hasAdminRole(authentication);
     if (!isAdmin && !requesterId.equals(id)) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN)
           .body(java.util.Map.of("error", "Forbidden"));
@@ -83,6 +79,12 @@ public class UserController {
   @GetMapping("/profile")
   public ResponseEntity<String> profile() {
     return ResponseEntity.ok(userService.profileMessage());
+  }
+
+  private boolean hasAdminRole(Authentication authentication) {
+    return authentication != null
+        && authentication.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
   }
 }
 

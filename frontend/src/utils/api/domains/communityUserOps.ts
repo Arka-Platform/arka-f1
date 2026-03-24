@@ -188,6 +188,28 @@ export function createCommunityApi({ supabase, ApiError, asErrorMessage, mapSupa
 }
 
 export function createOrdersApi({ supabase, ApiError, asErrorMessage }: Omit<Deps, 'mapSupabaseBook'>) {
+  type OrderBookRow = {
+    id: string
+    credit_price: number | null
+    title: string | null
+    author: string | null
+  }
+
+  type NormalizedOrderItem = {
+    bookId: string
+    quantity: number
+    unitPrice: number
+    title: string
+    author: string
+  }
+
+  type InsertedOrderItemRow = {
+    id: string
+    book_id: string
+    quantity: number
+    unit_price: number
+  }
+
   const ordersApi = {
     create: async (userId: string, data: CreateOrderRequest): Promise<OrderResponse> => {
       if (!data.items.length) {
@@ -201,13 +223,13 @@ export function createOrdersApi({ supabase, ApiError, asErrorMessage }: Omit<Dep
         .in('id', bookIds)
       if (booksError) throw new ApiError(asErrorMessage(booksError), 500, booksError)
 
-      const byId = new Map<string, any>((books ?? []).map((b: any) => [b.id, b]))
+      const byId = new Map<string, OrderBookRow>((books ?? []).map((b: OrderBookRow) => [b.id, b]))
       const missing = bookIds.filter((id) => !byId.has(id))
       if (missing.length) {
         throw new ApiError('One or more selected books were not found', 400, { missing })
       }
 
-      const normalizedItems = data.items.map((item) => {
+      const normalizedItems: NormalizedOrderItem[] = data.items.map((item) => {
         const book = byId.get(item.bookId)
         const unitPrice = Number(book?.credit_price ?? 0)
         return {
@@ -240,8 +262,11 @@ export function createOrdersApi({ supabase, ApiError, asErrorMessage }: Omit<Dep
         .select('id,book_id,quantity,unit_price')
       if (itemsError) throw new ApiError(asErrorMessage(itemsError), 500, itemsError)
 
-      const itemResponses = (insertedItems ?? []).map((row: any) => {
-        const meta = normalizedItems.find((i) => i.bookId === row.book_id)
+      const normalizedByBookId = new Map<string, NormalizedOrderItem>(
+        normalizedItems.map((i) => [i.bookId, i])
+      )
+      const itemResponses = (insertedItems as InsertedOrderItemRow[] | null ?? []).map((row) => {
+        const meta = normalizedByBookId.get(row.book_id)
         const unitPrice = Number(row.unit_price ?? 0)
         const quantity = Number(row.quantity ?? 0)
         return {

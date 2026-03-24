@@ -63,6 +63,32 @@ Deno.serve(async (req) => {
     }
 
     // Non-admin access: limit to shipments for requester's own orders.
+    // Fast path for common case: querying a single order_id should avoid loading all user orders.
+    if (orderId) {
+      const { data: ownedOrder, error: ownedOrderError } = await serviceClient
+        .from("orders")
+        .select("id")
+        .eq("id", orderId)
+        .eq("user_id", ctx.userId)
+        .maybeSingle();
+
+      if (ownedOrderError) return jsonResponse(500, { error: ownedOrderError.message });
+      if (!ownedOrder) return jsonResponse(200, { shipments: [] });
+
+      let query = serviceClient
+        .from("shipments")
+        .select("*")
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + Math.max(limit - 1, 0));
+
+      if (status) query = query.eq("status", status);
+
+      const { data, error } = await query;
+      if (error) return jsonResponse(500, { error: error.message });
+      return jsonResponse(200, { shipments: data ?? [] });
+    }
+
     const { data: orders, error: ordersError } = await serviceClient
       .from("orders")
       .select("id")
