@@ -1,7 +1,7 @@
 .order {
   width: 100%;
   padding: 2rem 4rem;
-  background-color: transparent;
+  background-color: var(--color-white);
   min-height: 100vh;
 }
 

@@ -134,8 +134,11 @@ const Preferences: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (validateForm()) {
+      // TODO: Implement backend API for saving preferences
+      // For now, save to localStorage
       localStorage.setItem('arka_user_preferences', JSON.stringify(formData))
       success('Preferences saved successfully!')
+      // Navigate to home page after successful preferences submission
       navigate('/home')
     }
   }

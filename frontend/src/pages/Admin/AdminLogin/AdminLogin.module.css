@@ -4,13 +4,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 2rem;
 }
 
 .loginContainer {
-  background: var(--app-glass-bg, rgba(255, 255, 255, 0.04));
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--app-glass-border, rgba(255, 255, 255, 0.14));
+  background: white;
   border-radius: 16px;
   padding: 3rem;
   max-width: 450px;

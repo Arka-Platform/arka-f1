@@ -50,13 +50,7 @@ const Bookshelf: React.FC = () => {
 
   if (!user) {
     return (
-      <div className={`${styles.bookshelf} vibePage`}>
-        <div className="vibeQuickLinks">
-          <Link to="/home" className="vibeQuickLink">Home</Link>
-          <Link to="/books" className="vibeQuickLink">Nearby Finds</Link>
-          <Link to="/exchange" className="vibeQuickLink">Swap Books</Link>
-          <Link to="/wishlist" className="vibeQuickLink">Wishlist</Link>
-        </div>
+      <div className={styles.bookshelf}>
         <div className={styles.authPrompt}>
           <p>Please log in to view your bookshelf.</p>
           <Link to="/login" className={styles.loginButton}>Log In</Link>
@@ -66,13 +60,7 @@ const Bookshelf: React.FC = () => {
   }
 
   return (
-    <div className={`${styles.bookshelf} vibePage`}>
-      <div className="vibeQuickLinks">
-        <Link to="/home" className="vibeQuickLink">Home</Link>
-        <Link to="/books" className="vibeQuickLink">Nearby Finds</Link>
-        <Link to="/exchange" className="vibeQuickLink">Swap Books</Link>
-        <Link to="/wishlist" className="vibeQuickLink">Wishlist</Link>
-      </div>
+    <div className={styles.bookshelf}>
       <h1 className={styles.pageTitle}>My Bookshelf</h1>
       <p className={styles.pageDescription}>
         Books you own and have at home

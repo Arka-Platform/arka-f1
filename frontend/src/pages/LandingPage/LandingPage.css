@@ -9,7 +9,7 @@
 }
 
 .testimonials {
-  background-color: transparent;
+  background-color: var(--color-gray-light);
   padding: 6rem 0;
 }
 
@@ -27,8 +27,7 @@
 }
 
 .testimonial-card {
-  background: var(--app-glass-bg, rgba(255, 255, 255, 0.04));
-  border: 1px solid var(--app-glass-border, rgba(255, 255, 255, 0.14));
+  background: #fff;
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -48,7 +47,7 @@
 }
 
 .key-info {
-  background-color: transparent;
+  background-color: var(--color-white);
   padding: 6rem 0;
 }
 
@@ -67,8 +66,7 @@
 }
 
 .info-card {
-  background: var(--app-glass-bg, rgba(255, 255, 255, 0.04));
-  border: 1px solid var(--app-glass-border, rgba(255, 255, 255, 0.14));
+  background: var(--color-gray-light);
   border-radius: 16px;
   padding: 2rem;
   text-align: center;

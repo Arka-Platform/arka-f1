@@ -15,8 +15,8 @@ const Hero: React.FC = () => {
       <div className={styles.container}>
         <div className={styles.content}>
           <h1 className={styles.heading}>ARKA</h1>
-          {/* <h2 className={styles.subheading}>Offering As A Service.</h2> */}
-          <p className={styles.tagline}>Sustainable Books. Unlimited Possibilities.</p>
+          <h2 className={styles.subheading}>Book Circulation Platform</h2>
+          <p className={styles.tagline}>Affordable Reads. Sustainable Books. Unlimited Possibilities.</p>
 
           <button 
             onClick={handleGetStarted} 

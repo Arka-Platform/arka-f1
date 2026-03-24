@@ -1,7 +1,7 @@
 .inventory {
   width: 100%;
   padding: 4rem 2rem;
-  background-color: transparent;
+  background-color: var(--color-white);
   min-height: 100vh;
 }
 

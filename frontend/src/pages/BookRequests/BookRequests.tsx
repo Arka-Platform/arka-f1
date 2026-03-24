@@ -269,6 +269,13 @@ const RequestCard: React.FC<RequestCardProps> = ({ request, onFulfill, onCancel,
           </Button>
         )}
       </div>
+      
+      {/* Match selection handler */}
+      {isOwner && matches.length > 0 && (
+        <div style={{ display: 'none' }}>
+          {/* This will be handled by the parent component's handleSelectMatch */}
+        </div>
+      )}
     </div>
   )
 }
@@ -782,21 +789,9 @@ const BookRequests: React.FC = () => {
   }
 
   const handleFulfill = (_requestId: string) => {
-    const target = requests.find((req) => req.id === _requestId)
-    if (!target) {
-      showError('Request not found')
-      return
-    }
-    if (!target.requesterEmail) {
-      showError('Getter contact email is unavailable for this request')
-      return
-    }
-
-    const subject = encodeURIComponent(`I can fulfill your request: ${target.title}`)
-    const body = encodeURIComponent(
-      `Hi ${target.requesterName},\n\nI have "${target.title}" by ${target.author} and can help with your request.\n\nRegards`
-    )
-    window.location.href = `mailto:${target.requesterEmail}?subject=${subject}&body=${body}`
+    // Navigate to fulfillment page or show modal
+    // For now, just show a message
+      showError('Fulfillment feature coming soon. You can contact the getter directly.')
   }
 
   const handleCancel = async (requestId: string) => {

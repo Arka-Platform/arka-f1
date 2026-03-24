@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { booksApi, exchangesApi, BookResponse } from '../../utils/api'
@@ -116,13 +116,7 @@ const Exchange: React.FC = () => {
   }
 
   return (
-    <div className={`${styles.exchange} vibePage`}>
-      <div className="vibeQuickLinks">
-        <Link to="/home" className="vibeQuickLink">Home</Link>
-        <Link to="/books" className="vibeQuickLink">Nearby Finds</Link>
-        <Link to="/wishlist" className="vibeQuickLink">Wishlist</Link>
-        <Link to="/bookshelf" className="vibeQuickLink">My Library</Link>
-      </div>
+    <div className={styles.exchange}>
       <div className={styles.header}>
         <h1 className={styles.title}>Exchange Books</h1>
         <p className={styles.subtitle}>

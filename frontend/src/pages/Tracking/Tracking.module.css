@@ -1,7 +1,7 @@
 .tracking {
   width: 100%;
   padding: 4rem 4rem;
-  background-color: transparent;
+  background-color: var(--color-gray-light);
   min-height: 100vh;
 }
 

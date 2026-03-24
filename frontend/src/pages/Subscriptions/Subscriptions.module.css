@@ -197,27 +197,6 @@
   }
 }
 
-/* Global dark-theme harmonization for subscription surfaces */
-.title,
-.loading,
-.currentSubscription h2,
-.subscriptionHeader h3,
-.subscriptionDetails,
-.plansSection h2,
-.planHeader h3,
-.planPeriod,
-.planFeatures li,
-.booksLimit {
-  color: var(--color-black);
-}
-
-.subscriptionCard,
-.planCard,
-.booksLimit {
-  background: var(--app-glass-bg, rgba(255, 255, 255, 0.04));
-  border-color: var(--app-glass-border, rgba(255, 255, 255, 0.14));
-}
-
 
 
 

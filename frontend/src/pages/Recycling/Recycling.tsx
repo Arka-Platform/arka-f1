@@ -21,6 +21,8 @@ interface WastePaperCardProps {
 
 const WastePaperCard: React.FC<WastePaperCardProps> = ({ item }) => {
   const handleSchedulePickup = () => {
+    // Navigate to order page with recycling item pre-filled
+    // TODO: Implement proper recycling pickup scheduling endpoint
     window.location.href = `/order?recycling=${item.id}`
   }
 
