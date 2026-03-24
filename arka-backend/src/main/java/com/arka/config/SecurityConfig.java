@@ -44,6 +44,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers("/actuator/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/v1/books/**").permitAll()
             .requestMatchers("/api/v1/users/register", "/api/v1/users/login").permitAll()
             .requestMatchers("/api/v1/otp/**").permitAll()
             .requestMatchers("/api/v1/auth/**").permitAll()

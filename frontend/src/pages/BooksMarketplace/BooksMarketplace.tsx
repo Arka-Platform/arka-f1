@@ -925,7 +925,7 @@ const BooksMarketplace: React.FC = () => {
         <div className={styles.container}>
             {booksLoading && (
             <div className={styles.loading}>
-              <p>Loading books...</p>
+              <p>Loading books... this can take a few seconds.</p>
             </div>
           )}
           
@@ -937,7 +937,11 @@ const BooksMarketplace: React.FC = () => {
           
             {!booksLoading && !booksError && books.length === 0 && (
             <div className={styles.empty}>
-                <p>No books found. Try adjusting your search.</p>
+                <p>
+                  {searchQuery
+                    ? 'No books matched your search. Try a different title or clear the search.'
+                    : 'No books are available right now. If this seems incorrect, refresh in a few seconds.'}
+                </p>
             </div>
           )}
           

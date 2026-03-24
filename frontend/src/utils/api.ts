@@ -358,6 +358,21 @@ function asErrorMessage(error: unknown): string {
 export const booksApi = {
   list: async (params?: { search?: string; genre?: string; subcategory?: string; page?: number; size?: number }) => {
     try {
+      const hasFilters = Boolean(params?.search || params?.genre || params?.subcategory)
+      const shouldTryLegacyFallback = !hasFilters
+
+      const legacyUrl = `${API_BASE_URL}/api/v1/books?page=${params?.page ?? 0}&size=${params?.size ?? 40}`
+      const legacyRequest = shouldTryLegacyFallback
+        ? fetch(legacyUrl, { method: 'GET' })
+            .then(async (res) => {
+              if (!res.ok) return [] as BookResponse[]
+              const rows = (await res.json()) as LegacyBookRow[]
+              if (!Array.isArray(rows)) return [] as BookResponse[]
+              return rows.map(mapLegacyBook)
+            })
+            .catch(() => [] as BookResponse[])
+        : Promise.resolve([] as BookResponse[])
+
       let query = supabase
         .from('books')
         .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id')
@@ -375,17 +390,14 @@ export const booksApi = {
       const { data, error } = await query
       if (error) throw error
       const mapped = (data ?? []).map((row) => mapSupabaseBook(row as SupabaseBookRow))
-      if (mapped.length > 0 || params?.search || params?.genre || params?.subcategory) {
+      if (mapped.length > 0 || hasFilters) {
         return mapped
       }
 
       // Fallback for environments where catalog data exists in backend API.
-      const url = `${API_BASE_URL}/api/v1/books?page=${params?.page ?? 0}&size=${params?.size ?? 40}`
-      const legacy = await fetch(url, { method: 'GET' })
-      if (!legacy.ok) return mapped
-      const legacyRows = (await legacy.json()) as LegacyBookRow[]
-      if (!Array.isArray(legacyRows)) return mapped
-      return legacyRows.map(mapLegacyBook)
+      // Started in parallel above to reduce perceived wait time.
+      const legacyMapped = await legacyRequest
+      return legacyMapped.length > 0 ? legacyMapped : mapped
     } catch (error) {
       throw new ApiError(asErrorMessage(error), 500, error)
     }
