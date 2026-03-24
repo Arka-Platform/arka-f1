@@ -1,3 +1,5 @@
+import { supabase } from '../lib/supabaseClient'
+
 // Use relative URL when deployed (same ALB serves both frontend and backend)
 // Fallback to localhost for local development
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
@@ -207,46 +209,204 @@ export interface DonationResponse {
   updatedAt: string
 }
 
+type SupabaseBookRow = {
+  id: string
+  title: string
+  author: string
+  description: string | null
+  genre: string | null
+  category: string | null
+  subcategory: string | null
+  credit_price: number | null
+  status: string
+  created_at: string
+  owner_id: string | null
+}
+
+function mapSupabaseBook(row: SupabaseBookRow): BookResponse {
+  return {
+    id: row.id,
+    title: row.title,
+    author: row.author,
+    description: row.description ?? '',
+    genre: row.genre,
+    category: row.category,
+    subcategory: row.subcategory,
+    price: row.credit_price,
+    status: row.status,
+    createdAt: row.created_at,
+    isbn: null,
+    publisher: null,
+    publicationYear: null,
+    imageUrl: null,
+    thumbnailUrl: null,
+    averageRating: null,
+    ratingsCount: null,
+  }
+}
+
+function asErrorMessage(error: unknown): string {
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String((error as { message?: string }).message ?? 'Supabase error')
+  }
+  return 'Supabase error'
+}
+
 // Book API functions
 export const booksApi = {
-  list: (params?: { search?: string; genre?: string; subcategory?: string; page?: number; size?: number }) => {
-    const searchParams = new URLSearchParams()
-    if (params?.search) searchParams.append('search', params.search)
-    if (params?.genre) searchParams.append('genre', params.genre)
-    if (params?.subcategory) searchParams.append('subcategory', params.subcategory)
-    if (params?.page) searchParams.append('page', params.page.toString())
-    if (params?.size) searchParams.append('size', params.size.toString())
-    
-    const query = searchParams.toString()
-    return api.get<BookResponse[]>(`/api/v1/books${query ? `?${query}` : ''}`)
+  list: async (params?: { search?: string; genre?: string; subcategory?: string; page?: number; size?: number }) => {
+    try {
+      let query = supabase
+        .from('books')
+        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id')
+        .order('created_at', { ascending: false })
+
+      if (params?.search) query = query.ilike('title', `%${params.search}%`)
+      if (params?.genre) query = query.eq('genre', params.genre)
+      if (params?.subcategory) query = query.eq('subcategory', params.subcategory)
+      if (params?.page !== undefined && params?.size) {
+        const from = params.page * params.size
+        const to = from + params.size - 1
+        query = query.range(from, to)
+      }
+
+      const { data, error } = await query
+      if (error) throw error
+      return (data ?? []).map((row) => mapSupabaseBook(row as SupabaseBookRow))
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
   },
   
-  create: (ownerId: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) => {
-    const params = new URLSearchParams()
-    params.append('ownerId', ownerId)
-    return api.post<{ id: string }>(`/api/v1/books?${params}`, data)
+  create: async (ownerId: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) => {
+    try {
+      const { data: inserted, error } = await supabase
+        .from('books')
+        .insert({
+          owner_id: ownerId,
+          title: data.title,
+          author: data.author,
+          description: data.description ?? null,
+          genre: data.genre ?? null,
+          credit_price: data.price,
+          status: 'AVAILABLE',
+        })
+        .select('id')
+        .single()
+      if (error) throw error
+      return { id: inserted.id as string }
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
   },
   
-  getById: (id: string) =>
-    api.get<BookResponse>(`/api/v1/books/${id}`),
+  getById: async (id: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('books')
+        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id')
+        .eq('id', id)
+        .single()
+      if (error) throw error
+      return mapSupabaseBook(data as SupabaseBookRow)
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  update: (id: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) =>
-    api.put<BookResponse>(`/api/v1/books/${id}`, data),
+  update: async (id: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) => {
+    try {
+      const { data: updated, error } = await supabase
+        .from('books')
+        .update({
+          title: data.title,
+          author: data.author,
+          description: data.description ?? null,
+          genre: data.genre ?? null,
+          credit_price: data.price,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id')
+        .single()
+      if (error) throw error
+      return mapSupabaseBook(updated as SupabaseBookRow)
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  delete: (id: string) =>
-    api.delete<void>(`/api/v1/books/${id}`),
+  delete: async (id: string) => {
+    try {
+      const { error } = await supabase.from('books').delete().eq('id', id)
+      if (error) throw error
+      return
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  updateStatus: (id: string, status: string) =>
-    api.patch<BookResponse>(`/api/v1/books/${id}/status?status=${status}`),
+  updateStatus: async (id: string, status: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('books')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id')
+        .single()
+      if (error) throw error
+      return mapSupabaseBook(data as SupabaseBookRow)
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  getMyBooks: (ownerId: string) =>
-    api.get<BookResponse[]>(`/api/v1/books/my?ownerId=${ownerId}`),
+  getMyBooks: async (ownerId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('books')
+        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id')
+        .eq('owner_id', ownerId)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return (data ?? []).map((row) => mapSupabaseBook(row as SupabaseBookRow))
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  getGenres: () =>
-    api.get<string[]>('/api/v1/books/genres'),
+  getGenres: async () => {
+    try {
+      const { data, error } = await supabase.from('books').select('genre').not('genre', 'is', null)
+      if (error) throw error
+      const genres = Array.from(new Set((data ?? []).map((d) => d.genre).filter(Boolean)))
+      return genres as string[]
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  getGenresWithSubcategories: () =>
-    api.get<Array<{ genre: string; subcategories: string[] }>>('/api/v1/books/genres/with-subcategories'),
+  getGenresWithSubcategories: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('books')
+        .select('genre,subcategory')
+        .not('genre', 'is', null)
+      if (error) throw error
+      const grouped = new Map<string, Set<string>>()
+      for (const row of data ?? []) {
+        const genre = row.genre as string
+        if (!grouped.has(genre)) grouped.set(genre, new Set<string>())
+        if (row.subcategory) grouped.get(genre)!.add(row.subcategory as string)
+      }
+      return Array.from(grouped.entries()).map(([genre, subcategories]) => ({
+        genre,
+        subcategories: Array.from(subcategories),
+      }))
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
   search: (query: string) =>
     api.get<BookResponse[]>(`/api/v1/books?search=${encodeURIComponent(query)}`),
@@ -263,90 +423,209 @@ export const uploadApi = {
 
 // Recycling API functions
 export const recyclingApi = {
-  list: (params?: { search?: string; category?: string }) => {
-    const searchParams = new URLSearchParams()
-    if (params?.search) searchParams.append('search', params.search)
-    if (params?.category) searchParams.append('category', params.category)
-    
-    const query = searchParams.toString()
-    return api.get<WastePaperResponse[]>(`/api/v1/recycling${query ? `?${query}` : ''}`)
-  },
+  list: async () => [],
 };
 
 // Donation API functions
 export const donationsApi = {
-  getNGOs: () =>
-    api.get<NGOResponse[]>('/api/v1/donations/ngos'),
-  
-  createDonation: (data: DonationRequest) =>
-    api.post<DonationResponse>('/api/v1/donations', data),
-  
-  getMyDonations: (userId: string) =>
-    api.get<DonationResponse[]>(`/api/v1/donations/my?userId=${userId}`),
-  
-  getDonation: (donationId: string) =>
-    api.get<DonationResponse>(`/api/v1/donations/${donationId}`),
-  
-  cancelDonation: (donationId: string) =>
-    api.delete<DonationResponse>(`/api/v1/donations/${donationId}`),
+  getNGOs: async () => {
+    const { data, error } = await supabase.from('ngos').select('*').order('name')
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return (data ?? []).map((n: any) => ({
+      id: n.id,
+      name: n.name,
+      description: n.description ?? null,
+      location: null,
+      verified: !!n.verified,
+      booksReceived: null,
+      categories: null,
+      contactEmail: n.contact_email ?? null,
+      contactPhone: n.contact_phone ?? null,
+      website: n.website ?? null,
+    }))
+  },
+  createDonation: async (data: DonationRequest) => {
+    const { data: created, error } = await supabase.rpc('create_donation', {
+      p_ngo_id: data.ngoId,
+      p_item_count: data.bookCount,
+      p_notes: data.additionalNotes ?? null,
+      p_idempotency_key: crypto.randomUUID(),
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: created.id,
+      ngoId: created.ngo_id,
+      ngoName: '',
+      donorName: data.donorName,
+      donorEmail: data.donorEmail,
+      donorPhone: data.donorPhone,
+      donorType: data.donorType,
+      institutionName: data.institutionName ?? null,
+      bookCount: created.item_count,
+      bookCategories: data.bookCategories ?? null,
+      condition: data.condition,
+      pickupAddress: data.pickupAddress,
+      additionalNotes: created.notes ?? null,
+      status: created.status,
+      userId: created.user_id ?? null,
+      createdAt: created.created_at,
+      updatedAt: created.updated_at ?? created.created_at,
+    } as DonationResponse
+  },
+  getMyDonations: async (userId: string) => {
+    const { data, error } = await supabase
+      .from('donations')
+      .select('*, ngos:ngo_id(name)')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return (data ?? []).map((d: any) => ({
+      id: d.id,
+      ngoId: d.ngo_id,
+      ngoName: d.ngos?.name ?? '',
+      donorName: '',
+      donorEmail: '',
+      donorPhone: '',
+      donorType: 'INDIVIDUAL',
+      institutionName: null,
+      bookCount: d.item_count ?? 1,
+      bookCategories: null,
+      condition: 'GOOD',
+      pickupAddress: { street: '', city: '', state: '', pincode: '' },
+      additionalNotes: d.notes ?? null,
+      status: d.status,
+      userId: d.user_id ?? null,
+      createdAt: d.created_at,
+      updatedAt: d.updated_at ?? d.created_at,
+    }))
+  },
+  getDonation: async (donationId: string) => {
+    const { data, error } = await supabase
+      .from('donations')
+      .select('*, ngos:ngo_id(name)')
+      .eq('id', donationId)
+      .single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: data.id,
+      ngoId: data.ngo_id,
+      ngoName: data.ngos?.name ?? '',
+      donorName: '',
+      donorEmail: '',
+      donorPhone: '',
+      donorType: 'INDIVIDUAL',
+      institutionName: null,
+      bookCount: data.item_count ?? 1,
+      bookCategories: null,
+      condition: 'GOOD',
+      pickupAddress: { street: '', city: '', state: '', pincode: '' },
+      additionalNotes: data.notes ?? null,
+      status: data.status,
+      userId: data.user_id ?? null,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at ?? data.created_at,
+    } as DonationResponse
+  },
+  cancelDonation: async (donationId: string) => {
+    const { data, error } = await supabase
+      .from('donations')
+      .update({ status: 'CANCELLED' })
+      .eq('id', donationId)
+      .select('*')
+      .single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: data.id,
+      ngoId: data.ngo_id,
+      ngoName: '',
+      donorName: '',
+      donorEmail: '',
+      donorPhone: '',
+      donorType: 'INDIVIDUAL',
+      institutionName: null,
+      bookCount: data.item_count ?? 1,
+      bookCategories: null,
+      condition: 'GOOD',
+      pickupAddress: { street: '', city: '', state: '', pincode: '' },
+      additionalNotes: data.notes ?? null,
+      status: data.status,
+      userId: data.user_id ?? null,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at ?? data.created_at,
+    } as DonationResponse
+  },
 };
 
 // Admin API functions
 export const adminApi = {
-  login: (email: string, password: string) => {
-    return api.post<{
-      token: string
-      userId: string
-      email: string
-      firstName: string
-      lastName: string
-    }>('/api/admin/auth/login', { email, password })
+  login: async (email: string, password: string) => {
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    if (authError || !authData.user) throw new ApiError(authError?.message ?? 'Invalid credentials', 401, authError)
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .select('id,email,first_name,last_name,is_admin')
+      .eq('id', authData.user.id)
+      .single()
+    if (profileError) throw new ApiError(asErrorMessage(profileError), 500, profileError)
+    if (!profile?.is_admin) throw new ApiError('Admin access denied', 403)
+    return {
+      token: authData.session?.access_token ?? '',
+      userId: profile.id,
+      email: profile.email,
+      firstName: profile.first_name ?? '',
+      lastName: profile.last_name ?? '',
+    }
   },
   
-  getNGOs: () => {
-    const token = localStorage.getItem('arka_admin_token')
-    return api.get<NGOResponse[]>('/api/admin/donations/ngos', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
+  getNGOs: () => donationsApi.getNGOs(),
+  
+  createNGO: async (data: CreateNGORequest) => {
+    const { data: created, error } = await supabase.from('ngos').insert({
+      name: data.name,
+      description: data.description ?? null,
+      contact_email: data.contactEmail ?? null,
+      contact_phone: data.contactPhone ?? null,
+      website: data.website ?? null,
+      verified: !!data.verified,
+    }).select('*').single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: created.id,
+      name: created.name,
+      description: created.description ?? null,
+      location: null,
+      verified: !!created.verified,
+      booksReceived: null,
+      categories: null,
+      contactEmail: created.contact_email ?? null,
+      contactPhone: created.contact_phone ?? null,
+      website: created.website ?? null,
+    }
   },
   
-  createNGO: (data: CreateNGORequest) => {
-    const token = localStorage.getItem('arka_admin_token')
-    return api.post<NGOResponse>('/api/admin/donations/ngos', data, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
+  updateNGO: async (ngoId: string, data: UpdateNGORequest) => {
+    const { data: updated, error } = await supabase.from('ngos').update({
+      name: data.name,
+      description: data.description,
+      contact_email: data.contactEmail,
+      contact_phone: data.contactPhone,
+      website: data.website,
+      verified: data.verified,
+    }).eq('id', ngoId).select('*').single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: updated.id, name: updated.name, description: updated.description ?? null, location: null,
+      verified: !!updated.verified, booksReceived: null, categories: null,
+      contactEmail: updated.contact_email ?? null, contactPhone: updated.contact_phone ?? null, website: updated.website ?? null,
+    }
   },
   
-  updateNGO: (ngoId: string, data: UpdateNGORequest) => {
-    const token = localStorage.getItem('arka_admin_token')
-    return api.put<NGOResponse>(`/api/admin/donations/ngos/${ngoId}`, data, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
+  deleteNGO: async (ngoId: string) => {
+    const { error } = await supabase.from('ngos').delete().eq('id', ngoId)
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
   },
   
-  deleteNGO: (ngoId: string) => {
-    const token = localStorage.getItem('arka_admin_token')
-    return api.delete<void>(`/api/admin/donations/ngos/${ngoId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-  },
-  
-  verifyNGO: (ngoId: string) => {
-    const token = localStorage.getItem('arka_admin_token')
-    return api.put<NGOResponse>(`/api/admin/donations/ngos/${ngoId}/verify`, {}, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-  },
+  verifyNGO: async (ngoId: string) => adminApi.updateNGO(ngoId, { verified: true }),
 };
 
 // Demand/Book Requests API types
@@ -403,55 +682,78 @@ export interface FulfillRequestRequest {
 
 // Demand/Book Requests API functions
 export const demandApi = {
-  createRequest: (requesterId: string, data: CreateBookRequestRequest) =>
-    api.post<CreateRequestResponse>(`/api/v1/demand/requests?requesterId=${requesterId}`, data),
-  
-  getOpenRequests: () =>
-    api.get<BookRequestResponse[]>('/api/v1/demand/requests'),
-  
-  getMyRequests: (userId: string) =>
-    api.get<BookRequestResponse[]>(`/api/v1/demand/requests/my?userId=${userId}`),
-  
-  getRequest: (requestId: string) =>
-    api.get<BookRequestResponse>(`/api/v1/demand/requests/${requestId}`),
-  
-  searchRequests: (query: string) =>
-    api.get<BookRequestResponse[]>(`/api/v1/demand/requests?search=${encodeURIComponent(query)}`),
-  
-  fulfillRequest: (requestId: string, sellerId: string, data: FulfillRequestRequest) =>
-    api.put<BookRequestResponse>(`/api/v1/demand/requests/${requestId}/fulfill?sellerId=${sellerId}`, data),
-  
-  cancelRequest: (requestId: string, userId: string) =>
-    api.delete<BookRequestResponse>(`/api/v1/demand/requests/${requestId}?userId=${userId}`),
-  
-  getMatchesForRequest: (requestId: string, userId: string) => {
-    const params = new URLSearchParams()
-    params.append('userId', userId)
-    return api.get<MatchResponse[]>(`/api/v1/demand/requests/${requestId}/matches?${params}`)
+  createRequest: async (_requesterId: string, data: CreateBookRequestRequest) => {
+    const { data: book, error: bookError } = await supabase
+      .from('books')
+      .select('id')
+      .ilike('title', data.title)
+      .ilike('author', data.author)
+      .limit(1)
+      .maybeSingle()
+    if (bookError) throw new ApiError(asErrorMessage(bookError), 500, bookError)
+    if (!book?.id) throw new ApiError('No matching book found to create request', 400)
+    const { data: req, error } = await supabase.rpc('create_request', {
+      p_book_id: book.id,
+      p_notes: data.additionalNotes ?? data.description ?? null,
+      p_idempotency_key: crypto.randomUUID(),
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return { request: req as unknown as BookRequestResponse, matches: [], totalMatches: 0 }
   },
   
-  getMatchesForBook: (bookId: string, sellerId: string) =>
-    api.get<RequestMatchResponse[]>(`/api/v1/demand/books/${bookId}/matches?sellerId=${sellerId}`),
-  
-  getAutoFillSuggestions: (userId: string) =>
-    api.get<AutoFillSuggestions>(`/api/v1/demand/requests/autofill?userId=${userId}`),
-  
-  getQuickSuggestions: (userId: string, query: string, fieldType: string) =>
-    api.get<string[]>(`/api/v1/demand/requests/suggestions?userId=${userId}&query=${encodeURIComponent(query)}&fieldType=${fieldType}`),
-  
-  getRecentlyServedRequests: (limit?: number) =>
-    api.get<BookRequestResponse[]>(`/api/v1/demand/requests/recently-served${limit ? `?limit=${limit}` : ''}`),
-  
-  getWeeklyStats: () =>
-    api.get<WeeklyStats>(`/api/v1/demand/requests/stats/weekly`),
-  
-  getMostRequestedBooks: (limit: number = 5) => {
-    const params = new URLSearchParams()
-    params.append('limit', limit.toString())
-    return api.get<Array<{ title: string; author: string; requestCount: number }>>(
-      `/api/v1/demand/requests/most-requested?${params}`
-    )
+  getOpenRequests: async () => {
+    const { data, error } = await supabase.from('v_open_book_requests').select('*').order('created_at', { ascending: false })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return (data ?? []) as unknown as BookRequestResponse[]
   },
+  
+  getMyRequests: async (userId: string) => {
+    const { data, error } = await supabase.from('book_requests').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return (data ?? []) as unknown as BookRequestResponse[]
+  },
+  
+  getRequest: async (requestId: string) => {
+    const { data, error } = await supabase.from('book_requests').select('*').eq('id', requestId).single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return data as unknown as BookRequestResponse
+  },
+  
+  searchRequests: async (_query: string) => demandApi.getOpenRequests(),
+  
+  fulfillRequest: async (requestId: string, _sellerId: string, data: FulfillRequestRequest) => {
+    const { data: updated, error } = await supabase
+      .from('book_requests')
+      .update({ status: 'FULFILLED', updated_at: new Date().toISOString(), matching_metadata: { offeredPrice: data.offeredPrice, condition: data.condition, notes: data.notes ?? null } })
+      .eq('id', requestId)
+      .select('*')
+      .single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return updated as unknown as BookRequestResponse
+  },
+  
+  cancelRequest: async (requestId: string, _userId: string) => {
+    const { data, error } = await supabase.rpc('cancel_request', { p_request_id: requestId })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return data as unknown as BookRequestResponse
+  },
+  
+  getMatchesForRequest: async () => [],
+  
+  getMatchesForBook: async () => [],
+  
+  getAutoFillSuggestions: async () => ({ recentSearches: [], suggestedGenres: [], recentlyViewedBooks: [], popularGenres: [] }),
+  
+  getQuickSuggestions: async () => [],
+  
+  getRecentlyServedRequests: async (limit?: number) => {
+    const rows = await demandApi.getOpenRequests()
+    return rows.slice(0, limit ?? 20)
+  },
+  
+  getWeeklyStats: async () => ({ openRequests: 0, completedThisWeek: 0, createdThisWeek: 0 }),
+  
+  getMostRequestedBooks: async () => [],
 };
 
 export interface WeeklyStats {
@@ -555,79 +857,72 @@ export interface FeeCalculationResponse {
 
 // Exchange API functions
 export const exchangesApi = {
-  create: (data: CreateExchangeRequest, buyerId?: string) => {
-    const url = buyerId 
-      ? `/api/v1/exchanges?buyerId=${buyerId}`
-      : '/api/v1/exchanges'
-    return api.post<ExchangeResponse>(url, data)
+  create: async (data: CreateExchangeRequest, buyerId?: string) => {
+    if (!buyerId) throw new ApiError('buyerId is required', 400)
+    const { data: book, error: bookError } = await supabase.from('books').select('owner_id,credit_price').eq('id', data.bookId).single()
+    if (bookError) throw new ApiError(asErrorMessage(bookError), 500, bookError)
+    if (!book.owner_id) throw new ApiError('Book owner missing', 400)
+    const { data: created, error } = await supabase.rpc('perform_exchange', {
+      p_seller_id: book.owner_id,
+      p_book_id: data.bookId,
+      p_request_id: null,
+      p_gross_amount: Number(book.credit_price ?? 1),
+      p_platform_fee: 0,
+      p_idempotency_key: crypto.randomUUID(),
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return created as unknown as ExchangeResponse
   },
   
-  getMyExchanges: (userId?: string) => {
-    const url = userId
-      ? `/api/v1/exchanges/my?userId=${userId}`
-      : '/api/v1/exchanges/my'
-    return api.get<ExchangeResponse[]>(url)
+  getMyExchanges: async (userId?: string) => {
+    let query = supabase.from('exchanges').select('*').order('created_at', { ascending: false })
+    if (userId) query = query.or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
+    const { data, error } = await query
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return (data ?? []) as unknown as ExchangeResponse[]
   },
   
-  getBookExchanges: (bookId: string) =>
-    api.get<ExchangeResponse[]>(`/api/v1/exchanges/book/${bookId}`),
-  
-  confirm: (exchangeId: string, sellerId?: string) => {
-    const url = sellerId
-      ? `/api/v1/exchanges/${exchangeId}/confirm?sellerId=${sellerId}`
-      : `/api/v1/exchanges/${exchangeId}/confirm`
-    return api.put<ExchangeResponse>(url)
+  getBookExchanges: async (bookId: string) => {
+    const { data, error } = await supabase.from('exchanges').select('*').eq('book_id', bookId)
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return (data ?? []) as unknown as ExchangeResponse[]
   },
   
-  complete: (exchangeId: string, buyerId?: string) => {
-    const url = buyerId
-      ? `/api/v1/exchanges/${exchangeId}/complete?buyerId=${buyerId}`
-      : `/api/v1/exchanges/${exchangeId}/complete`
-    return api.put<ExchangeResponse>(url)
+  confirm: async (exchangeId: string) => {
+    const { data, error } = await supabase.from('exchanges').select('*').eq('id', exchangeId).single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return data as unknown as ExchangeResponse
   },
   
-  cancel: (exchangeId: string, userId?: string) => {
-    const url = userId
-      ? `/api/v1/exchanges/${exchangeId}?userId=${userId}`
-      : `/api/v1/exchanges/${exchangeId}`
-    return api.delete<ExchangeResponse>(url)
+  complete: async (exchangeId: string) => {
+    const { data, error } = await supabase.from('exchanges').select('*').eq('id', exchangeId).single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return data as unknown as ExchangeResponse
   },
   
-  calculateFee: (bookPrice: number) => {
-    const params = new URLSearchParams()
-    params.append('bookPrice', bookPrice.toString())
-    return api.get<FeeCalculationResponse>(`/api/v1/exchanges/fee?${params}`)
+  cancel: async (exchangeId: string) => {
+    const { data, error } = await supabase.from('exchanges').select('*').eq('id', exchangeId).single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return data as unknown as ExchangeResponse
   },
+  
+  calculateFee: async (bookPrice: number) => ({
+    bookPrice,
+    serviceFee: Math.round(bookPrice * 0.05 * 100) / 100,
+    totalCost: Math.round(bookPrice * 1.05 * 100) / 100,
+    serviceFeePercentage: '5',
+  }),
 };
 
 // Recommendation API functions
 export const recommendationsApi = {
-  getRecommendations: (userId?: string, limit: number = 10) => {
-    const params = new URLSearchParams()
-    if (userId) params.append('userId', userId)
-    params.append('limit', limit.toString())
-    return api.get<BookResponse[]>(`/api/v1/recommendations?${params}`)
-  },
+  getRecommendations: async (_userId?: string, limit: number = 10) => booksApi.list({ size: limit, page: 0 }),
   
-  getPopular: (limit: number = 10) => {
-    const params = new URLSearchParams()
-    params.append('limit', limit.toString())
-    return api.get<BookResponse[]>(`/api/v1/recommendations/popular?${params}`)
-  },
+  getPopular: async (limit: number = 10) => booksApi.list({ size: limit, page: 0 }),
   
-  getSimilar: (bookId: string, limit: number = 5) => {
-    const params = new URLSearchParams()
-    params.append('bookId', bookId)
-    params.append('limit', limit.toString())
-    return api.get<BookResponse[]>(`/api/v1/recommendations/similar?${params}`)
-  },
+  getSimilar: async (_bookId: string, limit: number = 5) => booksApi.list({ size: limit, page: 0 }),
   
-  getTrending: (category: string, limit: number = 10) => {
-    const params = new URLSearchParams()
-    params.append('category', category)
-    params.append('limit', limit.toString())
-    return api.get<BookResponse[]>(`/api/v1/recommendations/trending?${params}`)
-  },
+  getTrending: async (_category: string, limit: number = 10) => booksApi.list({ size: limit, page: 0 }),
 };
 
 // Lending API types
@@ -663,38 +958,138 @@ export interface CreateLendingRequest {
 
 // Lending API functions
 export const lendingApi = {
-  request: (data: CreateLendingRequest) =>
-    api.post<LendingResponse>('/api/lending/request', data),
-  
-  approve: (lendingId: string, ownerId: string) =>
-    api.put<LendingResponse>(`/api/lending/${lendingId}/approve?ownerId=${ownerId}`),
-  
-  reject: (lendingId: string, ownerId: string, reason?: string) => {
-    const params = new URLSearchParams()
-    params.append('ownerId', ownerId)
-    if (reason) params.append('reason', reason)
-    return api.put<LendingResponse>(`/api/lending/${lendingId}/reject?${params}`)
+  request: async (data: CreateLendingRequest) => {
+    const { data: book, error: bookError } = await supabase
+      .from('books')
+      .select('author,title,owner_id')
+      .eq('id', data.bookId)
+      .single()
+    if (bookError) throw new ApiError(asErrorMessage(bookError), 500, bookError)
+    const { data: inserted, error } = await supabase
+      .from('lendings')
+      .insert({
+        book_id: data.bookId,
+        owner_id: book.owner_id,
+        borrower_id: data.borrowerId,
+        expected_return_date: data.expectedReturnDate,
+        lending_fee: data.lendingFee,
+        deposit: data.deposit,
+        notes: data.notes ?? null,
+        status: 'PENDING',
+      })
+      .select('*')
+      .single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: inserted.id,
+      bookId: inserted.book_id,
+      bookTitle: book.title ?? '',
+      bookAuthor: book.author ?? '',
+      ownerId: inserted.owner_id,
+      ownerName: '',
+      borrowerId: inserted.borrower_id,
+      borrowerName: '',
+      requestedAt: inserted.requested_at,
+      startDate: inserted.start_date,
+      expectedReturnDate: inserted.expected_return_date,
+      actualReturnDate: inserted.actual_return_date,
+      lendingFee: Number(inserted.lending_fee ?? 0),
+      deposit: Number(inserted.deposit ?? 0),
+      status: inserted.status,
+      notes: inserted.notes ?? null,
+      conditionBefore: inserted.condition_before ?? null,
+      conditionAfter: inserted.condition_after ?? null,
+    }
   },
   
-  start: (lendingId: string, ownerId: string, conditionBefore?: string) => {
-    const params = new URLSearchParams()
-    params.append('ownerId', ownerId)
-    if (conditionBefore) params.append('conditionBefore', conditionBefore)
-    return api.put<LendingResponse>(`/api/lending/${lendingId}/start?${params}`)
+  approve: async (lendingId: string) => {
+    const { data, error } = await supabase
+      .from('lendings')
+      .update({ status: 'APPROVED' })
+      .eq('id', lendingId)
+      .select('*')
+      .single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: data.id, bookId: data.book_id, bookTitle: '', bookAuthor: '', ownerId: data.owner_id, ownerName: '',
+      borrowerId: data.borrower_id, borrowerName: '', requestedAt: data.requested_at, startDate: data.start_date,
+      expectedReturnDate: data.expected_return_date, actualReturnDate: data.actual_return_date,
+      lendingFee: Number(data.lending_fee ?? 0), deposit: Number(data.deposit ?? 0), status: data.status,
+      notes: data.notes ?? null, conditionBefore: data.condition_before ?? null, conditionAfter: data.condition_after ?? null,
+    }
   },
   
-  return: (lendingId: string, borrowerId: string, conditionAfter?: string) => {
-    const params = new URLSearchParams()
-    params.append('borrowerId', borrowerId)
-    if (conditionAfter) params.append('conditionAfter', conditionAfter)
-    return api.put<LendingResponse>(`/api/lending/${lendingId}/return?${params}`)
+  reject: async (lendingId: string) => {
+    const { data, error } = await supabase
+      .from('lendings')
+      .update({ status: 'REJECTED' })
+      .eq('id', lendingId)
+      .select('*')
+      .single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: data.id, bookId: data.book_id, bookTitle: '', bookAuthor: '', ownerId: data.owner_id, ownerName: '',
+      borrowerId: data.borrower_id, borrowerName: '', requestedAt: data.requested_at, startDate: data.start_date,
+      expectedReturnDate: data.expected_return_date, actualReturnDate: data.actual_return_date,
+      lendingFee: Number(data.lending_fee ?? 0), deposit: Number(data.deposit ?? 0), status: data.status,
+      notes: data.notes ?? null, conditionBefore: data.condition_before ?? null, conditionAfter: data.condition_after ?? null,
+    }
   },
   
-  getUserLendings: (userId: string) =>
-    api.get<LendingResponse[]>(`/api/lending/user/${userId}`),
+  start: async (lendingId: string, _ownerId: string, conditionBefore?: string) => {
+    const { data, error } = await supabase
+      .from('lendings')
+      .update({ status: 'ACTIVE', start_date: new Date().toISOString(), condition_before: conditionBefore ?? null })
+      .eq('id', lendingId)
+      .select('*')
+      .single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: data.id, bookId: data.book_id, bookTitle: '', bookAuthor: '', ownerId: data.owner_id, ownerName: '',
+      borrowerId: data.borrower_id, borrowerName: '', requestedAt: data.requested_at, startDate: data.start_date,
+      expectedReturnDate: data.expected_return_date, actualReturnDate: data.actual_return_date,
+      lendingFee: Number(data.lending_fee ?? 0), deposit: Number(data.deposit ?? 0), status: data.status,
+      notes: data.notes ?? null, conditionBefore: data.condition_before ?? null, conditionAfter: data.condition_after ?? null,
+    }
+  },
   
-  getActiveLendings: (userId: string) =>
-    api.get<LendingResponse[]>(`/api/lending/user/${userId}/active`),
+  return: async (lendingId: string, _borrowerId: string, conditionAfter?: string) => {
+    const { data, error } = await supabase
+      .from('lendings')
+      .update({ status: 'RETURNED', actual_return_date: new Date().toISOString(), condition_after: conditionAfter ?? null })
+      .eq('id', lendingId)
+      .select('*')
+      .single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: data.id, bookId: data.book_id, bookTitle: '', bookAuthor: '', ownerId: data.owner_id, ownerName: '',
+      borrowerId: data.borrower_id, borrowerName: '', requestedAt: data.requested_at, startDate: data.start_date,
+      expectedReturnDate: data.expected_return_date, actualReturnDate: data.actual_return_date,
+      lendingFee: Number(data.lending_fee ?? 0), deposit: Number(data.deposit ?? 0), status: data.status,
+      notes: data.notes ?? null, conditionBefore: data.condition_before ?? null, conditionAfter: data.condition_after ?? null,
+    }
+  },
+  
+  getUserLendings: async (userId: string) => {
+    const { data, error } = await supabase
+      .from('lendings')
+      .select('*')
+      .or(`owner_id.eq.${userId},borrower_id.eq.${userId}`)
+      .order('requested_at', { ascending: false })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return (data ?? []).map((row: any) => ({
+      id: row.id, bookId: row.book_id, bookTitle: '', bookAuthor: '', ownerId: row.owner_id, ownerName: '',
+      borrowerId: row.borrower_id, borrowerName: '', requestedAt: row.requested_at, startDate: row.start_date,
+      expectedReturnDate: row.expected_return_date, actualReturnDate: row.actual_return_date,
+      lendingFee: Number(row.lending_fee ?? 0), deposit: Number(row.deposit ?? 0), status: row.status,
+      notes: row.notes ?? null, conditionBefore: row.condition_before ?? null, conditionAfter: row.condition_after ?? null,
+    }))
+  },
+  
+  getActiveLendings: async (userId: string) => {
+    const rows = await lendingApi.getUserLendings(userId)
+    return rows.filter((r) => r.status === 'ACTIVE' || r.status === 'APPROVED')
+  },
 };
 
 // Subscription API types
@@ -722,17 +1117,101 @@ export interface CreateSubscriptionRequest {
 
 // Subscription API functions
 export const subscriptionsApi = {
-  create: (data: CreateSubscriptionRequest) =>
-    api.post<SubscriptionResponse>('/api/subscriptions', data),
+  create: async (data: CreateSubscriptionRequest) => {
+    const { data: row, error } = await supabase.rpc('upsert_user_subscription', {
+      p_user_id: data.userId,
+      p_plan: data.plan,
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: row.id,
+      userId: row.user_id,
+      plan: row.plan,
+      status: row.status,
+      startDate: row.start_date,
+      endDate: row.end_date,
+      renewalDate: row.renewal_date,
+      monthlyPrice: row.monthly_price,
+      autoRenew: row.auto_renew,
+      booksPerMonth: row.books_per_month,
+      booksUsedThisMonth: row.books_used_this_month,
+      unlimitedAccess: row.unlimited_access,
+      prioritySupport: row.priority_support,
+      adFree: row.ad_free,
+    }
+  },
   
-  getUserSubscription: (userId: string) =>
-    api.get<SubscriptionResponse>(`/api/subscriptions/user/${userId}`),
+  getUserSubscription: async (userId: string) => {
+    const { data, error } = await supabase
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    if (!data) throw new ApiError('No subscription found', 404)
+    return {
+      id: data.id,
+      userId: data.user_id,
+      plan: data.plan,
+      status: data.status,
+      startDate: data.start_date,
+      endDate: data.end_date,
+      renewalDate: data.renewal_date,
+      monthlyPrice: data.monthly_price,
+      autoRenew: data.auto_renew,
+      booksPerMonth: data.books_per_month,
+      booksUsedThisMonth: data.books_used_this_month,
+      unlimitedAccess: data.unlimited_access,
+      prioritySupport: data.priority_support,
+      adFree: data.ad_free,
+    }
+  },
   
-  renew: (userId: string) =>
-    api.put<SubscriptionResponse>(`/api/subscriptions/user/${userId}/renew`),
+  renew: async (userId: string) => {
+    const { data, error } = await supabase.rpc('renew_user_subscription', {
+      p_user_id: userId,
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: data.id,
+      userId: data.user_id,
+      plan: data.plan,
+      status: data.status,
+      startDate: data.start_date,
+      endDate: data.end_date,
+      renewalDate: data.renewal_date,
+      monthlyPrice: data.monthly_price,
+      autoRenew: data.auto_renew,
+      booksPerMonth: data.books_per_month,
+      booksUsedThisMonth: data.books_used_this_month,
+      unlimitedAccess: data.unlimited_access,
+      prioritySupport: data.priority_support,
+      adFree: data.ad_free,
+    }
+  },
   
-  cancel: (userId: string) =>
-    api.delete<SubscriptionResponse>(`/api/subscriptions/user/${userId}`),
+  cancel: async (userId: string) => {
+    const { data, error } = await supabase.rpc('cancel_user_subscription', {
+      p_user_id: userId,
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: data.id,
+      userId: data.user_id,
+      plan: data.plan,
+      status: data.status,
+      startDate: data.start_date,
+      endDate: data.end_date,
+      renewalDate: data.renewal_date,
+      monthlyPrice: data.monthly_price,
+      autoRenew: data.auto_renew,
+      booksPerMonth: data.books_per_month,
+      booksUsedThisMonth: data.books_used_this_month,
+      unlimitedAccess: data.unlimited_access,
+      prioritySupport: data.priority_support,
+      adFree: data.ad_free,
+    }
+  },
 };
 
 // Analytics API types
@@ -811,14 +1290,54 @@ export interface PlatformInsightsResponse {
 
 // Analytics API functions
 export const analyticsApi = {
-  getUserAnalytics: (userId: string) =>
-    api.get<UserAnalyticsResponse>(`/api/analytics/user/${userId}`),
+  getUserAnalytics: async (userId: string) => {
+    const { data, error } = await supabase.from('v_analytics_user_summary').select('*').eq('user_id', userId).single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      userId,
+      userName: '',
+      totalBooksRead: 0,
+      totalBooksBought: 0,
+      totalBooksSold: 0,
+      totalBooksLent: 0,
+      totalBooksBorrowed: 0,
+      totalSpent: 0,
+      totalEarned: 0,
+      favoriteGenres: [],
+      favoriteCategories: [],
+      readingStreak: 0,
+      averageRatingGiven: 0,
+      reviewsWritten: Number(data.total_events ?? 0),
+    }
+  },
   
-  getBookAnalytics: (bookId: string) =>
-    api.get<BookAnalyticsResponse>(`/api/analytics/book/${bookId}`),
+  getBookAnalytics: async (bookId: string) => {
+    const { data, error } = await supabase.from('analytics_book_daily').select('*').eq('book_id', bookId)
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    const totalViews = (data ?? []).reduce((acc: number, r: any) => acc + Number(r.total_events ?? 0), 0)
+    const wishlistAdds = (data ?? []).reduce((acc: number, r: any) => acc + Number(r.wishlist_adds ?? 0), 0)
+    return {
+      bookId,
+      bookTitle: '',
+      bookAuthor: '',
+      totalViews,
+      totalPurchases: 0,
+      totalLendings: 0,
+      totalWishlistAdds: wishlistAdds,
+      averageRating: null,
+      ratingsCount: null,
+      popularityScore: totalViews,
+      trendingStatus: 'NORMAL',
+      daysSincePublished: 0,
+    }
+  },
   
-  getPlatformInsights: () =>
-    api.get<PlatformInsightsResponse>('/api/analytics/platform'),
+  getPlatformInsights: async () => ({
+    totalUsers: 0, activeUsers: 0, totalBooks: 0, availableBooks: 0, totalExchanges: 0, totalLendings: 0,
+    totalRevenue: 0, averageBookPrice: 0, booksByGenre: {}, booksByCategory: {}, trendingBooks: [], popularGenres: [],
+    monthlyStats: { newUsers: 0, newBooks: 0, exchanges: 0, lendings: 0, revenue: 0 },
+    weeklyStats: { newUsers: 0, newBooks: 0, exchanges: 0, lendings: 0, revenue: 0 },
+  }),
 };
 
 // Community API types
@@ -889,20 +1408,99 @@ export interface AddToWishlistRequest {
 
 // Wishlist API functions
 export const wishlistApi = {
-  addToWishlist: (userId: string, bookId: string, data?: AddToWishlistRequest) =>
-    api.post<WishlistItemResponse>(`/api/v1/wishlist/items?userId=${userId}&bookId=${bookId}`, data || {}),
+  addToWishlist: async (userId: string, bookId: string, data?: AddToWishlistRequest) => {
+    try {
+      const { error } = await supabase.from('wishlists').insert({
+        user_id: userId,
+        book_id: bookId,
+        notes: data?.notes ?? null,
+      })
+      if (error) throw error
+      const items = await wishlistApi.getWishlist(userId)
+      const item = items.find((i) => i.bookId === bookId)
+      if (!item) throw new Error('Wishlist item not found after insert')
+      return item
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  removeFromWishlist: (userId: string, bookId: string) =>
-    api.delete<{ message: string }>(`/api/v1/wishlist/items?userId=${userId}&bookId=${bookId}`),
+  removeFromWishlist: async (userId: string, bookId: string) => {
+    try {
+      const { error } = await supabase
+        .from('wishlists')
+        .delete()
+        .eq('user_id', userId)
+        .eq('book_id', bookId)
+      if (error) throw error
+      return { message: 'Removed from wishlist' }
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  getWishlist: (userId: string) =>
-    api.get<WishlistItemResponse[]>(`/api/v1/wishlist/items?userId=${userId}`),
+  getWishlist: async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('wishlists')
+        .select(`
+          id,
+          book_id,
+          notes,
+          created_at,
+          books:book_id (
+            id,title,author,genre,description,credit_price,status,owner_id
+          )
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return (data ?? []).map((row: any) => ({
+        wishlistId: row.id,
+        bookId: row.book_id,
+        bookTitle: row.books?.title ?? '',
+        bookAuthor: row.books?.author ?? '',
+        bookGenre: row.books?.genre ?? null,
+        bookDescription: row.books?.description ?? null,
+        bookPrice: Number(row.books?.credit_price ?? 0),
+        bookImageUrl: null,
+        bookStatus: row.books?.status ?? 'AVAILABLE',
+        bookOwnerId: row.books?.owner_id ?? '',
+        bookOwnerName: '',
+        notes: row.notes ?? null,
+        addedAt: row.created_at,
+      }))
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  checkInWishlist: (userId: string, bookId: string) =>
-    api.get<{ isInWishlist: boolean }>(`/api/v1/wishlist/items/check?userId=${userId}&bookId=${bookId}`),
+  checkInWishlist: async (userId: string, bookId: string) => {
+    try {
+      const { count, error } = await supabase
+        .from('wishlists')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('book_id', bookId)
+      if (error) throw error
+      return { isInWishlist: (count ?? 0) > 0 }
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  getWishlistCount: (userId: string) =>
-    api.get<{ count: number }>(`/api/v1/wishlist/count?userId=${userId}`),
+  getWishlistCount: async (userId: string) => {
+    try {
+      const { count, error } = await supabase
+        .from('wishlists')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+      if (error) throw error
+      return { count: count ?? 0 }
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
 };
 
 // Bookshelf API types
@@ -924,20 +1522,95 @@ export interface AddToBookshelfRequest {
 
 // Bookshelf API functions
 export const bookshelfApi = {
-  addToBookshelf: (userId: string, bookId: string, data?: AddToBookshelfRequest) =>
-    api.post<BookshelfItemResponse>(`/api/v1/bookshelf?userId=${userId}&bookId=${bookId}`, data || {}),
+  addToBookshelf: async (userId: string, bookId: string, data?: AddToBookshelfRequest) => {
+    try {
+      const { error } = await supabase.from('bookshelf').insert({
+        user_id: userId,
+        book_id: bookId,
+        notes: data?.notes ?? null,
+      })
+      if (error) throw error
+      const list = await bookshelfApi.getBookshelf(userId)
+      const item = list.find((i) => i.bookId === bookId)
+      if (!item) throw new Error('Bookshelf item not found after insert')
+      return item
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  removeFromBookshelf: (userId: string, bookId: string) =>
-    api.delete<{ message: string }>(`/api/v1/bookshelf/${bookId}?userId=${userId}`),
+  removeFromBookshelf: async (userId: string, bookId: string) => {
+    try {
+      const { error } = await supabase
+        .from('bookshelf')
+        .delete()
+        .eq('user_id', userId)
+        .eq('book_id', bookId)
+      if (error) throw error
+      return { message: 'Removed from bookshelf' }
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  getBookshelf: (userId: string) =>
-    api.get<BookshelfItemResponse[]>(`/api/v1/bookshelf?userId=${userId}`),
+  getBookshelf: async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('bookshelf')
+        .select(`
+          id,
+          book_id,
+          notes,
+          created_at,
+          books:book_id (
+            id,title,author,credit_price
+          )
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return (data ?? []).map((row: any) => ({
+        id: row.id,
+        userId,
+        bookId: row.book_id,
+        bookTitle: row.books?.title ?? '',
+        bookAuthor: row.books?.author ?? '',
+        bookImageUrl: null,
+        bookPrice: Number(row.books?.credit_price ?? 0),
+        notes: row.notes ?? null,
+        addedAt: row.created_at,
+      }))
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  checkInBookshelf: (userId: string, bookId: string) =>
-    api.get<{ isInBookshelf: boolean }>(`/api/v1/bookshelf/check?userId=${userId}&bookId=${bookId}`),
+  checkInBookshelf: async (userId: string, bookId: string) => {
+    try {
+      const { count, error } = await supabase
+        .from('bookshelf')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('book_id', bookId)
+      if (error) throw error
+      return { isInBookshelf: (count ?? 0) > 0 }
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
   
-  getBookshelfCount: (userId: string) =>
-    api.get<{ count: number }>(`/api/v1/bookshelf/count?userId=${userId}`),
+  getBookshelfCount: async (userId: string) => {
+    try {
+      const { count, error } = await supabase
+        .from('bookshelf')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+      if (error) throw error
+      return { count: count ?? 0 }
+    } catch (error) {
+      throw new ApiError(asErrorMessage(error), 500, error)
+    }
+  },
 }
 
 // Trust Score API types
@@ -964,35 +1637,189 @@ export interface TrustScoreResponse {
 
 // Trust Score API functions
 export const trustScoreApi = {
-  getTrustScore: (userId: string) =>
-    api.get<TrustScoreResponse>(`/api/v1/trustscore?userId=${userId}`),
+  getTrustScore: async (userId: string) => {
+    const { data, error } = await supabase.from('user_trust_scores').select('*').eq('user_id', userId).single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      userId,
+      trustScore: Number(data.trust_score ?? 0),
+      conditionAccuracyScore: 0,
+      conditionAssessmentsCount: 0,
+      accurateConditionCount: 0,
+      showupReliabilityScore: Number(data.reliability_score ?? 0),
+      pickupCommitmentsCount: 0,
+      successfulShowupsCount: 0,
+      noShowsCount: 0,
+      responseTimeScore: Number(data.responsiveness_score ?? 0),
+      averageResponseTimeHours: 0,
+      requestsRespondedCount: 0,
+      completionRate: Number(data.completion_rate ?? 0),
+      totalTransactions: Number(data.events_considered ?? 0),
+      completedTransactions: 0,
+      cancellationRate: 0,
+      cancelledTransactions: 0,
+      lastCalculatedAt: data.computed_at,
+    }
+  },
 }
 
 export const communityApi = {
-  getCircles: () =>
-    api.get<CommunityCircleResponse[]>('/api/v1/community/circles'),
-  
-  getCircleById: (circleId: string) =>
-    api.get<CommunityCircleResponse>(`/api/v1/community/circles/${circleId}`),
-  
-  getCircleBooks: (circleId: string, page?: number, size?: number) => {
-    const params = new URLSearchParams()
-    if (page !== undefined) params.append('page', page.toString())
-    if (size !== undefined) params.append('size', size.toString())
-    return api.get<BookResponse[]>(`/api/v1/community/circles/${circleId}/books?${params.toString()}`)
+  getCircles: async () => {
+    const { data: circles, error } = await supabase
+      .from('community_circles')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    const circleIds = (circles ?? []).map((c: any) => c.id)
+    const { data: members } = await supabase
+      .from('community_circle_members')
+      .select('circle_id')
+      .in('circle_id', circleIds.length ? circleIds : ['00000000-0000-0000-0000-000000000000'])
+    const { data: chains } = await supabase
+      .from('community_chain_stories')
+      .select('circle_id')
+      .in('circle_id', circleIds.length ? circleIds : ['00000000-0000-0000-0000-000000000000'])
+    const memberCount = new Map<string, number>()
+    const chainCount = new Map<string, number>()
+    for (const m of members ?? []) memberCount.set((m as any).circle_id, (memberCount.get((m as any).circle_id) ?? 0) + 1)
+    for (const c of chains ?? []) chainCount.set((c as any).circle_id, (chainCount.get((c as any).circle_id) ?? 0) + 1)
+    return (circles ?? []).map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      description: c.description ?? '',
+      host: 'ARKA',
+      members: memberCount.get(c.id) ?? 0,
+      activeChains: chainCount.get(c.id) ?? 0,
+      streakDays: c.streak_days ?? 0,
+      tags: [],
+      badge: c.badge ?? 'reader',
+    }))
   },
   
-  getChains: () =>
-    api.get<ChainStoryResponse[]>('/api/v1/community/chains'),
+  getCircleById: async (circleId: string) => {
+    const { data: circle, error } = await supabase
+      .from('community_circles')
+      .select('*')
+      .eq('id', circleId)
+      .single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    const { count: memberCount } = await supabase
+      .from('community_circle_members')
+      .select('user_id', { count: 'exact', head: true })
+      .eq('circle_id', circleId)
+    const { count: chainCount } = await supabase
+      .from('community_chain_stories')
+      .select('id', { count: 'exact', head: true })
+      .eq('circle_id', circleId)
+    return {
+      id: circle.id,
+      name: circle.name,
+      description: circle.description ?? '',
+      host: 'ARKA',
+      members: memberCount ?? 0,
+      activeChains: chainCount ?? 0,
+      streakDays: circle.streak_days ?? 0,
+      tags: [],
+      badge: circle.badge ?? 'reader',
+    }
+  },
   
-  createChain: (data: CreateChainRequest) =>
-    api.post<ChainStoryResponse>('/api/v1/community/chains', data),
+  getCircleBooks: async (circleId: string, page?: number, size?: number) => {
+    let query = supabase
+      .from('community_circle_books')
+      .select('book_id, books:book_id(*)')
+      .eq('circle_id', circleId)
+      .order('created_at', { ascending: false })
+    if (page !== undefined && size) {
+      query = query.range(page * size, page * size + size - 1)
+    }
+    const { data, error } = await query
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return (data ?? []).map((row: any) => mapSupabaseBook(row.books as SupabaseBookRow))
+  },
   
-  pingChain: (chainId: string) =>
-    api.post<ChainActionResponse>(`/api/v1/community/chains/${chainId}/ping`),
+  getChains: async () => {
+    const { data: chains, error } = await supabase
+      .from('community_chain_stories')
+      .select('*')
+      .order('updated_at', { ascending: false })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    const chainIds = (chains ?? []).map((c: any) => c.id)
+    const { data: participants } = await supabase
+      .from('community_chain_participants')
+      .select('*')
+      .in('chain_id', chainIds.length ? chainIds : ['00000000-0000-0000-0000-000000000000'])
+      .order('sort_order', { ascending: true })
+    const participantsMap = new Map<string, any[]>()
+    for (const p of participants ?? []) {
+      const id = (p as any).chain_id
+      if (!participantsMap.has(id)) participantsMap.set(id, [])
+      participantsMap.get(id)!.push({
+        name: (p as any).name,
+        location: (p as any).location ?? '',
+        handoff: (p as any).handoff ?? '',
+      })
+    }
+    return (chains ?? []).map((c: any) => ({
+      id: c.id,
+      title: c.title,
+      chainBadge: c.chain_badge ?? 'new',
+      coverLabel: c.cover_label ?? '',
+      streakDays: c.streak_days ?? 0,
+      hops: c.hops ?? 0,
+      lastHop: c.last_hop ?? '',
+      participants: participantsMap.get(c.id) ?? [],
+    }))
+  },
   
-  keepChainAlive: (chainId: string) =>
-    api.post<ChainActionResponse>(`/api/v1/community/chains/${chainId}/keep-alive`),
+  createChain: async (data: CreateChainRequest) => {
+    const { data: inserted, error } = await supabase
+      .from('community_chain_stories')
+      .insert({
+        title: data.title,
+        book_id: data.bookId,
+        chain_badge: 'new',
+        cover_label: data.description ?? '',
+        streak_days: 0,
+        hops: 0,
+        last_hop: 'Chain started',
+      })
+      .select('*')
+      .single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: inserted.id,
+      title: inserted.title,
+      chainBadge: inserted.chain_badge ?? 'new',
+      coverLabel: inserted.cover_label ?? '',
+      streakDays: inserted.streak_days ?? 0,
+      hops: inserted.hops ?? 0,
+      lastHop: inserted.last_hop ?? '',
+      participants: [],
+    }
+  },
+  
+  pingChain: async (chainId: string) => {
+    const { data, error } = await supabase.rpc('ping_chain', { p_chain_id: chainId })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      chainId: data.id,
+      status: 'PINGED',
+      streakDays: data.streak_days ?? 0,
+      lastHop: data.last_hop ?? '',
+    }
+  },
+  
+  keepChainAlive: async (chainId: string) => {
+    const { data, error } = await supabase.rpc('keep_chain_alive', { p_chain_id: chainId })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      chainId: data.id,
+      status: 'ALIVE',
+      streakDays: data.streak_days ?? 0,
+      lastHop: data.last_hop ?? '',
+    }
+  },
 };
 
 // Order API types
@@ -1055,17 +1882,45 @@ export interface OrderTrackingResponse {
 
 // Order API functions
 export const ordersApi = {
-  create: (userId: string, data: CreateOrderRequest) =>
-    api.post<OrderResponse>(`/api/v1/orders?userId=${userId}`, data),
+  create: async (userId: string, data: CreateOrderRequest) => {
+    const total = data.items.reduce((sum, i) => sum + i.quantity, 0)
+    const { data: order, error } = await supabase
+      .from('orders')
+      .insert({ user_id: userId, total_amount: total, shipping_address: data.shippingAddress, status: 'PENDING' })
+      .select('*')
+      .single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: order.id, userId: order.user_id, items: [], totalAmount: Number(order.total_amount), pickupFee: 0,
+      status: order.status, shippingAddress: order.shipping_address ?? '', paymentMethod: data.paymentMethod,
+      trackingNumber: order.tracking_number ?? '', createdAt: order.created_at, updatedAt: order.updated_at,
+    }
+  },
   
-  getMyOrders: (userId: string) =>
-    api.get<OrderResponse[]>(`/api/v1/orders/my?userId=${userId}`),
+  getMyOrders: async (userId: string) => {
+    const { data, error } = await supabase.from('orders').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return (data ?? []).map((o: any) => ({
+      id: o.id, userId: o.user_id, items: [], totalAmount: Number(o.total_amount), pickupFee: 0, status: o.status,
+      shippingAddress: o.shipping_address ?? '', paymentMethod: '', trackingNumber: o.tracking_number ?? '',
+      createdAt: o.created_at, updatedAt: o.updated_at,
+    }))
+  },
   
-  getById: (orderId: string, userId: string) =>
-    api.get<OrderResponse>(`/api/v1/orders/${orderId}?userId=${userId}`),
+  getById: async (orderId: string, _userId: string) => {
+    const { data, error } = await supabase.from('orders').select('*').eq('id', orderId).single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return {
+      id: data.id, userId: data.user_id, items: [], totalAmount: Number(data.total_amount), pickupFee: 0, status: data.status,
+      shippingAddress: data.shipping_address ?? '', paymentMethod: '', trackingNumber: data.tracking_number ?? '',
+      createdAt: data.created_at, updatedAt: data.updated_at,
+    }
+  },
   
-  getTracking: (orderId: string, userId: string) =>
-    api.get<OrderTrackingResponse>(`/api/v1/orders/${orderId}/tracking?userId=${userId}`),
+  getTracking: async (orderId: string, _userId: string) => {
+    const order = await ordersApi.getById(orderId, '')
+    return { orderId, trackingNumber: order.trackingNumber, status: order.status, estimatedDelivery: '', steps: [] }
+  },
 };
 
 // User API types
@@ -1085,59 +1940,56 @@ export interface UpdateUserRequest {
 
 // User API functions
 export const usersApi = {
-  getById: (id: string) =>
-    api.get<UserResponse>(`/api/v1/users/${id}`),
+  getById: async (id: string) => {
+    const { data, error } = await supabase.from('users').select('*').eq('id', id).single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return { id: data.id, email: data.email, firstName: data.first_name ?? '', lastName: data.last_name ?? '', creditBalance: Number(data.credit_balance ?? 0) }
+  },
   
-  update: (id: string, data: UpdateUserRequest) =>
-    api.put<UserResponse>(`/api/v1/users/${id}`, data),
+  update: async (id: string, data: UpdateUserRequest) => {
+    const { data: row, error } = await supabase.from('users').update({
+      first_name: data.firstName,
+      last_name: data.lastName,
+      email: data.email,
+      updated_at: new Date().toISOString(),
+    }).eq('id', id).select('*').single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return { id: row.id, email: row.email, firstName: row.first_name ?? '', lastName: row.last_name ?? '', creditBalance: Number(row.credit_balance ?? 0) }
+  },
 };
 
 // User Behavior API functions
 export const behaviorApi = {
-  trackView: (userId: string, bookId: string, durationSeconds: number = 0) => {
-    const params = new URLSearchParams()
-    params.append('userId', userId)
-    params.append('bookId', bookId)
-    params.append('durationSeconds', durationSeconds.toString())
-    return api.post<void>(`/api/v1/behavior/view?${params}`)
+  trackView: async (_userId: string, bookId: string, durationSeconds: number = 0) => {
+    await supabase.rpc('record_user_event', {
+      p_event_type: 'BOOK_VIEW',
+      p_metadata: { book_id: bookId, duration_seconds: durationSeconds },
+      p_idempotency_key: crypto.randomUUID(),
+    })
   },
   
-  trackSearch: (userId: string, query?: string, category?: string, subcategory?: string) => {
-    const params = new URLSearchParams()
-    params.append('userId', userId)
-    if (query) params.append('query', query)
-    if (category) params.append('category', category)
-    if (subcategory) params.append('subcategory', subcategory)
-    return api.post<void>(`/api/v1/behavior/search?${params}`)
+  trackSearch: async (_userId: string, query?: string, category?: string, subcategory?: string) => {
+    await supabase.rpc('record_user_event', {
+      p_event_type: 'SEARCH',
+      p_metadata: { query, category, subcategory },
+      p_idempotency_key: crypto.randomUUID(),
+    })
   },
   
-  trackCartAdd: (userId: string, bookId: string) => {
-    const params = new URLSearchParams()
-    params.append('userId', userId)
-    params.append('bookId', bookId)
-    return api.post<void>(`/api/v1/behavior/cart/add?${params}`)
+  trackCartAdd: async (_userId: string, bookId: string) => {
+    await supabase.rpc('record_user_event', { p_event_type: 'CART_ADD', p_metadata: { book_id: bookId }, p_idempotency_key: crypto.randomUUID() })
   },
   
-  trackCartRemove: (userId: string, bookId: string) => {
-    const params = new URLSearchParams()
-    params.append('userId', userId)
-    params.append('bookId', bookId)
-    return api.post<void>(`/api/v1/behavior/cart/remove?${params}`)
+  trackCartRemove: async (_userId: string, bookId: string) => {
+    await supabase.rpc('record_user_event', { p_event_type: 'CART_REMOVE', p_metadata: { book_id: bookId }, p_idempotency_key: crypto.randomUUID() })
   },
   
-  trackPurchase: (userId: string, bookId: string) => {
-    const params = new URLSearchParams()
-    params.append('userId', userId)
-    params.append('bookId', bookId)
-    return api.post<void>(`/api/v1/behavior/purchase?${params}`)
+  trackPurchase: async (_userId: string, bookId: string) => {
+    await supabase.rpc('record_user_event', { p_event_type: 'PURCHASE', p_metadata: { book_id: bookId }, p_idempotency_key: crypto.randomUUID() })
   },
   
-  trackCategoryView: (userId: string, category?: string, subcategory?: string) => {
-    const params = new URLSearchParams()
-    params.append('userId', userId)
-    if (category) params.append('category', category)
-    if (subcategory) params.append('subcategory', subcategory)
-    return api.post<void>(`/api/v1/behavior/category/view?${params}`)
+  trackCategoryView: async (_userId: string, category?: string, subcategory?: string) => {
+    await supabase.rpc('record_user_event', { p_event_type: 'CATEGORY_VIEW', p_metadata: { category, subcategory }, p_idempotency_key: crypto.randomUUID() })
   },
 };
 
