@@ -32,17 +32,19 @@
 
 /* Pick Your Next Read Search Section - Core Feature */
 .searchSection {
-  width: 100vw;
+  width: 100%;
   position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  left: auto;
+  right: auto;
+  margin-left: 0;
+  margin-right: 0;
+  background: var(--app-glass-bg, rgba(255, 255, 255, 0.04));
   padding: 4rem 2rem;
   margin-bottom: 4rem;
-  border-radius: 0;
-  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
+  border-radius: 16px;
+  border: 1px solid var(--app-glass-border, rgba(255, 255, 255, 0.14));
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(6px);
   overflow: hidden;
 }
 
@@ -93,7 +95,7 @@
 }
 
 .mainSearchInput {
-  background: white;
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   padding: 0.5rem;

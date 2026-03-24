@@ -23,10 +23,7 @@
 
 .vibePage {
   min-height: calc(100vh - 80px);
-  background:
-    radial-gradient(circle at 10% 10%, rgba(122, 74, 47, 0.08), transparent 32%),
-    radial-gradient(circle at 85% 0%, rgba(90, 47, 28, 0.1), transparent 36%),
-    var(--vibe-bg);
+  background: transparent;
 }
 
 .vibeContainer {

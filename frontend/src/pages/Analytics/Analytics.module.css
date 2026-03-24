@@ -269,6 +269,46 @@
   }
 }
 
+/* Global dark-theme harmonization for analytics surfaces */
+.title,
+.tab,
+.loading,
+.statLabel,
+.financialLabel,
+.financialValue,
+.revenueLabel,
+.trendingTitle,
+.trendingAuthor,
+.trendingStats,
+.genreName,
+.genreStats,
+.timeStatCard h4,
+.timeStatDetails,
+.financialStats h3,
+.favorites h3,
+.trendingSection h3,
+.genresSection h3 {
+  color: var(--color-black);
+}
+
+.tabs {
+  border-bottom-color: var(--app-glass-border, rgba(255, 255, 255, 0.14));
+}
+
+.statCard,
+.financialStats,
+.favorites,
+.trendingSection,
+.genresSection,
+.revenueCard,
+.timeStatCard,
+.financialCard,
+.trendingItem,
+.genreItem {
+  background: var(--app-glass-bg, rgba(255, 255, 255, 0.04));
+  border-color: var(--app-glass-border, rgba(255, 255, 255, 0.14));
+}
+
 
 
 

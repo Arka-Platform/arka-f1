@@ -8,7 +8,9 @@
 }
 
 .loginContainer {
-  background: white;
+  background: var(--app-glass-bg, rgba(255, 255, 255, 0.04));
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--app-glass-border, rgba(255, 255, 255, 0.14));
   border-radius: 16px;
   padding: 3rem;
   max-width: 450px;
