@@ -169,8 +169,34 @@ export function createWishlistApi({ supabase, ApiError, asErrorMessage }: Deps) 
 }
 
 export function createBookshelfApi({ supabase, ApiError, asErrorMessage }: Deps) {
+  let bookshelfAvailable: boolean | null = null
+
+  const isMissingBookshelfRelation = (error: unknown): boolean => {
+    if (!error || typeof error !== 'object') return false
+    const err = error as { code?: string; message?: string; details?: string }
+    const code = String(err.code ?? '').toUpperCase()
+    const message = String(err.message ?? '').toLowerCase()
+    const details = String(err.details ?? '').toLowerCase()
+    return (
+      code === 'PGRST205' ||
+      message.includes('bookshelf') && message.includes('does not exist') ||
+      details.includes('bookshelf') && details.includes('does not exist')
+    )
+  }
+
+  const markUnavailableIfMissing = (error: unknown): boolean => {
+    if (isMissingBookshelfRelation(error)) {
+      bookshelfAvailable = false
+      return true
+    }
+    return false
+  }
+
   const bookshelfApi = {
     addToBookshelf: async (userId: string, bookId: string, data?: AddToBookshelfRequest): Promise<BookshelfItemResponse> => {
+      if (bookshelfAvailable === false) {
+        throw new ApiError('Bookshelf is unavailable in this environment', 503)
+      }
       try {
         const { error } = await supabase.from('bookshelf').insert({
           user_id: userId,
@@ -178,16 +204,23 @@ export function createBookshelfApi({ supabase, ApiError, asErrorMessage }: Deps)
           notes: data?.notes ?? null,
         })
         if (error) throw error
+        bookshelfAvailable = true
         const list = await bookshelfApi.getBookshelf(userId)
         const item = list.find((i) => i.bookId === bookId)
         if (!item) throw new Error('Bookshelf item not found after insert')
         return item
       } catch (error) {
+        if (markUnavailableIfMissing(error)) {
+          throw new ApiError('Bookshelf is unavailable in this environment', 503, error)
+        }
         throw new ApiError(asErrorMessage(error), 500, error)
       }
     },
 
     removeFromBookshelf: async (userId: string, bookId: string) => {
+      if (bookshelfAvailable === false) {
+        return { message: 'Bookshelf unavailable' }
+      }
       try {
         const { error } = await supabase
           .from('bookshelf')
@@ -195,13 +228,18 @@ export function createBookshelfApi({ supabase, ApiError, asErrorMessage }: Deps)
           .eq('user_id', userId)
           .eq('book_id', bookId)
         if (error) throw error
+        bookshelfAvailable = true
         return { message: 'Removed from bookshelf' }
       } catch (error) {
+        if (markUnavailableIfMissing(error)) {
+          return { message: 'Bookshelf unavailable' }
+        }
         throw new ApiError(asErrorMessage(error), 500, error)
       }
     },
 
     getBookshelf: async (userId: string): Promise<BookshelfItemResponse[]> => {
+      if (bookshelfAvailable === false) return []
       try {
         const { data, error } = await supabase
           .from('bookshelf')
@@ -217,6 +255,7 @@ export function createBookshelfApi({ supabase, ApiError, asErrorMessage }: Deps)
           .eq('user_id', userId)
           .order('created_at', { ascending: false })
         if (error) throw error
+        bookshelfAvailable = true
         return (data ?? []).map((row: any) => ({
           id: row.id,
           userId,
@@ -229,11 +268,15 @@ export function createBookshelfApi({ supabase, ApiError, asErrorMessage }: Deps)
           addedAt: row.created_at,
         }))
       } catch (error) {
+        if (markUnavailableIfMissing(error)) {
+          return []
+        }
         throw new ApiError(asErrorMessage(error), 500, error)
       }
     },
 
     checkInBookshelf: async (userId: string, bookId: string) => {
+      if (bookshelfAvailable === false) return { isInBookshelf: false }
       try {
         const { count, error } = await supabase
           .from('bookshelf')
@@ -241,21 +284,30 @@ export function createBookshelfApi({ supabase, ApiError, asErrorMessage }: Deps)
           .eq('user_id', userId)
           .eq('book_id', bookId)
         if (error) throw error
+        bookshelfAvailable = true
         return { isInBookshelf: (count ?? 0) > 0 }
       } catch (error) {
+        if (markUnavailableIfMissing(error)) {
+          return { isInBookshelf: false }
+        }
         throw new ApiError(asErrorMessage(error), 500, error)
       }
     },
 
     getBookshelfCount: async (userId: string) => {
+      if (bookshelfAvailable === false) return { count: 0 }
       try {
         const { count, error } = await supabase
           .from('bookshelf')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', userId)
         if (error) throw error
+        bookshelfAvailable = true
         return { count: count ?? 0 }
       } catch (error) {
+        if (markUnavailableIfMissing(error)) {
+          return { count: 0 }
+        }
         throw new ApiError(asErrorMessage(error), 500, error)
       }
     },
