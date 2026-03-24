@@ -12,11 +12,11 @@ body {
 
 :root {
   /* Base Colors */
-  --color-black: #000000;
-  --color-white: #ffffff;
-  --color-gray-light: #f5f5f5;
-  --color-gray-medium: #e0e0e0;
-  --color-gray-dark: #666666;
+  --color-black: #f4e7cf;
+  --color-white: rgba(255, 255, 255, 0.04);
+  --color-gray-light: rgba(255, 255, 255, 0.06);
+  --color-gray-medium: rgba(255, 255, 255, 0.16);
+  --color-gray-dark: #d3bb95;
   
   /* Brand Colors - Green for sustainability theme */
   --color-primary: #10b981;
@@ -63,6 +63,10 @@ body {
   line-height: 1.6;
   background: var(--app-bg-gradient, var(--app-bg-home, #0f0a06));
   background-attachment: fixed;
+}
+
+a {
+  color: #f6d8a6;
 }
 
 #root {

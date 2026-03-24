@@ -11,12 +11,12 @@
     linear-gradient(135deg, #3a2617 0%, #1f140d 46%, #120b07 100%);
   --app-glass-bg: rgba(255, 255, 255, 0.04);
   --app-glass-border: rgba(255, 255, 255, 0.14);
-  --vibe-bg: #f5efe4;
-  --vibe-surface: #fdf8ed;
-  --vibe-surface-strong: #fff8e8;
-  --vibe-border: #d6c3a0;
-  --vibe-text: #2f2418;
-  --vibe-muted: #6f5a42;
+  --vibe-bg: rgba(255, 255, 255, 0.03);
+  --vibe-surface: rgba(255, 255, 255, 0.04);
+  --vibe-surface-strong: rgba(255, 255, 255, 0.07);
+  --vibe-border: rgba(255, 255, 255, 0.18);
+  --vibe-text: #f4e7cf;
+  --vibe-muted: #d3bb95;
   --vibe-accent-start: #7a4a2f;
   --vibe-accent-end: #5a2f1c;
 }
