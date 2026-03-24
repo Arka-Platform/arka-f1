@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
+import { useTheme } from '../../contexts/ThemeContext'
 import { booksApi, wishlistApi } from '../../utils/api'
 import Logo from '../shared/Logo/Logo'
 import UserMenu from '../shared/UserMenu/UserMenu'
@@ -12,6 +13,7 @@ const Header: React.FC = () => {
   const navigate = useNavigate()
   const { isAuthenticated, user } = useAuth()
   const { getItemCount } = useCart()
+  const { theme, toggleTheme } = useTheme()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeGenreDropdown, setActiveGenreDropdown] = useState(false)
   const [hoveredGenre, setHoveredGenre] = useState<string | null>(null)
@@ -285,6 +287,15 @@ const Header: React.FC = () => {
 
           {/* Desktop Right Section */}
           <div className={styles.rightSection}>
+            <button
+              type="button"
+              className={styles.themeToggle}
+              onClick={toggleTheme}
+              aria-label={theme === 'home' ? 'Switch to default theme' : 'Switch to home theme'}
+              title={theme === 'home' ? 'Home Theme' : 'Default Theme'}
+            >
+              {theme === 'home' ? 'Home Theme' : 'Default Theme'}
+            </button>
             {/* Wishlist - Heart Icon */}
             {isAuthenticated && (
               <Link to="/wishlist" className={styles.wishlistLink} aria-label="Wishlist">
@@ -451,6 +462,17 @@ const Header: React.FC = () => {
           >
             Help
           </Link>
+
+          <button
+            type="button"
+            className={styles.mobileThemeToggle}
+            onClick={() => {
+              toggleTheme()
+              closeMobileMenu()
+            }}
+          >
+            Switch to {theme === 'home' ? 'Default Theme' : 'Home Theme'}
+          </button>
 
           {isAuthenticated && (
             <Link

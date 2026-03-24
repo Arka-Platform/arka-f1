@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { CartProvider } from './contexts/CartContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import { ToastProvider, useToast } from './contexts/ToastContext'
 import Layout from './components/Layout/Layout'
 import ToastContainer from './components/shared/ToastContainer/ToastContainer'
@@ -85,17 +86,19 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <CartProvider>
-          <ToastProvider>
-            <div className="app">
-              <ErrorBoundary>
-                <AppContent />
-              </ErrorBoundary>
-            </div>
-          </ToastProvider>
-        </CartProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <CartProvider>
+            <ToastProvider>
+              <div className="app">
+                <ErrorBoundary>
+                  <AppContent />
+                </ErrorBoundary>
+              </div>
+            </ToastProvider>
+          </CartProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </Router>
   )
 }

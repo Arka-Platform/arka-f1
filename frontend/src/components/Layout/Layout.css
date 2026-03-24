@@ -6,6 +6,8 @@
 
 .layout-main {
   flex: 1;
+  background: var(--app-bg);
+  color: var(--app-text);
 }
 
 
