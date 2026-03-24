@@ -142,12 +142,6 @@ const Login: React.FC = () => {
               />
             )}
 
-            <div className={styles.forgotPassword}>
-              <Link to="/forgot-password" className={styles.forgotLink}>
-                Forgot password?
-              </Link>
-            </div>
-
             <Button type="submit" variant="primary" fullWidth loading={isLoading} disabled={isLoading}>
               {isLoading ? 'Logging in...' : 'Log In'}
             </Button>

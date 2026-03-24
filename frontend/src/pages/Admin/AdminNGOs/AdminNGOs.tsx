@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../../contexts/AuthContext'
 import { useToast } from '../../../contexts/ToastContext'
 import Input from '../../../components/shared/Input/Input'
 import Button from '../../../components/shared/Button/Button'
@@ -8,6 +9,7 @@ import styles from './AdminNGOs.module.css'
 
 const AdminNGOs: React.FC = () => {
   const navigate = useNavigate()
+  const { isAuthenticated, isLoading, user, logout } = useAuth()
   const { success, error: showError } = useToast()
   const [ngos, setNgos] = useState<NGOResponse[]>([])
   const [loading, setLoading] = useState(true)
@@ -26,16 +28,18 @@ const AdminNGOs: React.FC = () => {
   const [categoryInput, setCategoryInput] = useState('')
 
   useEffect(() => {
-    checkAdminAuth()
-    loadNGOs()
-  }, [])
-
-  const checkAdminAuth = () => {
-    const adminToken = localStorage.getItem('arka_admin_token')
-    if (!adminToken) {
+    if (isLoading) return
+    if (!isAuthenticated) {
       navigate('/admin/login')
+      return
     }
-  }
+    if (!user?.isAdmin) {
+      showError('Admin access denied')
+      navigate('/home')
+      return
+    }
+    loadNGOs()
+  }, [isAuthenticated, isLoading, user?.isAdmin])
 
   const loadNGOs = async () => {
     try {
@@ -53,9 +57,8 @@ const AdminNGOs: React.FC = () => {
     }
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('arka_admin_token')
-    localStorage.removeItem('arka_admin_user')
+  const handleLogout = async () => {
+    await logout()
     navigate('/admin/login')
   }
 

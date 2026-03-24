@@ -4,6 +4,7 @@ import { CartProvider } from './contexts/CartContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ToastProvider, useToast } from './contexts/ToastContext'
 import Layout from './components/Layout/Layout'
+import { ProtectedRoute, AdminRoute } from './components/RouteGuards/RouteGuards'
 import ToastContainer from './components/shared/ToastContainer/ToastContainer'
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
 import LandingPage from './pages/LandingPage/LandingPage'
@@ -57,25 +58,25 @@ function AppContent() {
             <Route path="/register" element={<Register />} />
             <Route path="/otp-verification" element={<OTPVerification />} />
             <Route path="/auth/callback" element={<OAuthCallback />} />
-            <Route path="/preferences" element={<Preferences />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/orders" element={<OrderHistory />} />
-            <Route path="/tracking/:orderId?" element={<Tracking />} />
-            <Route path="/inventory" element={<SellerInventory />} />
-            <Route path="/subscriptions" element={<Subscriptions />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/circles/:circleId" element={<CircleDetail />} />
-            <Route path="/start-chain" element={<StartChain />} />
-            <Route path="/exchange" element={<Exchange />} />
-            <Route path="/exchanges/my" element={<MyExchanges />} />
-            <Route path="/exchanges/:exchangeId" element={<ExchangeDetail />} />
-            <Route path="/donation" element={<Donation />} />
-            <Route path="/requests" element={<BookRequests />} />
-            <Route path="/wishlist" element={<Wishlist />} />
-            <Route path="/bookshelf" element={<Bookshelf />} />
+            <Route path="/preferences" element={<ProtectedRoute><Preferences /></ProtectedRoute>} />
+            <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+            <Route path="/orders" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
+            <Route path="/tracking/:orderId?" element={<ProtectedRoute><Tracking /></ProtectedRoute>} />
+            <Route path="/inventory" element={<ProtectedRoute><SellerInventory /></ProtectedRoute>} />
+            <Route path="/subscriptions" element={<ProtectedRoute><Subscriptions /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+            <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+            <Route path="/circles/:circleId" element={<ProtectedRoute><CircleDetail /></ProtectedRoute>} />
+            <Route path="/start-chain" element={<ProtectedRoute><StartChain /></ProtectedRoute>} />
+            <Route path="/exchange" element={<ProtectedRoute><Exchange /></ProtectedRoute>} />
+            <Route path="/exchanges/my" element={<ProtectedRoute><MyExchanges /></ProtectedRoute>} />
+            <Route path="/exchanges/:exchangeId" element={<ProtectedRoute><ExchangeDetail /></ProtectedRoute>} />
+            <Route path="/donation" element={<ProtectedRoute><Donation /></ProtectedRoute>} />
+            <Route path="/requests" element={<ProtectedRoute><BookRequests /></ProtectedRoute>} />
+            <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
+            <Route path="/bookshelf" element={<ProtectedRoute><Bookshelf /></ProtectedRoute>} />
             <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/ngos" element={<AdminNGOs />} />
+            <Route path="/admin/ngos" element={<AdminRoute><AdminNGOs /></AdminRoute>} />
         </Routes>
       </Layout>
       <ToastContainer toasts={toasts} onClose={removeToast} />

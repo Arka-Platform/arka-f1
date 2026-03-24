@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient'
+import { createDemandApi, createRecyclingApi } from './api/domains/demandRecycling'
 
 // Use relative URL when deployed (same ALB serves both frontend and backend)
 // Fallback to localhost for local development
@@ -446,8 +447,8 @@ export const uploadApi = {
 
 // Recycling API functions
 export const recyclingApi = {
-  list: async (_params?: { search?: string; category?: string }): Promise<WastePaperResponse[]> => [],
-};
+  ...createRecyclingApi({ supabase, ApiError, asErrorMessage }),
+}
 
 // Donation API functions
 export const donationsApi = {
@@ -705,79 +706,8 @@ export interface FulfillRequestRequest {
 
 // Demand/Book Requests API functions
 export const demandApi = {
-  createRequest: async (_requesterId: string, data: CreateBookRequestRequest) => {
-    const { data: book, error: bookError } = await supabase
-      .from('books')
-      .select('id')
-      .ilike('title', data.title)
-      .ilike('author', data.author)
-      .limit(1)
-      .maybeSingle()
-    if (bookError) throw new ApiError(asErrorMessage(bookError), 500, bookError)
-    if (!book?.id) throw new ApiError('No matching book found to create request', 400)
-    const { data: req, error } = await supabase.rpc('create_request', {
-      p_book_id: book.id,
-      p_notes: data.additionalNotes ?? data.description ?? null,
-      p_idempotency_key: crypto.randomUUID(),
-    })
-    if (error) throw new ApiError(asErrorMessage(error), 500, error)
-    return { request: req as unknown as BookRequestResponse, matches: [], totalMatches: 0 }
-  },
-  
-  getOpenRequests: async () => {
-    const { data, error } = await supabase.from('v_open_book_requests').select('*').order('created_at', { ascending: false })
-    if (error) throw new ApiError(asErrorMessage(error), 500, error)
-    return (data ?? []) as unknown as BookRequestResponse[]
-  },
-  
-  getMyRequests: async (userId: string) => {
-    const { data, error } = await supabase.from('book_requests').select('*').eq('user_id', userId).order('created_at', { ascending: false })
-    if (error) throw new ApiError(asErrorMessage(error), 500, error)
-    return (data ?? []) as unknown as BookRequestResponse[]
-  },
-  
-  getRequest: async (requestId: string) => {
-    const { data, error } = await supabase.from('book_requests').select('*').eq('id', requestId).single()
-    if (error) throw new ApiError(asErrorMessage(error), 500, error)
-    return data as unknown as BookRequestResponse
-  },
-  
-  searchRequests: async (_query: string) => demandApi.getOpenRequests(),
-  
-  fulfillRequest: async (requestId: string, _sellerId: string, data: FulfillRequestRequest) => {
-    const { data: updated, error } = await supabase
-      .from('book_requests')
-      .update({ status: 'FULFILLED', updated_at: new Date().toISOString(), matching_metadata: { offeredPrice: data.offeredPrice, condition: data.condition, notes: data.notes ?? null } })
-      .eq('id', requestId)
-      .select('*')
-      .single()
-    if (error) throw new ApiError(asErrorMessage(error), 500, error)
-    return updated as unknown as BookRequestResponse
-  },
-  
-  cancelRequest: async (requestId: string, _userId: string) => {
-    const { data, error } = await supabase.rpc('cancel_request', { p_request_id: requestId })
-    if (error) throw new ApiError(asErrorMessage(error), 500, error)
-    return data as unknown as BookRequestResponse
-  },
-  
-  getMatchesForRequest: async (_requestId: string, _requesterId?: string): Promise<MatchResponse[]> => [],
-  
-  getMatchesForBook: async (_bookId: string, _sellerId?: string): Promise<RequestMatchResponse[]> => [],
-  
-  getAutoFillSuggestions: async (_userId?: string): Promise<AutoFillSuggestions> => ({ recentSearches: [], suggestedGenres: [], recentlyViewedBooks: [], popularGenres: [] }),
-  
-  getQuickSuggestions: async (_query: string, _limit: number = 5): Promise<BookRequestResponse[]> => [],
-  
-  getRecentlyServedRequests: async (limit?: number) => {
-    const rows = await demandApi.getOpenRequests()
-    return rows.slice(0, limit ?? 20)
-  },
-  
-  getWeeklyStats: async () => ({ openRequests: 0, completedThisWeek: 0, createdThisWeek: 0 }),
-  
-  getMostRequestedBooks: async (_limit: number = 10): Promise<Array<{ title: string; author: string; requestCount: number }>> => [],
-};
+  ...createDemandApi({ supabase, ApiError, asErrorMessage }),
+}
 
 export interface WeeklyStats {
   openRequests: number

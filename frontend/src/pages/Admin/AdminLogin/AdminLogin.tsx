@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../../contexts/AuthContext'
 import { useToast } from '../../../contexts/ToastContext'
 import Input from '../../../components/shared/Input/Input'
 import Button from '../../../components/shared/Button/Button'
@@ -8,6 +9,7 @@ import styles from './AdminLogin.module.css'
 
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate()
+  const { refreshUser } = useAuth()
   const { success, error: showError } = useToast()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -23,17 +25,8 @@ const AdminLogin: React.FC = () => {
 
     try {
       setLoading(true)
-      const response = await adminApi.login(email, password)
-      
-      // Store admin session
-      localStorage.setItem('arka_admin_token', response.token)
-      localStorage.setItem('arka_admin_user', JSON.stringify({
-        id: response.userId,
-        email: response.email,
-        firstName: response.firstName,
-        lastName: response.lastName,
-        isAdmin: true
-      }))
+      await adminApi.login(email, password)
+      await refreshUser()
       
       success('Admin login successful')
       navigate('/admin/ngos')
