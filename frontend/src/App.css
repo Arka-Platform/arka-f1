@@ -4,6 +4,13 @@
 
 :root {
   --app-bg-home: #0f0a06;
+  --app-bg-gradient:
+    linear-gradient(180deg, rgba(20, 10, 3, 0.45) 0%, rgba(20, 10, 3, 0.8) 100%),
+    radial-gradient(circle at 20% 20%, rgba(255, 188, 107, 0.2), transparent 35%),
+    radial-gradient(circle at 85% 0%, rgba(255, 188, 107, 0.22), transparent 40%),
+    linear-gradient(135deg, #3a2617 0%, #1f140d 46%, #120b07 100%);
+  --app-glass-bg: rgba(255, 255, 255, 0.04);
+  --app-glass-border: rgba(255, 255, 255, 0.14);
   --vibe-bg: #f5efe4;
   --vibe-surface: #fdf8ed;
   --vibe-surface-strong: #fff8e8;

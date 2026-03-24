@@ -1,7 +1,7 @@
 .orderHistory {
   width: 100%;
   padding: 4rem 4rem;
-  background-color: var(--color-white);
+  background-color: transparent;
   min-height: 100vh;
 }
 

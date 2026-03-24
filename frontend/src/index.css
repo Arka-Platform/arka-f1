@@ -61,7 +61,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   color: var(--color-black);
   line-height: 1.6;
-  background: var(--app-bg-home, #0f0a06);
+  background: var(--app-bg-gradient, var(--app-bg-home, #0f0a06));
+  background-attachment: fixed;
 }
 
 #root {
@@ -69,14 +70,14 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--app-bg-home, #0f0a06);
+  background: var(--app-bg-gradient, var(--app-bg-home, #0f0a06));
 }
 
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--app-bg-home, #0f0a06);
+  background: var(--app-bg-gradient, var(--app-bg-home, #0f0a06));
 }
 
 main {

@@ -2,7 +2,7 @@
   width: 100%;
   min-height: calc(100vh - 200px);
   padding: 4rem 2rem;
-  background-color: var(--color-gray-light);
+  background-color: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,7 +15,9 @@
 }
 
 .preferencesCard {
-  background-color: var(--color-white);
+  background: var(--app-glass-bg, rgba(255, 255, 255, 0.04));
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--app-glass-border, rgba(255, 255, 255, 0.14));
   padding: 3rem;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);

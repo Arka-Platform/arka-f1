@@ -1,7 +1,7 @@
 .adminNGOs {
   width: 100%;
   min-height: 100vh;
-  background-color: var(--color-white);
+  background-color: transparent;
   padding: 2rem;
 }
 

@@ -1,6 +1,6 @@
 .contactUs {
   width: 100%;
-  background-color: var(--color-gray-light);
+  background-color: transparent;
 }
 
 .contactSection {
@@ -20,7 +20,9 @@
 
 .formContainer,
 .infoContainer {
-  background-color: var(--color-white);
+  background: var(--app-glass-bg, rgba(255, 255, 255, 0.04));
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--app-glass-border, rgba(255, 255, 255, 0.14));
   padding: 3rem;
   border-radius: 12px;
 }

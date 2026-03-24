@@ -6,7 +6,8 @@
 
 .layout-main {
   flex: 1;
-  background: var(--app-bg-home, #0f0a06);
+  min-height: 100vh;
+  background: var(--app-bg-gradient, var(--app-bg-home, #0f0a06));
 }
 
 
