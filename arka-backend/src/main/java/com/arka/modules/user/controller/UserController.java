@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,7 +40,18 @@ public class UserController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
+  public ResponseEntity<?> getUserById(
+      @PathVariable UUID id,
+      Authentication authentication,
+      @org.springframework.security.core.annotation.AuthenticationPrincipal String authenticatedUserId) {
+    UUID requesterId = UUID.fromString(authenticatedUserId);
+    boolean isAdmin = authentication != null
+        && authentication.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    if (!isAdmin && !requesterId.equals(id)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(java.util.Map.of("error", "Forbidden"));
+    }
     UserResponse user = userService.getUserById(id);
     return ResponseEntity.ok(user);
   }
@@ -47,7 +59,17 @@ public class UserController {
   @PutMapping("/{id}")
   public ResponseEntity<?> updateUser(
       @PathVariable UUID id,
+      Authentication authentication,
+      @org.springframework.security.core.annotation.AuthenticationPrincipal String authenticatedUserId,
       @Valid @RequestBody com.arka.modules.user.dto.UpdateUserRequest request) {
+    UUID requesterId = UUID.fromString(authenticatedUserId);
+    boolean isAdmin = authentication != null
+        && authentication.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    if (!isAdmin && !requesterId.equals(id)) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN)
+          .body(java.util.Map.of("error", "Forbidden"));
+    }
     try {
       UserResponse user = userService.updateUser(id, request);
       return ResponseEntity.ok(user);

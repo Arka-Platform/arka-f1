@@ -4,11 +4,12 @@ import { createBehaviorApi, createCommunityApi, createOrdersApi, createUsersApi 
 import { createDemandApi, createRecyclingApi } from './api/domains/demandRecycling'
 import { createAnalyticsApi, createBookshelfApi, createTrustScoreApi, createWishlistApi } from './api/domains/insightsLibrary'
 
-// Use relative URL when deployed (same ALB serves both frontend and backend)
-// Fallback to localhost for local development
+// Legacy backend HTTP transport (Spring) is kept as an escape hatch only.
+// Primary runtime path is Supabase client + Supabase Edge Functions.
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
   (import.meta.env.PROD ? '' : 'http://localhost:8080');
 const API_LATENCY_WARN_MS = Number(import.meta.env.VITE_API_LATENCY_WARN_MS || 800);
+const ENABLE_LEGACY_BACKEND_API = String(import.meta.env.VITE_ENABLE_LEGACY_BACKEND_API || 'false') === 'true';
 
 type ApiMetric = {
   endpoint: string;
@@ -64,6 +65,14 @@ export async function apiRequest<T>(
   endpoint: string,
   options?: RequestInit
 ): Promise<T> {
+  // Guardrail: avoid accidental architecture drift to direct backend HTTP calls.
+  if (!endpoint.startsWith('http') && !ENABLE_LEGACY_BACKEND_API) {
+    throw new ApiError(
+      'Legacy backend HTTP API is disabled. Use Supabase client/RPC/Edge Functions for domain operations.',
+      400
+    );
+  }
+
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
   
   // Merge headers properly - ensure Content-Type is always set
@@ -138,11 +147,21 @@ export const api = {
   
   // File upload helper
   uploadFile: async <T>(endpoint: string, file: File): Promise<T> => {
+    if (!endpoint.startsWith('http') && !ENABLE_LEGACY_BACKEND_API) {
+      throw new ApiError(
+        'Legacy backend HTTP upload is disabled. Use Supabase Storage upload helpers.',
+        400
+      );
+    }
+
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
     const formData = new FormData();
     formData.append('file', file);
     
-    const token = localStorage.getItem('arka_token');
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const token = session?.access_token ?? null;
     const headers: HeadersInit = {};
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;

@@ -72,7 +72,7 @@ const Order: React.FC = () => {
   }
 
   const subtotal = getTotalPrice()
-  const pickupFee = 1.00
+  const pickupFee = 0
   const total = subtotal + pickupFee
 
   return (

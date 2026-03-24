@@ -2,8 +2,11 @@ package com.arka.modules.storage.controller;
 
 import com.arka.common.result.Result;
 import com.arka.modules.storage.service.LocalFileStorageService;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
+import javax.imageio.ImageIO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -96,7 +99,20 @@ public class FileUploadController {
                   originalFilename != null ? originalFilename : "unknown")));
     }
 
+    // Decode image bytes to ensure the uploaded payload is a real image.
+    if (!isDecodableImage(file)) {
+      return ResponseEntity.badRequest().body(Map.of("error", "Uploaded file is not a valid image"));
+    }
+
     return null; // Validation passed
+  }
+
+  private boolean isDecodableImage(MultipartFile file) {
+    try (InputStream is = file.getInputStream()) {
+      return ImageIO.read(is) != null;
+    } catch (IOException e) {
+      return false;
+    }
   }
 }
 

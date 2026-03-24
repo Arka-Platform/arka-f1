@@ -4,6 +4,8 @@ import com.arka.modules.user.service.OtpService;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/otp")
 public class OtpController {
+  private static final Logger log = LoggerFactory.getLogger(OtpController.class);
   private final OtpService otpService;
 
   public OtpController(OtpService otpService) {
@@ -25,7 +28,8 @@ public class OtpController {
       otpService.sendEmailOtp(request.email());
       return ResponseEntity.ok(java.util.Map.of("message", "OTP sent to email successfully"));
     } catch (Exception e) {
-      return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+      log.warn("Failed to send email OTP", e);
+      return ResponseEntity.badRequest().body(java.util.Map.of("error", "Unable to process OTP request"));
     }
   }
 
@@ -35,7 +39,8 @@ public class OtpController {
       otpService.sendPhoneOtp(request.phoneNumber());
       return ResponseEntity.ok(java.util.Map.of("message", "OTP sent to phone successfully"));
     } catch (Exception e) {
-      return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+      log.warn("Failed to send phone OTP", e);
+      return ResponseEntity.badRequest().body(java.util.Map.of("error", "Unable to process OTP request"));
     }
   }
 
@@ -49,7 +54,8 @@ public class OtpController {
         return ResponseEntity.badRequest().body(java.util.Map.of("error", "Invalid or expired OTP", "valid", false));
       }
     } catch (Exception e) {
-      return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+      log.warn("Failed to verify OTP", e);
+      return ResponseEntity.badRequest().body(java.util.Map.of("error", "Unable to verify OTP"));
     }
   }
 

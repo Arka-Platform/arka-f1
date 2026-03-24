@@ -10,6 +10,8 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/orders")
 public class OrderController {
+  private static final Logger log = LoggerFactory.getLogger(OrderController.class);
   private final OrderService orderService;
 
   public OrderController(OrderService orderService) {
@@ -66,7 +69,8 @@ public class OrderController {
       OrderResponse order = orderService.getOrderById(id, userId);
       return ResponseEntity.ok(order);
     } catch (Exception e) {
-      return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+      log.warn("Failed to get order {}", id, e);
+      return ResponseEntity.badRequest().body(Map.of("error", "Unable to fetch order"));
     }
   }
 
@@ -80,7 +84,8 @@ public class OrderController {
       OrderTrackingResponse tracking = orderService.getOrderTracking(id, userId);
       return ResponseEntity.ok(tracking);
     } catch (Exception e) {
-      return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+      log.warn("Failed to get order tracking {}", id, e);
+      return ResponseEntity.badRequest().body(Map.of("error", "Unable to fetch order tracking"));
     }
   }
 

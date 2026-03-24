@@ -27,14 +27,20 @@ export function createCommunityApi({ supabase, ApiError, asErrorMessage, mapSupa
         .order('created_at', { ascending: false })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
       const circleIds = (circles ?? []).map((c: any) => c.id)
-      const { data: members } = await supabase
-        .from('community_circle_members')
-        .select('circle_id')
-        .in('circle_id', circleIds.length ? circleIds : ['00000000-0000-0000-0000-000000000000'])
-      const { data: chains } = await supabase
-        .from('community_chain_stories')
-        .select('circle_id')
-        .in('circle_id', circleIds.length ? circleIds : ['00000000-0000-0000-0000-000000000000'])
+      let members: any[] | null = null
+      let chains: any[] | null = null
+      if (circleIds.length) {
+        const { data: membersData } = await supabase
+          .from('community_circle_members')
+          .select('circle_id')
+          .in('circle_id', circleIds)
+        const { data: chainsData } = await supabase
+          .from('community_chain_stories')
+          .select('circle_id')
+          .in('circle_id', circleIds)
+        members = membersData ?? []
+        chains = chainsData ?? []
+      }
       const memberCount = new Map<string, number>()
       const chainCount = new Map<string, number>()
       for (const m of members ?? []) memberCount.set((m as any).circle_id, (memberCount.get((m as any).circle_id) ?? 0) + 1)
@@ -99,11 +105,15 @@ export function createCommunityApi({ supabase, ApiError, asErrorMessage, mapSupa
         .order('updated_at', { ascending: false })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
       const chainIds = (chains ?? []).map((c: any) => c.id)
-      const { data: participants } = await supabase
-        .from('community_chain_participants')
-        .select('*')
-        .in('chain_id', chainIds.length ? chainIds : ['00000000-0000-0000-0000-000000000000'])
-        .order('sort_order', { ascending: true })
+      let participants: any[] | null = null
+      if (chainIds.length) {
+        const { data: participantsData } = await supabase
+          .from('community_chain_participants')
+          .select('*')
+          .in('chain_id', chainIds)
+          .order('sort_order', { ascending: true })
+        participants = participantsData ?? []
+      }
       const participantsMap = new Map<string, any[]>()
       for (const p of participants ?? []) {
         const id = (p as any).chain_id
@@ -180,15 +190,73 @@ export function createCommunityApi({ supabase, ApiError, asErrorMessage, mapSupa
 export function createOrdersApi({ supabase, ApiError, asErrorMessage }: Omit<Deps, 'mapSupabaseBook'>) {
   const ordersApi = {
     create: async (userId: string, data: CreateOrderRequest): Promise<OrderResponse> => {
-      const total = data.items.reduce((sum, i) => sum + i.quantity, 0)
+      if (!data.items.length) {
+        throw new ApiError('Order must contain at least one item', 400)
+      }
+
+      const bookIds = data.items.map((item) => item.bookId)
+      const { data: books, error: booksError } = await supabase
+        .from('books')
+        .select('id,credit_price,title,author')
+        .in('id', bookIds)
+      if (booksError) throw new ApiError(asErrorMessage(booksError), 500, booksError)
+
+      const byId = new Map<string, any>((books ?? []).map((b: any) => [b.id, b]))
+      const missing = bookIds.filter((id) => !byId.has(id))
+      if (missing.length) {
+        throw new ApiError('One or more selected books were not found', 400, { missing })
+      }
+
+      const normalizedItems = data.items.map((item) => {
+        const book = byId.get(item.bookId)
+        const unitPrice = Number(book?.credit_price ?? 0)
+        return {
+          bookId: item.bookId,
+          quantity: Math.max(1, Number(item.quantity ?? 1)),
+          unitPrice: Number.isFinite(unitPrice) ? unitPrice : 0,
+          title: String(book?.title ?? ''),
+          author: String(book?.author ?? ''),
+        }
+      })
+      const total = normalizedItems.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0)
+
       const { data: order, error } = await supabase
         .from('orders')
         .insert({ user_id: userId, total_amount: total, shipping_address: data.shippingAddress, status: 'PENDING' })
         .select('*')
         .single()
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
+
+      const { data: insertedItems, error: itemsError } = await supabase
+        .from('order_items')
+        .insert(
+          normalizedItems.map((item) => ({
+            order_id: order.id,
+            book_id: item.bookId,
+            quantity: item.quantity,
+            unit_price: item.unitPrice,
+          }))
+        )
+        .select('id,book_id,quantity,unit_price')
+      if (itemsError) throw new ApiError(asErrorMessage(itemsError), 500, itemsError)
+
+      const itemResponses = (insertedItems ?? []).map((row: any) => {
+        const meta = normalizedItems.find((i) => i.bookId === row.book_id)
+        const unitPrice = Number(row.unit_price ?? 0)
+        const quantity = Number(row.quantity ?? 0)
+        return {
+          id: row.id,
+          bookId: row.book_id,
+          bookTitle: meta?.title ?? '',
+          bookAuthor: meta?.author ?? '',
+          quantity,
+          unitPrice,
+          subtotal: quantity * unitPrice,
+        }
+      })
+
       return {
-        id: order.id, userId: order.user_id, items: [], totalAmount: Number(order.total_amount), pickupFee: 0,
+        id: order.id, userId: order.user_id, items: itemResponses, totalAmount: Number(order.total_amount), pickupFee: 0,
         status: order.status, shippingAddress: order.shipping_address ?? '', paymentMethod: data.paymentMethod,
         trackingNumber: order.tracking_number ?? '', createdAt: order.created_at, updatedAt: order.updated_at,
       }

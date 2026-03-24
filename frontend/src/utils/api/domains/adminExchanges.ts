@@ -141,19 +141,28 @@ export function createExchangesApi({ supabase, ApiError, asErrorMessage }: Deps)
     },
 
     confirm: async (exchangeId: string, _userId?: string): Promise<ExchangeResponse> => {
-      const { data, error } = await supabase.from('exchanges').select('*').eq('id', exchangeId).single()
+      const { data, error } = await supabase.rpc('update_exchange_status', {
+        p_exchange_id: exchangeId,
+        p_new_status: 'PENDING',
+      })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
       return data as unknown as ExchangeResponse
     },
 
     complete: async (exchangeId: string, _userId?: string): Promise<ExchangeResponse> => {
-      const { data, error } = await supabase.from('exchanges').select('*').eq('id', exchangeId).single()
+      const { data, error } = await supabase.rpc('update_exchange_status', {
+        p_exchange_id: exchangeId,
+        p_new_status: 'COMPLETED',
+      })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
       return data as unknown as ExchangeResponse
     },
 
     cancel: async (exchangeId: string, _userId?: string): Promise<ExchangeResponse> => {
-      const { data, error } = await supabase.from('exchanges').select('*').eq('id', exchangeId).single()
+      const { data, error } = await supabase.rpc('update_exchange_status', {
+        p_exchange_id: exchangeId,
+        p_new_status: 'CANCELLED',
+      })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
       return data as unknown as ExchangeResponse
     },

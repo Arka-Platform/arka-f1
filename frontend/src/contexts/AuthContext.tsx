@@ -63,11 +63,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const latestUserIdRef = useRef<string | null>(null)
   const googleOauthInFlightRef = useRef(false)
 
-  const fetchUser = async () => {
+  const fetchUser = async (sessionOverride?: Session | null) => {
     setIsLoading(true)
     try {
-      const { data: sessionData } = await supabase.auth.getSession()
-      const session: Session | null = sessionData.session ?? null
+      const session: Session | null =
+        sessionOverride !== undefined
+          ? sessionOverride
+          : (await supabase.auth.getSession()).data.session ?? null
 
       if (!session) {
         localStorage.removeItem('arka_user')
@@ -155,8 +157,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     fetchUser()
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, _session) => {
-      fetchUser()
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      fetchUser(session ?? null)
     })
 
     return () => authListener.subscription.unsubscribe()
