@@ -8,6 +8,15 @@ import { createAnalyticsApi, createBookshelfApi, createTrustScoreApi, createWish
 // Fallback to localhost for local development
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
   (import.meta.env.PROD ? '' : 'http://localhost:8080');
+const API_LATENCY_WARN_MS = Number(import.meta.env.VITE_API_LATENCY_WARN_MS || 800);
+
+type ApiMetric = {
+  endpoint: string;
+  method: string;
+  durationMs: number;
+  status: number;
+  ok: boolean;
+};
 
 export class ApiError extends Error {
   constructor(
@@ -17,6 +26,17 @@ export class ApiError extends Error {
   ) {
     super(message);
     this.name = 'ApiError';
+  }
+}
+
+function emitApiMetric(metric: ApiMetric) {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('api:metric', { detail: metric }));
+  }
+  if (!metric.ok || metric.durationMs >= API_LATENCY_WARN_MS) {
+    console.warn(
+      `[api] ${metric.method} ${metric.endpoint} ${metric.status} ${metric.durationMs.toFixed(0)}ms`
+    );
   }
 }
 
@@ -57,10 +77,27 @@ export async function apiRequest<T>(
     headers,
   };
 
+  const startedAt = performance.now();
+  const method = (config.method || 'GET').toUpperCase();
+
   try {
     const response = await fetch(url, config);
+    emitApiMetric({
+      endpoint,
+      method,
+      durationMs: performance.now() - startedAt,
+      status: response.status,
+      ok: response.ok,
+    });
     return handleResponse<T>(response);
   } catch (error) {
+    emitApiMetric({
+      endpoint,
+      method,
+      durationMs: performance.now() - startedAt,
+      status: 0,
+      ok: false,
+    });
     if (error instanceof ApiError) {
       throw error;
     }

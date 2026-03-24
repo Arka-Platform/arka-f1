@@ -282,6 +282,7 @@ const BooksMarketplace: React.FC = () => {
   // Book browsing state
   const searchQuery = searchParams.get('search') || searchParams.get('q') || ''
   const [books, setBooks] = useState<Book[]>([])
+  const [visibleBooksCount, setVisibleBooksCount] = useState(20)
   const [booksLoading, setBooksLoading] = useState(true)
   const [booksError, setBooksError] = useState<string | null>(null)
   
@@ -290,6 +291,7 @@ const BooksMarketplace: React.FC = () => {
   const [myRequests, setMyRequests] = useState<BookRequestResponse[]>([])
   const [requestsLoading, setRequestsLoading] = useState(true)
   const [requestSearchQuery, setRequestSearchQuery] = useState('')
+  const [debouncedRequestSearchQuery, setDebouncedRequestSearchQuery] = useState('')
 
   // Form state for requests
   const [title, setTitle] = useState('')
@@ -355,11 +357,13 @@ const BooksMarketplace: React.FC = () => {
           params.search = searchFromUrl.trim()
         } else {
           params.page = 0
-          params.size = 100
+          params.size = 40
         }
         
         const data = await booksApi.list(params)
-        setBooks(data.map(bookToCard))
+        const mappedBooks = data.map(bookToCard)
+        setBooks(mappedBooks)
+        setVisibleBooksCount(Math.min(20, mappedBooks.length))
       } catch (err) {
         setBooksError(err instanceof Error ? err.message : 'Failed to load books')
         console.error('Error fetching books:', err)
@@ -373,19 +377,26 @@ const BooksMarketplace: React.FC = () => {
 
   // Load requests
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedRequestSearchQuery(requestSearchQuery)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [requestSearchQuery])
+
+  useEffect(() => {
     loadRequests()
     if (user?.id) {
       loadMyRequests()
       loadUserProfile()
     }
-  }, [user?.id, requestSearchQuery])
+  }, [user?.id, debouncedRequestSearchQuery])
 
   const loadRequests = async () => {
     try {
       setRequestsLoading(true)
       let data: BookRequestResponse[]
-      if (requestSearchQuery.trim()) {
-        data = await demandApi.searchRequests(requestSearchQuery.trim())
+      if (debouncedRequestSearchQuery.trim()) {
+        data = await demandApi.searchRequests(debouncedRequestSearchQuery.trim())
     } else {
         data = await demandApi.getOpenRequests()
       }
@@ -936,7 +947,7 @@ const BooksMarketplace: React.FC = () => {
                 <p>Found {books.length} book{books.length !== 1 ? 's' : ''}</p>
               </div>
               <div className={styles.booksGrid}>
-                {books.map((book) => (
+                {books.slice(0, visibleBooksCount).map((book) => (
                   <BookCard
                     key={book.id}
                     book={book}
@@ -945,6 +956,16 @@ const BooksMarketplace: React.FC = () => {
                   />
                 ))}
               </div>
+              {visibleBooksCount < books.length && (
+                <div style={{ marginTop: 16, display: 'grid', placeItems: 'center' }}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setVisibleBooksCount((prev) => Math.min(prev + 20, books.length))}
+                  >
+                    Load More
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </div>

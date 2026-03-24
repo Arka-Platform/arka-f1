@@ -28,6 +28,7 @@ interface BookCardProps {
   showButton?: boolean
   buttonText?: string
   onButtonClick?: (book: Book) => void
+  enableUserCollections?: boolean
 }
 
 const BookCard: React.FC<BookCardProps> = ({
@@ -36,6 +37,7 @@ const BookCard: React.FC<BookCardProps> = ({
   showButton = true,
   buttonText = 'Buy Now',
   onButtonClick,
+  enableUserCollections = true,
 }) => {
   const { user } = useAuth()
   const { success, error: showError } = useToast()
@@ -49,6 +51,7 @@ const BookCard: React.FC<BookCardProps> = ({
 
   // Check if book is in wishlist
   useEffect(() => {
+    if (!enableUserCollections) return
     const checkWishlistStatus = async () => {
       if (user?.id && book.id) {
         try {
@@ -61,10 +64,11 @@ const BookCard: React.FC<BookCardProps> = ({
       }
     }
     checkWishlistStatus()
-  }, [user?.id, book.id])
+  }, [user?.id, book.id, enableUserCollections])
 
   // Check if book is in bookshelf
   useEffect(() => {
+    if (!enableUserCollections) return
     const checkBookshelfStatus = async () => {
       if (user?.id && book.id) {
         try {
@@ -77,7 +81,7 @@ const BookCard: React.FC<BookCardProps> = ({
       }
     }
     checkBookshelfStatus()
-  }, [user?.id, book.id])
+  }, [user?.id, book.id, enableUserCollections])
 
   // Track view when card is visible for more than 2 seconds
   useEffect(() => {
@@ -175,7 +179,7 @@ const BookCard: React.FC<BookCardProps> = ({
           </div>
         )}
         {/* Wishlist Heart Icon */}
-        {user && (
+        {user && enableUserCollections && (
           <button
             className={`${styles.wishlistButton} ${isInWishlist ? styles.wishlistButtonActive : ''} ${isToggling ? styles.wishlistButtonAnimating : ''}`}
             onClick={handleWishlistToggle}
@@ -196,7 +200,7 @@ const BookCard: React.FC<BookCardProps> = ({
           </button>
         )}
         {/* Bookshelf Book Icon */}
-        {user && (
+        {user && enableUserCollections && (
           <button
             className={`${styles.bookshelfButton} ${isInBookshelf ? styles.bookshelfButtonActive : ''} ${isTogglingBookshelf ? styles.bookshelfButtonAnimating : ''}`}
             onClick={handleBookshelfToggle}
