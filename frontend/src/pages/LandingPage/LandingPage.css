@@ -1,15 +1,17 @@
 .landing-page {
   width: 100%;
+  min-height: 100vh;
+  color: var(--app-text);
 }
 
 .lp-container {
-  max-width: 1600px;
+  width: min(1600px, 100%);
   margin: 0 auto;
-  padding: 0 4rem;
+  padding: 0 clamp(1rem, 4vw, 4rem);
 }
 
 .testimonials {
-  background-color: var(--color-gray-light);
+  background: color-mix(in srgb, var(--theme-surface-soft) 88%, transparent);
   padding: 6rem 0;
 }
 
@@ -27,7 +29,8 @@
 }
 
 .testimonial-card {
-  background: #fff;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -42,12 +45,12 @@
 
 .testimonial-author {
   font-size: 0.9rem;
-  color: var(--color-gray);
+  color: var(--color-gray-dark);
   margin: 0;
 }
 
 .key-info {
-  background-color: var(--color-white);
+  background: color-mix(in srgb, var(--theme-surface-strong) 92%, transparent);
   padding: 6rem 0;
 }
 

@@ -6,7 +6,8 @@
 
 .layout-main {
   flex: 1;
-  background: var(--app-bg);
+  width: 100%;
+  background: transparent;
   color: var(--app-text);
 }
 
