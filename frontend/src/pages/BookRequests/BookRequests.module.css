@@ -1,6 +1,6 @@
 .bookRequests {
   width: 100%;
-  background-color: var(--color-white);
+  background-color: transparent;
 }
 
 .bookRequests > *:not(.searchSection) {
@@ -39,11 +39,11 @@
   right: 50%;
   margin-left: -50vw;
   margin-right: -50vw;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--theme-accent-gradient);
   padding: 4rem 2rem;
   margin-bottom: 4rem;
   border-radius: 0;
-  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--theme-shadow-lg);
   overflow: hidden;
 }
 
@@ -69,13 +69,13 @@
 .searchHeader {
   text-align: center;
   margin-bottom: 2rem;
-  color: white;
+  color: var(--theme-text-inverse);
 }
 
 .searchTitle {
   font-size: 2.5rem;
   font-weight: 700;
-  color: white;
+  color: var(--theme-text-inverse);
   margin: 0 0 0.75rem 0;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -83,7 +83,7 @@
 
 .searchSubtitle {
   font-size: 1.25rem;
-  color: rgba(255, 255, 255, 0.95);
+  color: color-mix(in srgb, var(--theme-text-inverse) 95%, transparent);
   margin: 0;
   line-height: 1.6;
 }
@@ -94,9 +94,9 @@
 }
 
 .mainSearchInput {
-  background: white;
+  background: var(--theme-surface-strong);
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   padding: 0.5rem;
 }
 
@@ -109,17 +109,17 @@
 
 .mainSearchInput :global(input):focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 .authPrompt {
-  background: #fef3c7;
-  border: 1px solid #fbbf24;
+  background: var(--theme-warning-bg);
+  border: 1px solid var(--theme-warning-border);
   border-radius: 8px;
   padding: 1.5rem;
   text-align: center;
   margin-bottom: 2rem;
-  color: #92400e;
+  color: var(--theme-warning-text);
 }
 
 .formSection {

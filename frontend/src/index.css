@@ -54,6 +54,20 @@
   --app-border: rgba(0, 0, 0, 0.08);
   --app-text: #0f172a;
   --app-link: #2563eb;
+  --theme-accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --theme-surface-soft: #f5f7fb;
+  --theme-surface-strong: #ffffff;
+  --theme-text-inverse: #ffffff;
+  --theme-shadow-lg: 0 12px 40px rgba(102, 126, 234, 0.22);
+  --theme-warning-bg: #fef3c7;
+  --theme-warning-border: #fbbf24;
+  --theme-warning-text: #92400e;
+  --component-surface: linear-gradient(135deg, #ffffff 0%, #f3f6fb 100%);
+  --component-surface-strong: linear-gradient(135deg, #f8fbff 0%, #edf3fb 100%);
+  --component-border: rgba(15, 23, 42, 0.12);
+  --component-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  --component-overlay: rgba(255, 255, 255, 0.92);
+  --component-backdrop: none;
 }
 
 :root[data-theme='default'] {
@@ -70,6 +84,20 @@
   --app-border: rgba(0, 0, 0, 0.08);
   --app-text: #0f172a;
   --app-link: #2563eb;
+  --theme-accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --theme-surface-soft: #f5f7fb;
+  --theme-surface-strong: #ffffff;
+  --theme-text-inverse: #ffffff;
+  --theme-shadow-lg: 0 12px 40px rgba(102, 126, 234, 0.22);
+  --theme-warning-bg: #fef3c7;
+  --theme-warning-border: #fbbf24;
+  --theme-warning-text: #92400e;
+  --component-surface: linear-gradient(135deg, #ffffff 0%, #f3f6fb 100%);
+  --component-surface-strong: linear-gradient(135deg, #f8fbff 0%, #edf3fb 100%);
+  --component-border: rgba(15, 23, 42, 0.12);
+  --component-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  --component-overlay: rgba(255, 255, 255, 0.92);
+  --component-backdrop: none;
 }
 
 :root[data-theme='home'] {
@@ -86,6 +114,20 @@
   --app-border: rgba(255, 255, 255, 0.16);
   --app-text: #f4e7cf;
   --app-link: #f6d8a6;
+  --theme-accent-gradient: linear-gradient(135deg, #3a2617 0%, #1f140d 46%, #120b07 100%);
+  --theme-surface-soft: rgba(255, 255, 255, 0.06);
+  --theme-surface-strong: rgba(255, 255, 255, 0.1);
+  --theme-text-inverse: #f7ecd7;
+  --theme-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.35);
+  --theme-warning-bg: rgba(251, 191, 36, 0.16);
+  --theme-warning-border: rgba(251, 191, 36, 0.45);
+  --theme-warning-text: #f6e6ca;
+  --component-surface: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+  --component-surface-strong: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.09) 100%);
+  --component-border: rgba(255, 255, 255, 0.24);
+  --component-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+  --component-overlay: rgba(23, 15, 11, 0.72);
+  --component-backdrop: blur(12px);
 }
 
 body {

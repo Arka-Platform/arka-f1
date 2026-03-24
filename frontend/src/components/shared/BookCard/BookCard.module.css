@@ -1,5 +1,8 @@
 .bookCard {
-  background-color: var(--color-gray-light);
+  background: var(--component-surface);
+  border: 1px solid var(--component-border);
+  box-shadow: var(--component-shadow);
+  backdrop-filter: var(--component-backdrop);
   border-radius: 12px;
   overflow: hidden;
   display: flex;
@@ -17,7 +20,7 @@
   width: 100%;
   height: 250px;
   overflow: hidden;
-  background-color: var(--color-white);
+  background: var(--component-surface-strong);
   position: relative;
 }
 
@@ -131,7 +134,7 @@
   right: 0.75rem;
   width: 40px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--component-overlay);
   border: none;
   border-radius: 50%;
   display: flex;
@@ -140,12 +143,12 @@
   cursor: pointer;
   transition: all 0.3s ease;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(4px);
+  box-shadow: var(--component-shadow);
+  backdrop-filter: var(--component-backdrop);
 }
 
 .wishlistButton:hover {
-  background: rgba(255, 255, 255, 1);
+  background: var(--component-surface-strong);
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
@@ -211,7 +214,7 @@
   left: 0.75rem;
   width: 40px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--component-overlay);
   border: none;
   border-radius: 50%;
   display: flex;
@@ -220,12 +223,12 @@
   cursor: pointer;
   transition: all 0.3s ease;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(4px);
+  box-shadow: var(--component-shadow);
+  backdrop-filter: var(--component-backdrop);
 }
 
 .bookshelfButton:hover {
-  background: rgba(255, 255, 255, 1);
+  background: var(--component-surface-strong);
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }

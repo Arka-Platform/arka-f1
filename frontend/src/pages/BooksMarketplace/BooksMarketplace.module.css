@@ -1,6 +1,6 @@
 .marketplace {
   width: 100%;
-  background-color: var(--color-white);
+  background-color: transparent;
 }
 
 .marketplace > *:not(.searchSection) {
@@ -12,8 +12,8 @@
 /* In Queue Button - Below Search Section */
 .inQueueSection {
   padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-bottom: 1px solid #e2e8f0;
+  background: color-mix(in srgb, var(--theme-surface-soft) 85%, transparent);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .inQueueSection .container {
@@ -28,13 +28,13 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1.75rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--theme-accent-gradient);
+  color: var(--theme-text-inverse);
   border: none;
   border-radius: 12px;
   font-size: 1rem;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
   transition: all 0.3s ease;
   white-space: nowrap;
   position: relative;
@@ -58,12 +58,12 @@
 
 .inQueueButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .inQueueButton:active {
   transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
 }
 
 .inQueueIcon {

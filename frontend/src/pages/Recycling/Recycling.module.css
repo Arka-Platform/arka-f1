@@ -1,13 +1,13 @@
 .recycling {
   width: 100%;
-  background-color: var(--color-white);
+  background-color: transparent;
   min-height: 100vh;
 }
 
 .header {
   padding: 3rem 4rem 2rem;
-  background: linear-gradient(135deg, #228B22 0%, #32CD32 100%);
-  color: white;
+  background: var(--theme-accent-gradient);
+  color: var(--theme-text-inverse);
   text-align: center;
 }
 
