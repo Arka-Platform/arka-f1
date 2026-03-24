@@ -185,6 +185,12 @@ const AdminNGOs: React.FC = () => {
         </div>
         <div className={styles.headerActions}>
           <Button
+            variant="secondary"
+            onClick={() => navigate('/admin/shipments')}
+          >
+            Shipments
+          </Button>
+          <Button
             variant="primary"
             onClick={() => {
               resetForm()

@@ -40,6 +40,7 @@ const Wishlist = lazy(() => import('./pages/Wishlist/Wishlist'))
 const Bookshelf = lazy(() => import('./pages/Bookshelf/Bookshelf'))
 const AdminLogin = lazy(() => import('./pages/Admin/AdminLogin/AdminLogin'))
 const AdminNGOs = lazy(() => import('./pages/Admin/AdminNGOs/AdminNGOs'))
+const AdminShipments = lazy(() => import('./pages/Admin/AdminShipments/AdminShipments'))
 
 function AppContent() {
   const { toasts, removeToast } = useToast()
@@ -80,6 +81,7 @@ function AppContent() {
               <Route path="/bookshelf" element={<ProtectedRoute><Bookshelf /></ProtectedRoute>} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/ngos" element={<AdminRoute><AdminNGOs /></AdminRoute>} />
+              <Route path="/admin/shipments" element={<AdminRoute><AdminShipments /></AdminRoute>} />
           </Routes>
         </Suspense>
       </Layout>

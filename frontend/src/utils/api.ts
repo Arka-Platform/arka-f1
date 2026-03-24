@@ -1352,6 +1352,79 @@ export const ordersApi = {
   ...createOrdersApi({ supabase, ApiError, asErrorMessage }),
 }
 
+export type ShipmentPreference = 'cheapest' | 'fastest' | 'balanced' | 'manual'
+export type ShipmentStatus = 'pending_manual_dispatch' | 'dispatched' | 'in_transit' | 'delivered'
+
+export interface ShipmentResponse {
+  id: string
+  order_id: string
+  provider_name: string | null
+  preference: ShipmentPreference
+  tracking_id: string | null
+  status: ShipmentStatus
+  metadata: Record<string, unknown> | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateShipmentRequest {
+  order_id: string
+  preference: ShipmentPreference
+  provider_name?: string
+  metadata?: Record<string, unknown>
+}
+
+export interface UpdateShipmentRequest {
+  id: string
+  provider_name?: string
+  tracking_id?: string
+  status?: ShipmentStatus
+  metadata?: Record<string, unknown>
+}
+
+export const manualLogisticsApi = {
+  createShipment: async (payload: CreateShipmentRequest) => {
+    const { data, error } = await supabase.functions.invoke('create-shipment', {
+      body: payload,
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    if (!data?.shipment) throw new ApiError('Invalid create-shipment response', 500, data)
+    return data.shipment as ShipmentResponse
+  },
+
+  updateShipment: async (payload: UpdateShipmentRequest) => {
+    const { data, error } = await supabase.functions.invoke('update-shipment', {
+      body: payload,
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    if (!data?.shipment) throw new ApiError('Invalid update-shipment response', 500, data)
+    return data.shipment as ShipmentResponse
+  },
+
+  getShipments: async (params?: {
+    status?: ShipmentStatus
+    order_id?: string
+    limit?: number
+    offset?: number
+  }) => {
+    const { data, error } = await supabase.functions.invoke('get-shipments', {
+      body: params ?? {},
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    if (!Array.isArray(data?.shipments)) throw new ApiError('Invalid get-shipments response', 500, data)
+    return data.shipments as ShipmentResponse[]
+  },
+
+  getShipmentById: async (id: string) => {
+    const { data, error } = await supabase.functions.invoke('get-shipment-by-id', {
+      body: { id },
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    if (!data?.shipment) throw new ApiError('Invalid get-shipment-by-id response', 500, data)
+    return data.shipment as ShipmentResponse
+  },
+}
+
 // User API types
 export interface UserResponse {
   id: string
