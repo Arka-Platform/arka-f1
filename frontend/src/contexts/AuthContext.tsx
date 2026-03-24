@@ -70,6 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const session: Session | null = sessionData.session ?? null
 
       if (!session) {
+        localStorage.removeItem('arka_user')
         setUser(null)
         lastProfileSyncedUserIdRef.current = null
         profileSyncInFlightRef.current = null
@@ -81,7 +82,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const metadata = supabaseUser.user_metadata as Record<string, any> | undefined
       latestUserIdRef.current = supabaseUser.id
 
-      setUser({
+      const normalizedUser = {
         id: supabaseUser.id,
         email: supabaseUser.email ?? null,
         firstName: metadata?.first_name ?? '',
@@ -90,7 +91,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         avatar: metadata?.avatar ?? null,
         isAdmin: metadata?.is_admin ?? false,
         creditBalance: metadata?.credit_balance ?? 0,
-      })
+      }
+
+      setUser(normalizedUser)
+      localStorage.setItem('arka_user', JSON.stringify(normalizedUser))
 
       // Best-effort profile sync: never block auth UX.
       // Prevent redundant syncs for the same user within a session, and avoid races.
@@ -295,6 +299,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true)
     try {
       await supabase.auth.signOut()
+      localStorage.removeItem('arka_user')
       setUser(null)
     } finally {
       setIsLoading(false)

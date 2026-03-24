@@ -1,0 +1,294 @@
+import type {
+  AddToBookshelfRequest,
+  AddToWishlistRequest,
+  BookAnalyticsResponse,
+  BookshelfItemResponse,
+  PlatformInsightsResponse,
+  TrustScoreResponse,
+  UserAnalyticsResponse,
+  WishlistItemResponse,
+} from '../../api'
+
+type Deps = {
+  supabase: any
+  ApiError: new (message: string, status: number, response?: unknown) => Error
+  asErrorMessage: (error: unknown) => string
+}
+
+export function createAnalyticsApi({ supabase, ApiError, asErrorMessage }: Deps) {
+  return {
+    getUserAnalytics: async (userId: string): Promise<UserAnalyticsResponse> => {
+      const { data, error } = await supabase.from('v_analytics_user_summary').select('*').eq('user_id', userId).single()
+      if (error) throw new ApiError(asErrorMessage(error), 500, error)
+      return {
+        userId,
+        userName: '',
+        totalBooksRead: 0,
+        totalBooksBought: 0,
+        totalBooksSold: 0,
+        totalBooksLent: 0,
+        totalBooksBorrowed: 0,
+        totalSpent: 0,
+        totalEarned: 0,
+        favoriteGenres: [],
+        favoriteCategories: [],
+        readingStreak: 0,
+        averageRatingGiven: 0,
+        reviewsWritten: Number(data.total_events ?? 0),
+      }
+    },
+
+    getBookAnalytics: async (bookId: string): Promise<BookAnalyticsResponse> => {
+      const { data, error } = await supabase.from('analytics_book_daily').select('*').eq('book_id', bookId)
+      if (error) throw new ApiError(asErrorMessage(error), 500, error)
+      const totalViews = (data ?? []).reduce((acc: number, r: any) => acc + Number(r.total_events ?? 0), 0)
+      const wishlistAdds = (data ?? []).reduce((acc: number, r: any) => acc + Number(r.wishlist_adds ?? 0), 0)
+      return {
+        bookId,
+        bookTitle: '',
+        bookAuthor: '',
+        totalViews,
+        totalPurchases: 0,
+        totalLendings: 0,
+        totalWishlistAdds: wishlistAdds,
+        averageRating: null,
+        ratingsCount: null,
+        popularityScore: totalViews,
+        trendingStatus: 'NORMAL',
+        daysSincePublished: 0,
+      }
+    },
+
+    getPlatformInsights: async (): Promise<PlatformInsightsResponse> => ({
+      totalUsers: 0, activeUsers: 0, totalBooks: 0, availableBooks: 0, totalExchanges: 0, totalLendings: 0,
+      totalRevenue: 0, averageBookPrice: 0, booksByGenre: {}, booksByCategory: {}, trendingBooks: [], popularGenres: [],
+      monthlyStats: { newUsers: 0, newBooks: 0, exchanges: 0, lendings: 0, revenue: 0 },
+      weeklyStats: { newUsers: 0, newBooks: 0, exchanges: 0, lendings: 0, revenue: 0 },
+    }),
+  }
+}
+
+export function createWishlistApi({ supabase, ApiError, asErrorMessage }: Deps) {
+  const wishlistApi = {
+    addToWishlist: async (userId: string, bookId: string, data?: AddToWishlistRequest): Promise<WishlistItemResponse> => {
+      try {
+        const { error } = await supabase.from('wishlists').insert({
+          user_id: userId,
+          book_id: bookId,
+          notes: data?.notes ?? null,
+        })
+        if (error) throw error
+        const items = await wishlistApi.getWishlist(userId)
+        const item = items.find((i) => i.bookId === bookId)
+        if (!item) throw new Error('Wishlist item not found after insert')
+        return item
+      } catch (error) {
+        throw new ApiError(asErrorMessage(error), 500, error)
+      }
+    },
+
+    removeFromWishlist: async (userId: string, bookId: string) => {
+      try {
+        const { error } = await supabase
+          .from('wishlists')
+          .delete()
+          .eq('user_id', userId)
+          .eq('book_id', bookId)
+        if (error) throw error
+        return { message: 'Removed from wishlist' }
+      } catch (error) {
+        throw new ApiError(asErrorMessage(error), 500, error)
+      }
+    },
+
+    getWishlist: async (userId: string): Promise<WishlistItemResponse[]> => {
+      try {
+        const { data, error } = await supabase
+          .from('wishlists')
+          .select(`
+            id,
+            book_id,
+            notes,
+            created_at,
+            books:book_id (
+              id,title,author,genre,description,credit_price,status,owner_id
+            )
+          `)
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+        if (error) throw error
+        return (data ?? []).map((row: any) => ({
+          wishlistId: row.id,
+          bookId: row.book_id,
+          bookTitle: row.books?.title ?? '',
+          bookAuthor: row.books?.author ?? '',
+          bookGenre: row.books?.genre ?? null,
+          bookDescription: row.books?.description ?? null,
+          bookPrice: Number(row.books?.credit_price ?? 0),
+          bookImageUrl: null,
+          bookStatus: row.books?.status ?? 'AVAILABLE',
+          bookOwnerId: row.books?.owner_id ?? '',
+          bookOwnerName: '',
+          notes: row.notes ?? null,
+          addedAt: row.created_at,
+        }))
+      } catch (error) {
+        throw new ApiError(asErrorMessage(error), 500, error)
+      }
+    },
+
+    checkInWishlist: async (userId: string, bookId: string) => {
+      try {
+        const { count, error } = await supabase
+          .from('wishlists')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .eq('book_id', bookId)
+        if (error) throw error
+        return { isInWishlist: (count ?? 0) > 0 }
+      } catch (error) {
+        throw new ApiError(asErrorMessage(error), 500, error)
+      }
+    },
+
+    getWishlistCount: async (userId: string) => {
+      try {
+        const { count, error } = await supabase
+          .from('wishlists')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId)
+        if (error) throw error
+        return { count: count ?? 0 }
+      } catch (error) {
+        throw new ApiError(asErrorMessage(error), 500, error)
+      }
+    },
+  }
+
+  return wishlistApi
+}
+
+export function createBookshelfApi({ supabase, ApiError, asErrorMessage }: Deps) {
+  const bookshelfApi = {
+    addToBookshelf: async (userId: string, bookId: string, data?: AddToBookshelfRequest): Promise<BookshelfItemResponse> => {
+      try {
+        const { error } = await supabase.from('bookshelf').insert({
+          user_id: userId,
+          book_id: bookId,
+          notes: data?.notes ?? null,
+        })
+        if (error) throw error
+        const list = await bookshelfApi.getBookshelf(userId)
+        const item = list.find((i) => i.bookId === bookId)
+        if (!item) throw new Error('Bookshelf item not found after insert')
+        return item
+      } catch (error) {
+        throw new ApiError(asErrorMessage(error), 500, error)
+      }
+    },
+
+    removeFromBookshelf: async (userId: string, bookId: string) => {
+      try {
+        const { error } = await supabase
+          .from('bookshelf')
+          .delete()
+          .eq('user_id', userId)
+          .eq('book_id', bookId)
+        if (error) throw error
+        return { message: 'Removed from bookshelf' }
+      } catch (error) {
+        throw new ApiError(asErrorMessage(error), 500, error)
+      }
+    },
+
+    getBookshelf: async (userId: string): Promise<BookshelfItemResponse[]> => {
+      try {
+        const { data, error } = await supabase
+          .from('bookshelf')
+          .select(`
+            id,
+            book_id,
+            notes,
+            created_at,
+            books:book_id (
+              id,title,author,credit_price
+            )
+          `)
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+        if (error) throw error
+        return (data ?? []).map((row: any) => ({
+          id: row.id,
+          userId,
+          bookId: row.book_id,
+          bookTitle: row.books?.title ?? '',
+          bookAuthor: row.books?.author ?? '',
+          bookImageUrl: null,
+          bookPrice: Number(row.books?.credit_price ?? 0),
+          notes: row.notes ?? null,
+          addedAt: row.created_at,
+        }))
+      } catch (error) {
+        throw new ApiError(asErrorMessage(error), 500, error)
+      }
+    },
+
+    checkInBookshelf: async (userId: string, bookId: string) => {
+      try {
+        const { count, error } = await supabase
+          .from('bookshelf')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .eq('book_id', bookId)
+        if (error) throw error
+        return { isInBookshelf: (count ?? 0) > 0 }
+      } catch (error) {
+        throw new ApiError(asErrorMessage(error), 500, error)
+      }
+    },
+
+    getBookshelfCount: async (userId: string) => {
+      try {
+        const { count, error } = await supabase
+          .from('bookshelf')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId)
+        if (error) throw error
+        return { count: count ?? 0 }
+      } catch (error) {
+        throw new ApiError(asErrorMessage(error), 500, error)
+      }
+    },
+  }
+
+  return bookshelfApi
+}
+
+export function createTrustScoreApi({ supabase, ApiError, asErrorMessage }: Deps) {
+  return {
+    getTrustScore: async (userId: string): Promise<TrustScoreResponse> => {
+      const { data, error } = await supabase.from('user_trust_scores').select('*').eq('user_id', userId).single()
+      if (error) throw new ApiError(asErrorMessage(error), 500, error)
+      return {
+        userId,
+        trustScore: Number(data.trust_score ?? 0),
+        conditionAccuracyScore: 0,
+        conditionAssessmentsCount: 0,
+        accurateConditionCount: 0,
+        showupReliabilityScore: Number(data.reliability_score ?? 0),
+        pickupCommitmentsCount: 0,
+        successfulShowupsCount: 0,
+        noShowsCount: 0,
+        responseTimeScore: Number(data.responsiveness_score ?? 0),
+        averageResponseTimeHours: 0,
+        requestsRespondedCount: 0,
+        completionRate: Number(data.completion_rate ?? 0),
+        totalTransactions: Number(data.events_considered ?? 0),
+        completedTransactions: 0,
+        cancellationRate: 0,
+        cancelledTransactions: 0,
+        lastCalculatedAt: data.computed_at,
+      }
+    },
+  }
+}

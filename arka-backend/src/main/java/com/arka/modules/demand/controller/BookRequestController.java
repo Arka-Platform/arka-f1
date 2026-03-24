@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,7 +48,8 @@ public class BookRequestController {
   @PostMapping("/requests")
   public ResponseEntity<?> createRequest(
       @RequestBody CreateBookRequestRequest request,
-      @RequestParam UUID requesterId) {
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID requesterId = UUID.fromString(authenticatedUserId);
     Result<BookRequestResponse> result = bookRequestService.createRequest(requesterId, request);
     return switch (result) {
       case Result.Success<BookRequestResponse> success -> {
@@ -110,7 +112,8 @@ public class BookRequestController {
 
   @GetMapping("/requests/my")
   public ResponseEntity<List<BookRequestResponse>> getMyRequests(
-      @RequestParam UUID userId) {
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
     return ResponseEntity.ok(bookRequestService.getUserRequests(userId));
   }
 
@@ -128,8 +131,9 @@ public class BookRequestController {
   @PutMapping("/requests/{requestId}/fulfill")
   public ResponseEntity<?> fulfillRequest(
       @PathVariable UUID requestId,
-      @RequestParam UUID sellerId,
+      @AuthenticationPrincipal String authenticatedUserId,
       @RequestBody FulfillRequestRequest fulfillRequest) {
+    UUID sellerId = UUID.fromString(authenticatedUserId);
     Result<BookRequestResponse> result = bookRequestService.fulfillRequest(requestId, sellerId, fulfillRequest);
     return switch (result) {
       case Result.Success<BookRequestResponse> success -> 
@@ -142,7 +146,8 @@ public class BookRequestController {
   @DeleteMapping("/requests/{requestId}")
   public ResponseEntity<?> cancelRequest(
       @PathVariable UUID requestId,
-      @RequestParam UUID userId) {
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
     Result<BookRequestResponse> result = bookRequestService.cancelRequest(requestId, userId);
     return switch (result) {
       case Result.Success<BookRequestResponse> success -> 
@@ -159,7 +164,8 @@ public class BookRequestController {
   @GetMapping("/requests/{requestId}/matches")
   public ResponseEntity<?> getMatchesForRequest(
       @PathVariable UUID requestId,
-      @RequestParam UUID userId) {
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
     // Verify that the user is the requester of this request
     Result<BookRequestResponse> requestResult = bookRequestService.getRequest(requestId);
     if (requestResult instanceof Result.Failure) {
@@ -208,7 +214,8 @@ public class BookRequestController {
   @GetMapping("/books/{bookId}/matches")
   public ResponseEntity<List<RequestMatchResponse>> getMatchesForBook(
       @PathVariable UUID bookId,
-      @RequestParam UUID sellerId) {
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID sellerId = UUID.fromString(authenticatedUserId);
     List<BookMatchingService.RequestMatchResult> matches = matchingService.findMatchesForBook(bookId, sellerId);
     
     List<RequestMatchResponse> response = matches.stream()
@@ -237,7 +244,8 @@ public class BookRequestController {
    */
   @GetMapping("/requests/autofill")
   public ResponseEntity<RequestAutoFillService.AutoFillSuggestions> getAutoFillSuggestions(
-      @RequestParam UUID userId) {
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
     return ResponseEntity.ok(autoFillService.getAutoFillSuggestions(userId));
   }
 
@@ -246,9 +254,10 @@ public class BookRequestController {
    */
   @GetMapping("/requests/suggestions")
   public ResponseEntity<List<String>> getQuickSuggestions(
-      @RequestParam UUID userId,
+      @AuthenticationPrincipal String authenticatedUserId,
       @RequestParam String query,
       @RequestParam String fieldType) {
+    UUID userId = UUID.fromString(authenticatedUserId);
     return ResponseEntity.ok(autoFillService.getQuickSuggestions(userId, query, fieldType));
   }
 

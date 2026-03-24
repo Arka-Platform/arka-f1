@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,12 +35,8 @@ public class ExchangeController {
    */
   @PostMapping
   public ResponseEntity<?> createExchange(
-      @RequestBody @Valid CreateExchangeRequest request,
-      @RequestParam(required = false) UUID buyerId) {
-    // For now, accept buyerId as parameter. In production, get from authenticated user context
-    if (buyerId == null) {
-      buyerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
-    }
+      @RequestBody @Valid CreateExchangeRequest request, @AuthenticationPrincipal String authenticatedUserId) {
+    UUID buyerId = UUID.fromString(authenticatedUserId);
     
     Result<ExchangeResponse> result = exchangeService.createExchange(request.bookId(), buyerId);
     return switch (result) {
@@ -56,11 +53,8 @@ public class ExchangeController {
    */
   @GetMapping("/my")
   public ResponseEntity<List<ExchangeResponse>> getMyExchanges(
-      @RequestParam(required = false) UUID userId) {
-    // For now, accept userId as parameter. In production, get from authenticated user context
-    if (userId == null) {
-      userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
-    }
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
     
     List<ExchangeResponse> exchanges = exchangeService.getUserExchanges(userId);
     return ResponseEntity.ok(exchanges);
@@ -84,11 +78,8 @@ public class ExchangeController {
   @PutMapping("/{exchangeId}/confirm")
   public ResponseEntity<?> confirmExchange(
       @PathVariable UUID exchangeId,
-      @RequestParam(required = false) UUID sellerId) {
-    // For now, accept sellerId as parameter. In production, get from authenticated user context
-    if (sellerId == null) {
-      sellerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
-    }
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID sellerId = UUID.fromString(authenticatedUserId);
     
     Result<ExchangeResponse> result = exchangeService.confirmExchange(exchangeId, sellerId);
     return switch (result) {
@@ -106,11 +97,8 @@ public class ExchangeController {
   @PutMapping("/{exchangeId}/complete")
   public ResponseEntity<?> completeExchange(
       @PathVariable UUID exchangeId,
-      @RequestParam(required = false) UUID buyerId) {
-    // For now, accept buyerId as parameter. In production, get from authenticated user context
-    if (buyerId == null) {
-      buyerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
-    }
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID buyerId = UUID.fromString(authenticatedUserId);
     
     Result<ExchangeResponse> result = exchangeService.completeExchange(exchangeId, buyerId);
     return switch (result) {
@@ -128,11 +116,8 @@ public class ExchangeController {
   @DeleteMapping("/{exchangeId}")
   public ResponseEntity<?> cancelExchange(
       @PathVariable UUID exchangeId,
-      @RequestParam(required = false) UUID userId) {
-    // For now, accept userId as parameter. In production, get from authenticated user context
-    if (userId == null) {
-      userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
-    }
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
     
     Result<ExchangeResponse> result = exchangeService.cancelExchange(exchangeId, userId);
     return switch (result) {

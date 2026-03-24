@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -34,11 +35,8 @@ public class OrderController {
   @PostMapping
   public ResponseEntity<?> createOrder(
       @Valid @RequestBody CreateOrderRequest request,
-      @RequestParam(required = false) UUID userId) {
-    // For now, accept userId as parameter. In production, get from authenticated user context
-    if (userId == null) {
-      userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
-    }
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
 
     Result<OrderResponse> result = orderService.createOrder(userId, request);
     return switch (result) {
@@ -51,11 +49,8 @@ public class OrderController {
 
   @GetMapping("/my")
   public ResponseEntity<List<OrderResponse>> getMyOrders(
-      @RequestParam(required = false) UUID userId) {
-    // For now, accept userId as parameter. In production, get from authenticated user context
-    if (userId == null) {
-      userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
-    }
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
 
     List<OrderResponse> orders = orderService.getUserOrders(userId);
     return ResponseEntity.ok(orders);
@@ -64,11 +59,8 @@ public class OrderController {
   @GetMapping("/{id}")
   public ResponseEntity<?> getOrderById(
       @PathVariable UUID id,
-      @RequestParam(required = false) UUID userId) {
-    // For now, accept userId as parameter. In production, get from authenticated user context
-    if (userId == null) {
-      userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
-    }
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
 
     try {
       OrderResponse order = orderService.getOrderById(id, userId);
@@ -81,11 +73,8 @@ public class OrderController {
   @GetMapping("/{id}/tracking")
   public ResponseEntity<?> getOrderTracking(
       @PathVariable UUID id,
-      @RequestParam(required = false) UUID userId) {
-    // For now, accept userId as parameter. In production, get from authenticated user context
-    if (userId == null) {
-      userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
-    }
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
 
     try {
       OrderTrackingResponse tracking = orderService.getOrderTracking(id, userId);
@@ -98,11 +87,8 @@ public class OrderController {
   @DeleteMapping("/{id}")
   public ResponseEntity<?> cancelOrder(
       @PathVariable UUID id,
-      @RequestParam(required = false) UUID userId) {
-    // For now, accept userId as parameter. In production, get from authenticated user context
-    if (userId == null) {
-      userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
-    }
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
 
     Result<OrderResponse> result = orderService.cancelOrder(id, userId);
     return switch (result) {
@@ -116,11 +102,8 @@ public class OrderController {
   public ResponseEntity<?> updateOrderStatus(
       @PathVariable UUID id,
       @RequestParam String status,
-      @RequestParam(required = false) UUID userId) {
-    // For now, accept userId as parameter. In production, get from authenticated user context
-    if (userId == null) {
-      userId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
-    }
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
 
     try {
       OrderStatus newStatus = OrderStatus.valueOf(status.toUpperCase());

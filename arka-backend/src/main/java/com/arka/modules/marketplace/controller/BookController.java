@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -33,11 +34,8 @@ public class BookController {
   @PostMapping
   public ResponseEntity<?> create(
       @RequestBody @Valid CreateBookRequest request,
-      @RequestParam(required = false) UUID ownerId) {
-    // For now, accept ownerId as parameter. In production, get from authenticated user context
-    if (ownerId == null) {
-      ownerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
-    }
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID ownerId = UUID.fromString(authenticatedUserId);
     Result<UUID> result = bookService.createBook(request, ownerId);
     return switch (result) {
       case Result.Success<UUID> success -> ResponseEntity.ok(Map.of("id", success.value()));
@@ -107,11 +105,8 @@ public class BookController {
 
   @GetMapping("/my")
   public ResponseEntity<List<BookResponse>> getMyBooks(
-      @RequestParam(required = false) UUID ownerId) {
-    // For now, accept ownerId as parameter. In production, get from authenticated user context
-    if (ownerId == null) {
-      ownerId = UUID.fromString("00000000-0000-0000-0000-000000000000"); // Placeholder for testing
-    }
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID ownerId = UUID.fromString(authenticatedUserId);
     return ResponseEntity.ok(bookService.getBooksByOwner(ownerId));
   }
 

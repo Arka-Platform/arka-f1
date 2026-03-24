@@ -3,6 +3,7 @@ package com.arka.config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +16,21 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-  @Value("${app.jwt.secret:arka-secret-key-change-in-production-min-256-bits-long}")
+  @Value("${app.jwt.secret}")
   private String secret;
 
   @Value("${app.jwt.expiration:86400000}") // 24 hours default
   private Long expiration;
+
+  @PostConstruct
+  void validateConfiguration() {
+    if (secret == null || secret.isBlank()) {
+      throw new IllegalStateException("app.jwt.secret must be configured");
+    }
+    if (secret.getBytes(StandardCharsets.UTF_8).length < 32) {
+      throw new IllegalStateException("app.jwt.secret must be at least 32 bytes");
+    }
+  }
 
   private SecretKey getSigningKey() {
     return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));

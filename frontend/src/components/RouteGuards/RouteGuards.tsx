@@ -10,7 +10,13 @@ export const ProtectedRoute: React.FC<GuardProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth()
   const location = useLocation()
 
-  if (isLoading) return null
+  if (isLoading) {
+    return (
+      <div style={{ minHeight: '40vh', display: 'grid', placeItems: 'center' }}>
+        <span>Loading...</span>
+      </div>
+    )
+  }
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />
   }
@@ -21,7 +27,13 @@ export const AdminRoute: React.FC<GuardProps> = ({ children }) => {
   const { isAuthenticated, isLoading, user } = useAuth()
   const location = useLocation()
 
-  if (isLoading) return null
+  if (isLoading) {
+    return (
+      <div style={{ minHeight: '40vh', display: 'grid', placeItems: 'center' }}>
+        <span>Loading...</span>
+      </div>
+    )
+  }
   if (!isAuthenticated) {
     return <Navigate to="/admin/login" replace state={{ from: location.pathname }} />
   }

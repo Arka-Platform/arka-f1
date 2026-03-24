@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,15 +28,17 @@ public class BookshelfController {
   }
 
   @GetMapping
-  public ResponseEntity<List<BookshelfItemResponse>> getBookshelf(@RequestParam UUID userId) {
+  public ResponseEntity<List<BookshelfItemResponse>> getBookshelf(@AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
     return ResponseEntity.ok(bookshelfService.getBookshelf(userId));
   }
 
   @PostMapping
   public ResponseEntity<?> addToBookshelf(
-      @RequestParam UUID userId,
+      @AuthenticationPrincipal String authenticatedUserId,
       @RequestParam UUID bookId,
       @RequestBody(required = false) AddToBookshelfRequest request) {
+    UUID userId = UUID.fromString(authenticatedUserId);
     Result<BookshelfItemResponse> result = bookshelfService.addToBookshelf(userId, bookId, request);
     return switch (result) {
       case Result.Success<BookshelfItemResponse> success ->
@@ -48,7 +51,8 @@ public class BookshelfController {
   @DeleteMapping("/{bookId}")
   public ResponseEntity<?> removeFromBookshelf(
       @PathVariable UUID bookId,
-      @RequestParam UUID userId) {
+      @AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
     Result<Void> result = bookshelfService.removeFromBookshelf(userId, bookId);
     return switch (result) {
       case Result.Success<Void> success ->
@@ -60,14 +64,16 @@ public class BookshelfController {
 
   @GetMapping("/check")
   public ResponseEntity<Map<String, Boolean>> checkInBookshelf(
-      @RequestParam UUID userId,
+      @AuthenticationPrincipal String authenticatedUserId,
       @RequestParam UUID bookId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
     boolean isInBookshelf = bookshelfService.isInBookshelf(userId, bookId);
     return ResponseEntity.ok(Map.of("isInBookshelf", isInBookshelf));
   }
 
   @GetMapping("/count")
-  public ResponseEntity<Map<String, Integer>> getBookshelfCount(@RequestParam UUID userId) {
+  public ResponseEntity<Map<String, Integer>> getBookshelfCount(@AuthenticationPrincipal String authenticatedUserId) {
+    UUID userId = UUID.fromString(authenticatedUserId);
     int count = bookshelfService.getBookshelfCount(userId);
     return ResponseEntity.ok(Map.of("count", count));
   }

@@ -5,6 +5,7 @@ import com.arka.modules.marketplace.service.RecommendationService;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,8 +22,9 @@ public class RecommendationController {
 
   @GetMapping
   public ResponseEntity<List<BookResponse>> getRecommendations(
-      @RequestParam(required = false) UUID userId,
+      @AuthenticationPrincipal String authenticatedUserId,
       @RequestParam(defaultValue = "10") int limit) {
+    UUID userId = UUID.fromString(authenticatedUserId);
     return ResponseEntity.ok(recommendationService.getRecommendations(userId, limit));
   }
 

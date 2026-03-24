@@ -280,7 +280,7 @@ const BooksMarketplace: React.FC = () => {
   const [searchParams] = useSearchParams()
   
   // Book browsing state
-  const [searchQuery] = useState(searchParams.get('search') || '')
+  const searchQuery = searchParams.get('search') || searchParams.get('q') || ''
   const [books, setBooks] = useState<Book[]>([])
   const [booksLoading, setBooksLoading] = useState(true)
   const [booksError, setBooksError] = useState<string | null>(null)

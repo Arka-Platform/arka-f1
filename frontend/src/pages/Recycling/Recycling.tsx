@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Input from '../../components/shared/Input/Input'
 import Select from '../../components/shared/Select/Select'
 import Button from '../../components/shared/Button/Button'
@@ -17,15 +18,10 @@ const categories = [
 
 interface WastePaperCardProps {
   item: WastePaperResponse
+  onSchedulePickup: () => void
 }
 
-const WastePaperCard: React.FC<WastePaperCardProps> = ({ item }) => {
-  const handleSchedulePickup = () => {
-    // Navigate to order page with recycling item pre-filled
-    // TODO: Implement proper recycling pickup scheduling endpoint
-    window.location.href = `/order?recycling=${item.id}`
-  }
-
+const WastePaperCard: React.FC<WastePaperCardProps> = ({ item, onSchedulePickup }) => {
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
@@ -54,7 +50,7 @@ const WastePaperCard: React.FC<WastePaperCardProps> = ({ item }) => {
           <Button 
             variant="primary" 
             fullWidth 
-            onClick={handleSchedulePickup}
+            onClick={onSchedulePickup}
           >
             Schedule Pickup
           </Button>
@@ -65,6 +61,7 @@ const WastePaperCard: React.FC<WastePaperCardProps> = ({ item }) => {
 }
 
 const Recycling: React.FC = () => {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [items, setItems] = useState<WastePaperResponse[]>([])
@@ -165,7 +162,7 @@ const Recycling: React.FC = () => {
               </div>
               <div className={styles.itemsGrid}>
                 {items.map((item) => (
-                  <WastePaperCard key={item.id} item={item} />
+                  <WastePaperCard key={item.id} item={item} onSchedulePickup={() => navigate(`/order?recycling=${item.id}`)} />
                 ))}
               </div>
             </>

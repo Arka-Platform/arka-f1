@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import BookCard, { Book } from '../BookCard/BookCard'
 import { recommendationsApi, BookResponse } from '../../../utils/api'
 import { useAuth } from '../../../contexts/AuthContext'
@@ -134,9 +135,9 @@ const RecommendationSection: React.FC<RecommendationSectionProps> = ({
       <div className={styles.header}>
         <h2 className={styles.title}>{title}</h2>
         {showViewAll && (
-          <a className={styles.viewAll} href="/books">
+          <Link className={styles.viewAll} to="/books">
             View all
-          </a>
+          </Link>
         )}
       </div>
       <div className={styles.carouselContainer}>

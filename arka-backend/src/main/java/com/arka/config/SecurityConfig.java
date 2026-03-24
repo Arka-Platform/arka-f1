@@ -10,6 +10,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -18,11 +19,14 @@ public class SecurityConfig {
 
   private final CorsConfig corsConfig;
   private final ClientRegistrationRepository clientRegistrationRepository;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
   public SecurityConfig(
       CorsConfig corsConfig,
+      JwtAuthenticationFilter jwtAuthenticationFilter,
       @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository) {
     this.corsConfig = corsConfig;
+    this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     this.clientRegistrationRepository = clientRegistrationRepository;
   }
 
@@ -43,10 +47,14 @@ public class SecurityConfig {
             .requestMatchers("/api/v1/users/register", "/api/v1/users/login").permitAll()
             .requestMatchers("/api/v1/otp/**").permitAll()
             .requestMatchers("/api/v1/auth/**").permitAll()
+            .requestMatchers("/api/admin/auth/**").permitAll()
             .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
-            .requestMatchers("/api/**").permitAll() // TODO: Add JWT filter and require auth for protected endpoints
-            .anyRequest().permitAll()
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            .requestMatchers("/api/**").authenticated()
+            .anyRequest().authenticated()
         );
+
+    http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     // Conditionally enable OAuth2 login only if OAuth2 client is configured
     if (clientRegistrationRepository != null) {

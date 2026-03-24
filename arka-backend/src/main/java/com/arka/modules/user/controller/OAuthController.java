@@ -1,6 +1,5 @@
 package com.arka.modules.user.controller;
 
-import com.arka.modules.user.dto.AuthResponse;
 import com.arka.modules.user.service.OAuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -35,11 +34,8 @@ public class OAuthController {
       @AuthenticationPrincipal OAuth2User oauth2User,
       HttpServletResponse response) throws IOException {
     try {
-      AuthResponse authResponse = oauthService.processOAuthLogin(oauth2User, "google");
-
-      response.sendRedirect(frontendUrl + "/auth/callback?token=" + authResponse.token() + 
-          "&userId=" + authResponse.userId() + 
-          "&email=" + authResponse.email());
+      oauthService.processOAuthLogin(oauth2User, "google");
+      response.sendRedirect(frontendUrl + "/auth/callback");
     } catch (Exception e) {
       response.sendRedirect(frontendUrl + "/auth/error?message=" + 
           URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8));
