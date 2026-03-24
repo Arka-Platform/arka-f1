@@ -6,7 +6,7 @@
 
 .layout-main {
   flex: 1;
-  background: var(--vibe-bg);
+  background: var(--app-bg-home, #0f0a06);
 }
 
 

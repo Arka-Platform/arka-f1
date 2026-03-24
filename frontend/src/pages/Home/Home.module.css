@@ -1,7 +1,7 @@
 .home {
   width: 100%;
   min-height: 100vh;
-  background: #0f0a06;
+  background: var(--app-bg-home, #0f0a06);
   color: #f4e7cf;
 }
 
