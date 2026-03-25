@@ -1,6 +1,6 @@
 .howItWorks {
   padding: 6rem 4rem;
-  background-color: var(--color-white);
+  background: color-mix(in srgb, var(--theme-surface-soft) 88%, transparent);
 }
 
 .container {
@@ -24,11 +24,11 @@
 .sectionTitle {
   font-size: 2.5rem;
   font-weight: 700;
-  color: var(--color-black);
+  color: var(--app-text);
 }
 
 .chevron {
-  color: var(--color-black);
+  color: var(--app-text);
   transition: transform 0.3s ease;
 }
 

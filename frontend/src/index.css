@@ -50,7 +50,8 @@
 
   /* Theme tokens */
   --app-bg: #f8f9fa;
-  --app-bg-gradient: radial-gradient(circle at top left, rgba(102, 126, 234, 0.18) 0%, rgba(118, 75, 162, 0.06) 24%, rgba(248, 249, 250, 0.94) 60%, #f8f9fa 100%);
+  /* Keep background subtle to avoid a bright hotspot behind hero/header */
+  --app-bg-gradient: radial-gradient(circle at top, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.03) 22%, rgba(248, 249, 250, 0.98) 58%, #f8f9fa 100%);
   --app-surface: #ffffff;
   --app-border: rgba(0, 0, 0, 0.08);
   --app-text: #0f172a;
@@ -81,7 +82,7 @@
   --color-primary-dark: #059669;
   --color-primary-light: #34d399;
   --app-bg: #f8f9fa;
-  --app-bg-gradient: radial-gradient(circle at top left, rgba(102, 126, 234, 0.18) 0%, rgba(118, 75, 162, 0.06) 24%, rgba(248, 249, 250, 0.94) 60%, #f8f9fa 100%);
+  --app-bg-gradient: radial-gradient(circle at top, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.03) 22%, rgba(248, 249, 250, 0.98) 58%, #f8f9fa 100%);
   --app-surface: #ffffff;
   --app-border: rgba(0, 0, 0, 0.08);
   --app-text: #0f172a;

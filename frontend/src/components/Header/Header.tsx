@@ -328,10 +328,37 @@ const Header: React.FC = () => {
               type="button"
               className={styles.themeToggle}
               onClick={toggleTheme}
-              aria-label={theme === 'home' ? 'Switch to default theme' : 'Switch to home theme'}
-              title={theme === 'home' ? 'Home Theme' : 'Default Theme'}
+              aria-label={theme === 'home' ? 'Switch to light theme' : 'Switch to dark theme'}
+              title={theme === 'home' ? 'Switch to light theme' : 'Switch to dark theme'}
             >
-              {theme === 'home' ? 'Home Theme' : 'Default Theme'}
+              {theme === 'home' ? (
+                // Sun icon (light theme)
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  />
+                  <path d="M12 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M12 20v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M4.93 4.93l1.41 1.41" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M17.66 17.66l1.41 1.41" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M2 12h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M20 12h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M4.93 19.07l1.41-1.41" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M17.66 6.34l1.41-1.41" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              ) : (
+                // Moon icon (dark theme)
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M21 12.8A8.5 8.5 0 0 1 11.2 3a7 7 0 1 0 9.8 9.8Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
             </button>
             {/* Wishlist - Heart Icon */}
             {isAuthenticated && (
