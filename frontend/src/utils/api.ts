@@ -427,7 +427,10 @@ export const booksApi = {
   
   update: async (id: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) => {
     try {
-      const { data: updated, error } = await supabase
+      const baseSelect = 'id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id'
+      const extendedSelect = `${baseSelect},image_url,thumbnail_url`
+
+      const { data: updatedExt, error: errorExt } = await supabase
         .from('books')
         .update({
           title: data.title,
@@ -438,10 +441,26 @@ export const booksApi = {
           updated_at: new Date().toISOString(),
         })
         .eq('id', id)
-        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id,image_url,thumbnail_url')
+        .select(extendedSelect)
         .single()
-      if (error) throw error
-      return mapSupabaseBook(updated as SupabaseBookRow)
+      if (!errorExt) return mapSupabaseBook(updatedExt as SupabaseBookRow)
+      if (!shouldRetryWithoutOptionalBookImageColumns(errorExt)) throw errorExt
+
+      const { data: updatedBase, error: errorBase } = await supabase
+        .from('books')
+        .update({
+          title: data.title,
+          author: data.author,
+          description: data.description ?? null,
+          genre: data.genre ?? null,
+          credit_price: data.price,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select(baseSelect)
+        .single()
+      if (errorBase) throw errorBase
+      return mapSupabaseBook(updatedBase as SupabaseBookRow)
     } catch (error) {
       throw new ApiError(asErrorMessage(error), 500, error)
     }
@@ -459,14 +478,26 @@ export const booksApi = {
   
   updateStatus: async (id: string, status: string) => {
     try {
-      const { data, error } = await supabase
+      const baseSelect = 'id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id'
+      const extendedSelect = `${baseSelect},image_url,thumbnail_url`
+
+      const { data: dataExt, error: errorExt } = await supabase
         .from('books')
         .update({ status, updated_at: new Date().toISOString() })
         .eq('id', id)
-        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id,image_url,thumbnail_url')
+        .select(extendedSelect)
         .single()
-      if (error) throw error
-      return mapSupabaseBook(data as SupabaseBookRow)
+      if (!errorExt) return mapSupabaseBook(dataExt as SupabaseBookRow)
+      if (!shouldRetryWithoutOptionalBookImageColumns(errorExt)) throw errorExt
+
+      const { data: dataBase, error: errorBase } = await supabase
+        .from('books')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select(baseSelect)
+        .single()
+      if (errorBase) throw errorBase
+      return mapSupabaseBook(dataBase as SupabaseBookRow)
     } catch (error) {
       throw new ApiError(asErrorMessage(error), 500, error)
     }
@@ -474,13 +505,24 @@ export const booksApi = {
   
   getMyBooks: async (ownerId: string) => {
     try {
-      const { data, error } = await supabase
+      const baseSelect = 'id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id'
+      const extendedSelect = `${baseSelect},image_url,thumbnail_url`
+
+      const { data: dataExt, error: errorExt } = await supabase
         .from('books')
-        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id,image_url,thumbnail_url')
+        .select(extendedSelect)
         .eq('owner_id', ownerId)
         .order('created_at', { ascending: false })
-      if (error) throw error
-      return (data ?? []).map((row) => mapSupabaseBook(row as SupabaseBookRow))
+      if (!errorExt) return (dataExt ?? []).map((row) => mapSupabaseBook(row as unknown as SupabaseBookRow))
+      if (!shouldRetryWithoutOptionalBookImageColumns(errorExt)) throw errorExt
+
+      const { data: dataBase, error: errorBase } = await supabase
+        .from('books')
+        .select(baseSelect)
+        .eq('owner_id', ownerId)
+        .order('created_at', { ascending: false })
+      if (errorBase) throw errorBase
+      return (dataBase ?? []).map((row) => mapSupabaseBook(row as unknown as SupabaseBookRow))
     } catch (error) {
       throw new ApiError(asErrorMessage(error), 500, error)
     }
