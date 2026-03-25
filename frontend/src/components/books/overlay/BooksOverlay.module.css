@@ -1,0 +1,113 @@
+.overlayRoot {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.toolbar {
+  position: absolute;
+  right: 22px;
+  bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.iconButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(17, 24, 39, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: transform 140ms ease, background 140ms ease;
+}
+
+.iconButton:hover {
+  transform: translateY(-1px);
+  background: rgba(17, 24, 39, 0.84);
+}
+
+.iconButton:active {
+  transform: translateY(0px) scale(0.98);
+}
+
+.iconSvg {
+  width: 20px;
+  height: 20px;
+}
+
+.pillButton {
+  width: 170px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: rgba(17, 24, 39, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+
+.pillText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.pillTitle {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.pillSubtitle {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.anchor {
+  position: absolute;
+  left: 50%;
+  top: 16px;
+  transform: translateX(-50%);
+  pointer-events: auto;
+  z-index: 60;
+}
+
+.anchorCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: rgba(17, 24, 39, 0.68);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(10px);
+}
+
+.anchorTitle {
+  font-size: 13px;
+  font-weight: 680;
+  max-width: 340px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.anchorPrice {
+  font-size: 12px;
+  opacity: 0.85;
+}
+

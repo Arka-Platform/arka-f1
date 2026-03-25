@@ -282,6 +282,8 @@ type SupabaseBookRow = {
   status: string
   created_at: string
   owner_id: string | null
+  image_url: string | null
+  thumbnail_url: string | null
 }
 
 function mapSupabaseBook(row: SupabaseBookRow): BookResponse {
@@ -299,8 +301,8 @@ function mapSupabaseBook(row: SupabaseBookRow): BookResponse {
     isbn: null,
     publisher: null,
     publicationYear: null,
-    imageUrl: null,
-    thumbnailUrl: null,
+    imageUrl: row.image_url ?? null,
+    thumbnailUrl: row.thumbnail_url ?? null,
     averageRating: null,
     ratingsCount: null,
   }
@@ -376,7 +378,7 @@ export const booksApi = {
 
       let query = supabase
         .from('books')
-        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id')
+        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id,image_url,thumbnail_url')
         .order('created_at', { ascending: false })
 
       if (params?.search) query = query.ilike('title', `%${params.search}%`)
@@ -430,7 +432,7 @@ export const booksApi = {
     try {
       const { data, error } = await supabase
         .from('books')
-        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id')
+        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id,image_url,thumbnail_url')
         .eq('id', id)
         .single()
       if (error) throw error
@@ -453,7 +455,7 @@ export const booksApi = {
           updated_at: new Date().toISOString(),
         })
         .eq('id', id)
-        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id')
+        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id,image_url,thumbnail_url')
         .single()
       if (error) throw error
       return mapSupabaseBook(updated as SupabaseBookRow)
@@ -478,7 +480,7 @@ export const booksApi = {
         .from('books')
         .update({ status, updated_at: new Date().toISOString() })
         .eq('id', id)
-        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id')
+        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id,image_url,thumbnail_url')
         .single()
       if (error) throw error
       return mapSupabaseBook(data as SupabaseBookRow)
@@ -491,7 +493,7 @@ export const booksApi = {
     try {
       const { data, error } = await supabase
         .from('books')
-        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id')
+        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id,image_url,thumbnail_url')
         .eq('owner_id', ownerId)
         .order('created_at', { ascending: false })
       if (error) throw error

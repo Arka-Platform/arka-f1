@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import Providers from '../components/providers/Providers'
 import '../index.css'
+import RoutePresence from '../components/motion/RoutePresence'
 
 export const metadata = {
   title: 'Arka',
@@ -11,7 +12,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <RoutePresence>{children}</RoutePresence>
+        </Providers>
       </body>
     </html>
   )
