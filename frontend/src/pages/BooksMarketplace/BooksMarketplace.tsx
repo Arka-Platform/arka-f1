@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useId, useRef, useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
@@ -274,6 +274,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ request, onFulfill, onCancel,
 }
 
 const BooksMarketplace: React.FC = () => {
+  const reactId = useId()
   const { user, register } = useAuth()
   const { success, error: showError } = useToast()
   const { addToCart } = useCart()
@@ -315,6 +316,8 @@ const BooksMarketplace: React.FC = () => {
   const [selectedBookForRequest, setSelectedBookForRequest] = useState<BookResponse | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [actionType, setActionType] = useState<'wishlist' | 'match' | null>(null)
+  const requestModalContentRef = useRef<HTMLDivElement | null>(null)
+  const requestModalCloseButtonRef = useRef<HTMLButtonElement | null>(null)
   
   // Missing info form
   const [showMissingInfoForm, setShowMissingInfoForm] = useState(false)
@@ -327,6 +330,91 @@ const BooksMarketplace: React.FC = () => {
   const [missingInfoCity, setMissingInfoCity] = useState('')
   const [missingInfoState, setMissingInfoState] = useState('')
   const [missingInfoPincode, setMissingInfoPincode] = useState('')
+  const missingInfoModalContentRef = useRef<HTMLDivElement | null>(null)
+  const missingInfoModalCloseButtonRef = useRef<HTMLButtonElement | null>(null)
+
+  const closeRequestModal = () => {
+    setShowRequestFormModal(false)
+    setSelectedBookForRequest(null)
+    resetForm()
+    setActionType(null)
+  }
+
+  const closeMissingInfoModal = () => {
+    setShowMissingInfoForm(false)
+    setSelectedMatchForInfo(null)
+  }
+
+  useEffect(() => {
+    const modalContent = showRequestFormModal
+      ? requestModalContentRef.current
+      : showMissingInfoForm
+        ? missingInfoModalContentRef.current
+        : null
+
+    if (!modalContent) return
+
+    const previouslyFocusedElement = document.activeElement as HTMLElement | null
+
+    const focusInitial = () => {
+      if (showRequestFormModal) {
+        requestModalCloseButtonRef.current?.focus()
+      } else if (showMissingInfoForm) {
+        missingInfoModalCloseButtonRef.current?.focus()
+      }
+    }
+
+    focusInitial()
+
+    const getFocusableElements = () => {
+      const elements = Array.from(
+        modalContent.querySelectorAll<HTMLElement>(
+          'a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])'
+        )
+      )
+      return elements.filter((el) => {
+        const disabled = (el as HTMLButtonElement).disabled
+        const ariaHidden = el.getAttribute('aria-hidden') === 'true'
+        return !disabled && !ariaHidden
+      })
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        if (showRequestFormModal) closeRequestModal()
+        if (showMissingInfoForm) closeMissingInfoModal()
+        return
+      }
+
+      if (event.key !== 'Tab') return
+
+      const focusables = getFocusableElements()
+      if (focusables.length === 0) return
+
+      const first = focusables[0]
+      const last = focusables[focusables.length - 1]
+      const active = document.activeElement as HTMLElement | null
+
+      if (event.shiftKey) {
+        if (!active || active === first) {
+          event.preventDefault()
+          last.focus()
+        }
+      } else {
+        if (active === last) {
+          event.preventDefault()
+          first.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      previouslyFocusedElement?.focus?.()
+    }
+  }, [showRequestFormModal, showMissingInfoForm])
 
   const bookToCard = (book: BookResponse): Book => ({
     id: book.id,
@@ -978,21 +1066,27 @@ const BooksMarketplace: React.FC = () => {
 
       {/* Get Form Modal */}
       {showRequestFormModal && selectedBookForRequest && (
-        <div className={styles.requestFormModal}>
-          <div className={styles.requestFormModalContent}>
+        <div className={styles.requestFormModal} role="presentation">
+          <div
+            className={styles.requestFormModalContent}
+            ref={requestModalContentRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`request-modal-title-${reactId}`}
+          >
             <div className={styles.requestFormModalHeader}>
-              <h2 className={styles.requestFormModalTitle}>"{selectedBookForRequest.title}"</h2>
+              <h2 className={styles.requestFormModalTitle} id={`request-modal-title-${reactId}`}>
+                "{selectedBookForRequest.title}"
+              </h2>
               <p className={styles.requestFormModalSubtitle}>
                 Choose how you'd like to proceed with this book
               </p>
               <button
+                ref={requestModalCloseButtonRef}
+                type="button"
                 className={styles.requestFormModalClose}
-                onClick={() => {
-                  setShowRequestFormModal(false)
-                  setSelectedBookForRequest(null)
-                  resetForm()
-                  setActionType(null)
-                }}
+                aria-label="Close dialog"
+                onClick={closeRequestModal}
               >
                 ×
               </button>
@@ -1111,8 +1205,11 @@ const BooksMarketplace: React.FC = () => {
                 </div>
                 
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Description</label>
+                  <label className={styles.label} htmlFor={`request-description-${reactId}`}>
+                    Description
+                  </label>
                   <textarea
+                    id={`request-description-${reactId}`}
                     className={styles.textarea}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -1178,8 +1275,11 @@ const BooksMarketplace: React.FC = () => {
                 </div>
                 
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Additional Notes</label>
+                  <label className={styles.label} htmlFor={`request-additional-notes-${reactId}`}>
+                    Additional Notes
+                  </label>
                   <textarea
+                    id={`request-additional-notes-${reactId}`}
                     className={styles.textarea}
                     value={additionalNotes}
                     onChange={(e) => setAdditionalNotes(e.target.value)}
@@ -1204,9 +1304,7 @@ const BooksMarketplace: React.FC = () => {
                   variant="secondary"
                   fullWidth
                   onClick={() => {
-                    setShowRequestFormModal(false)
-                    setSelectedBookForRequest(null)
-                    resetForm()
+                      closeRequestModal()
                   }}
                 >
                   Cancel
@@ -1220,19 +1318,27 @@ const BooksMarketplace: React.FC = () => {
 
       {/* Missing Info Form Modal */}
       {showMissingInfoForm && selectedMatchForInfo && (
-        <div className={styles.requestFormModal}>
-          <div className={styles.requestFormModalContent}>
+        <div className={styles.requestFormModal} role="presentation">
+          <div
+            className={styles.requestFormModalContent}
+            ref={missingInfoModalContentRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`missing-info-modal-title-${reactId}`}
+          >
             <div className={styles.requestFormModalHeader}>
-              <h2 className={styles.requestFormModalTitle}>Complete Your Information</h2>
+              <h2 className={styles.requestFormModalTitle} id={`missing-info-modal-title-${reactId}`}>
+                Complete Your Information
+              </h2>
               <p className={styles.requestFormModalSubtitle}>
                 We need a few details to complete your exchange/purchase of "{selectedMatchForInfo.match.bookTitle}"
               </p>
               <button
+                ref={missingInfoModalCloseButtonRef}
+                type="button"
                 className={styles.requestFormModalClose}
-                onClick={() => {
-                  setShowMissingInfoForm(false)
-                  setSelectedMatchForInfo(null)
-                }}
+                aria-label="Close dialog"
+                onClick={closeMissingInfoModal}
               >
                 ×
               </button>

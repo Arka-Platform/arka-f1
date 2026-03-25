@@ -102,7 +102,7 @@ const ContactUs: React.FC = () => {
 
             {/* Contact Information */}
             <div className={styles.infoContainer}>
-              <h1 className={styles.title}>Contact Information</h1>
+              <h2 className={styles.title}>Contact Information</h2>
               <div className={styles.infoList}>
                 <div className={styles.infoItem}>
                   <strong className={styles.infoLabel}>Address:</strong>

@@ -65,13 +65,37 @@ const Home: React.FC = () => {
           </button>
         </div>
         <div className={styles.featuredGrid}>
-          <article className={`${styles.featuredCard} ${styles.cardAncient}`} onClick={() => navigate('/books')}>
+          <article
+            className={`${styles.featuredCard} ${styles.cardAncient}`}
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate('/books')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                navigate('/books')
+              }
+            }}
+            aria-label="Browse books: Lost Cities of the Past"
+          >
             <div className={styles.featuredContent}>
               <h3>Lost Cities of the Past</h3>
               <p>History and archaeology treasures</p>
             </div>
           </article>
-          <article className={`${styles.featuredCard} ${styles.cardFantasy}`} onClick={() => navigate('/books')}>
+          <article
+            className={`${styles.featuredCard} ${styles.cardFantasy}`}
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate('/books')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                navigate('/books')
+              }
+            }}
+            aria-label="Browse books: Epic Fantasy Adventures"
+          >
             <div className={styles.featuredContent}>
               <h3>Epic Fantasy Adventures</h3>
               <p>Castles, dragons, and quests</p>

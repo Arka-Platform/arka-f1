@@ -9,6 +9,7 @@ import UserMenu from '../shared/UserMenu/UserMenu'
 import styles from './Header.module.css'
 
 const Header: React.FC = () => {
+  const genresMenuId = 'genres-menu'
   const location = useLocation()
   const navigate = useNavigate()
   const { isAuthenticated, user } = useAuth()
@@ -96,6 +97,20 @@ const Header: React.FC = () => {
     }
   }, [activeGenreDropdown])
 
+  // Close dropdowns with Escape
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setActiveGenreDropdown(false)
+      }
+    }
+
+    if (activeGenreDropdown) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [activeGenreDropdown])
+
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -105,6 +120,20 @@ const Header: React.FC = () => {
     }
     return () => {
       document.body.style.overflow = 'unset'
+    }
+  }, [isMobileMenuOpen])
+
+  // Close mobile menu with Escape
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    if (isMobileMenuOpen) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
     }
   }, [isMobileMenuOpen])
 
@@ -175,6 +204,7 @@ const Header: React.FC = () => {
                   }}
                   aria-expanded={activeGenreDropdown}
                   aria-haspopup="true"
+                  aria-controls={genresMenuId}
                   aria-label="Genres menu"
                 >
                   <svg
@@ -191,7 +221,11 @@ const Header: React.FC = () => {
                 </button>
               </div>
               {activeGenreDropdown && (
-                <div className={`${styles.dropdown} ${styles.genreDropdown}`} onClick={(e) => e.stopPropagation()}>
+                <div
+                  id={genresMenuId}
+                  className={`${styles.dropdown} ${styles.genreDropdown}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {loadingGenres ? (
                     <div className={styles.loadingGenres}>Loading genres...</div>
                   ) : genresWithSubcategories.length === 0 ? (
@@ -200,10 +234,12 @@ const Header: React.FC = () => {
                     <div className={styles.genreSubcategoryContainer}>
                       <div className={styles.genreList}>
                         {genresWithSubcategories.map((item) => (
-                          <div
+                          <button
                             key={item.genre}
+                            type="button"
                             className={`${styles.genreItem} ${hoveredGenre === item.genre ? styles.genreItemActive : ''}`}
                             onMouseEnter={() => setHoveredGenre(item.genre)}
+                            onFocus={() => setHoveredGenre(item.genre)}
                             onClick={() => handleGenreClick(item.genre)}
                           >
                             {item.genre}
@@ -212,7 +248,7 @@ const Header: React.FC = () => {
                                 <path d="M9 18l6-6-6-6" />
                               </svg>
                             )}
-                          </div>
+                          </button>
                         ))}
                       </div>
                       {hoveredGenre && (
@@ -222,6 +258,7 @@ const Header: React.FC = () => {
                             ?.subcategories.map((subcategory) => (
                               <button
                                 key={subcategory}
+                                type="button"
                                 className={styles.subcategoryItem}
                                 onClick={() => handleSubcategoryClick(hoveredGenre, subcategory)}
                               >

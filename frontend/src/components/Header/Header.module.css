@@ -346,6 +346,25 @@
   background-color: color-mix(in srgb, var(--app-text) 8%, transparent);
 }
 
+.navLink:focus-visible,
+.navButtonLink:focus-visible,
+.dropdownToggle:focus-visible,
+.themeToggle:focus-visible,
+.wishlistLink:focus-visible,
+.cartLink:focus-visible,
+.buttonPrimary:focus-visible,
+.buttonSecondary:focus-visible,
+.genreItem:focus-visible,
+.subcategoryItem:focus-visible,
+.mobileNavLink:focus-visible,
+.mobileThemeToggle:focus-visible,
+.mobileMenuButton:focus-visible,
+.mobileGenreItem:focus-visible,
+.mobileSubcategoryItem:focus-visible {
+  outline: 2px solid var(--color-primary, #2196F3);
+  outline-offset: 2px;
+}
+
 .navLink.active {
   color: var(--color-primary, #2196F3);
   font-weight: 600;

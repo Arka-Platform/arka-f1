@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useId, useState, useEffect, useRef } from 'react'
 import { booksApi, BookResponse } from '../../../utils/api'
 import styles from './BookSearchInput.module.css'
 
@@ -21,6 +21,9 @@ const BookSearchInput: React.FC<BookSearchInputProps> = ({
   required = false,
   fullWidth = false
 }) => {
+  const reactId = useId()
+  const inputId = `book-search-${reactId}`
+  const listboxId = `book-search-listbox-${reactId}`
   const [suggestions, setSuggestions] = useState<BookResponse[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -83,9 +86,7 @@ const BookSearchInput: React.FC<BookSearchInputProps> = ({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault()
-        setSelectedIndex(prev => 
-          prev < suggestions.length - 1 ? prev + 1 : prev
-        )
+        setSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : prev))
         break
       case 'ArrowUp':
         e.preventDefault()
@@ -121,7 +122,7 @@ const BookSearchInput: React.FC<BookSearchInputProps> = ({
   return (
     <div className={`${styles.bookSearchContainer} ${fullWidth ? styles.fullWidth : ''}`}>
       {label && (
-        <label className={styles.label}>
+        <label className={styles.label} htmlFor={inputId}>
           {label}
           {required && <span className={styles.required}>*</span>}
         </label>
@@ -129,6 +130,7 @@ const BookSearchInput: React.FC<BookSearchInputProps> = ({
       <div className={styles.inputWrapper}>
         <input
           ref={inputRef}
+          id={inputId}
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -138,6 +140,15 @@ const BookSearchInput: React.FC<BookSearchInputProps> = ({
           placeholder={placeholder}
           className={styles.input}
           required={required}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={showSuggestions && suggestions.length > 0}
+          aria-controls={listboxId}
+          aria-activedescendant={
+            selectedIndex >= 0 && selectedIndex < suggestions.length
+              ? `${listboxId}-option-${suggestions[selectedIndex].id}`
+              : undefined
+          }
         />
         {loading && (
           <div className={styles.loadingSpinner}>
@@ -150,6 +161,7 @@ const BookSearchInput: React.FC<BookSearchInputProps> = ({
           <button
             type="button"
             className={styles.clearButton}
+            aria-label="Clear search"
             onClick={() => {
               onChange('')
               setSuggestions([])
@@ -165,14 +177,23 @@ const BookSearchInput: React.FC<BookSearchInputProps> = ({
         )}
       </div>
       {showSuggestions && suggestions.length > 0 && (
-        <div ref={suggestionsRef} className={styles.suggestionsDropdown}>
+        <div
+          ref={suggestionsRef}
+          className={styles.suggestionsDropdown}
+          id={listboxId}
+          role="listbox"
+          aria-label="Search suggestions"
+        >
           {suggestions.map((book, index) => (
             <button
               key={book.id}
+              id={`${listboxId}-option-${book.id}`}
               type="button"
               className={`${styles.suggestionItem} ${index === selectedIndex ? styles.selected : ''}`}
               onClick={() => handleSelectBook(book)}
               onMouseEnter={() => setSelectedIndex(index)}
+              role="option"
+              aria-selected={index === selectedIndex}
             >
               <div className={styles.suggestionContent}>
                 {book.imageUrl && (
