@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useRe
 import { supabase, } from '../lib/supabaseClient'
 import type { Session } from '@supabase/supabase-js'
 import { fetchSupabasePublicUserById, syncSupabasePublicUser } from '../utils/supabaseProfileSync'
-import { getEnv } from '../lib/env'
 
 interface User {
   id: string
@@ -264,7 +263,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Use an absolute redirectTo so localhost vs production ports match Supabase config.
       const redirectToDefault = `${window.location.origin}/auth/callback`
-      const redirectToOverride = getEnv('NEXT_PUBLIC_SUPABASE_OAUTH_REDIRECT_TO') as string | undefined
+      const redirectToOverride = process.env.NEXT_PUBLIC_SUPABASE_OAUTH_REDIRECT_TO as string | undefined
       const redirectTo = redirectToOverride
         ? normalizeRedirectTo(redirectToOverride)
         : redirectToDefault

@@ -3,21 +3,6 @@ import { createAdminApi, createExchangesApi } from './api/domains/adminExchanges
 import { createBehaviorApi, createCommunityApi, createOrdersApi, createUsersApi } from './api/domains/communityUserOps'
 import { createDemandApi, createRecyclingApi } from './api/domains/demandRecycling'
 import { createAnalyticsApi, createBookshelfApi, createTrustScoreApi, createWishlistApi } from './api/domains/insightsLibrary'
-import { getEnv, isProd } from '../lib/env'
-
-// Legacy backend HTTP transport (Spring) is kept as an escape hatch only.
-// Primary runtime path is Supabase client + Supabase Edge Functions.
-const API_BASE_URL = getEnv('NEXT_PUBLIC_API_BASE_URL') || (isProd() ? '' : 'http://localhost:8080');
-const API_LATENCY_WARN_MS = Number(getEnv('NEXT_PUBLIC_API_LATENCY_WARN_MS') || 800);
-const ENABLE_LEGACY_BACKEND_API = String(getEnv('NEXT_PUBLIC_ENABLE_LEGACY_BACKEND_API') || 'false') === 'true';
-
-type ApiMetric = {
-  endpoint: string;
-  method: string;
-  durationMs: number;
-  status: number;
-  ok: boolean;
-};
 
 export class ApiError extends Error {
   constructor(
@@ -30,152 +15,7 @@ export class ApiError extends Error {
   }
 }
 
-function emitApiMetric(metric: ApiMetric) {
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('api:metric', { detail: metric }));
-  }
-  if (!metric.ok || metric.durationMs >= API_LATENCY_WARN_MS) {
-    console.warn(
-      `[api] ${metric.method} ${metric.endpoint} ${metric.status} ${metric.durationMs.toFixed(0)}ms`
-    );
-  }
-}
-
-async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    // Backend may return either "error" or "message" field
-    const errorMessage = errorData.error || errorData.message || `HTTP error! status: ${response.status}`;
-    throw new ApiError(
-      errorMessage,
-      response.status,
-      errorData
-    );
-  }
-
-  // Handle empty responses
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
-    return response.json();
-  }
-  return response.text() as unknown as T;
-}
-
-export async function apiRequest<T>(
-  endpoint: string,
-  options?: RequestInit
-): Promise<T> {
-  // Guardrail: avoid accidental architecture drift to direct backend HTTP calls.
-  if (!endpoint.startsWith('http') && !ENABLE_LEGACY_BACKEND_API) {
-    throw new ApiError(
-      'Legacy backend HTTP API is disabled. Use Supabase client/RPC/Edge Functions for domain operations.',
-      400
-    );
-  }
-
-  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-  
-  // Merge headers properly - ensure Content-Type is always set
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(options?.headers as Record<string, string> || {}),
-  };
-  
-  const config: RequestInit = {
-    ...options,
-    headers,
-  };
-
-  const startedAt = performance.now();
-  const method = (config.method || 'GET').toUpperCase();
-
-  try {
-    const response = await fetch(url, config);
-    emitApiMetric({
-      endpoint,
-      method,
-      durationMs: performance.now() - startedAt,
-      status: response.status,
-      ok: response.ok,
-    });
-    return handleResponse<T>(response);
-  } catch (error) {
-    emitApiMetric({
-      endpoint,
-      method,
-      durationMs: performance.now() - startedAt,
-      status: 0,
-      ok: false,
-    });
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    throw new ApiError(
-      error instanceof Error ? error.message : 'Network error',
-      0
-    );
-  }
-}
-
-export const api = {
-  get: <T>(endpoint: string, options?: RequestInit) =>
-    apiRequest<T>(endpoint, { ...options, method: 'GET' }),
-  
-  post: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
-    apiRequest<T>(endpoint, {
-      ...options,
-      method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    }),
-  
-  put: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
-    apiRequest<T>(endpoint, {
-      ...options,
-      method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
-    }),
-  
-  delete: <T>(endpoint: string, options?: RequestInit) =>
-    apiRequest<T>(endpoint, { ...options, method: 'DELETE' }),
-  
-  patch: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
-    apiRequest<T>(endpoint, {
-      ...options,
-      method: 'PATCH',
-      body: data ? JSON.stringify(data) : undefined,
-    }),
-  
-  // File upload helper
-  uploadFile: async <T>(endpoint: string, file: File): Promise<T> => {
-    if (!endpoint.startsWith('http') && !ENABLE_LEGACY_BACKEND_API) {
-      throw new ApiError(
-        'Legacy backend HTTP upload is disabled. Use Supabase Storage upload helpers.',
-        400
-      );
-    }
-
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const token = session?.access_token ?? null;
-    const headers: HeadersInit = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
-    
-    return handleResponse<T>(response);
-  },
-};
+// NOTE: Direct backend HTTP APIs were removed. Domain operations must use Supabase.
 
 // Book API types
 export interface BookResponse {
@@ -269,20 +109,20 @@ export interface DonationResponse {
   updatedAt: string
 }
 
+// Matches `public.books` from Supabase migrations (no guessed columns).
 type SupabaseBookRow = {
   id: string
+  created_at: string
+  updated_at: string | null
   title: string
   author: string
   description: string | null
   genre: string | null
   category: string | null
   subcategory: string | null
-  credit_price: number | null
-  status: string
-  created_at: string
+  credit_price: number | string
   owner_id: string | null
-  image_url?: string | null
-  thumbnail_url?: string | null
+  status: string
 }
 
 function mapSupabaseBook(row: SupabaseBookRow): BookResponse {
@@ -294,14 +134,16 @@ function mapSupabaseBook(row: SupabaseBookRow): BookResponse {
     genre: row.genre,
     category: row.category,
     subcategory: row.subcategory,
-    price: row.credit_price,
-    status: row.status,
+    price: typeof row.credit_price === 'string' ? Number(row.credit_price) : Number(row.credit_price ?? 0),
+    status: row.status ?? 'AVAILABLE',
     createdAt: row.created_at,
     isbn: null,
     publisher: null,
     publicationYear: null,
-    imageUrl: row.image_url ?? null,
-    thumbnailUrl: row.thumbnail_url ?? null,
+    // `public.books` does not store images. Images belong to listings (`book_listings.image_cover_url`)
+    // or `listing_images.image_url` in the marketplace domain.
+    imageUrl: null,
+    thumbnailUrl: null,
     averageRating: null,
     ratingsCount: null,
   }
@@ -314,75 +156,25 @@ function asErrorMessage(error: unknown): string {
   return 'Supabase error'
 }
 
-function shouldRetryWithoutOptionalBookImageColumns(error: unknown): boolean {
-  if (!error || typeof error !== 'object') return false
-  const err = error as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown; status?: unknown }
-  const msg = String(err.message ?? '').toLowerCase()
-  const details = String(err.details ?? '').toLowerCase()
-  const hint = String(err.hint ?? '').toLowerCase()
-  const code = String(err.code ?? '').toUpperCase()
-  const status = Number(err.status ?? NaN)
-
-  // PostgREST "unknown column" commonly surfaces as PGRSTxxx or "column ... does not exist".
-  const mentionsOptionalColumns =
-    msg.includes('image_url') ||
-    msg.includes('thumbnail_url') ||
-    details.includes('image_url') ||
-    details.includes('thumbnail_url') ||
-    hint.includes('image_url') ||
-    hint.includes('thumbnail_url')
-
-  const looksLikeMissingColumn =
-    msg.includes('does not exist') ||
-    details.includes('does not exist') ||
-    msg.includes('unknown column') ||
-    details.includes('unknown column') ||
-    code === 'PGRST204' ||
-    code === 'PGRST200' ||
-    code === '42703'
-
-  // Some clients only surface status 400 without strong typing; we still gate on column mentions.
-  const isBadRequest = status === 400
-
-  return mentionsOptionalColumns && (looksLikeMissingColumn || isBadRequest)
-}
-
 // Book API functions
 export const booksApi = {
   list: async (params?: { search?: string; genre?: string; subcategory?: string; page?: number; size?: number }) => {
-    try {
-      const baseSelect = 'id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id'
-      const extendedSelect = `${baseSelect},image_url,thumbnail_url`
+    const select =
+      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status'
 
-      const runQuery = async (select: string) => {
-        let query = supabase.from('books').select(select).order('created_at', { ascending: false })
-        if (params?.search) query = query.ilike('title', `%${params.search}%`)
-        if (params?.genre) query = query.eq('genre', params.genre)
-        if (params?.subcategory) query = query.eq('subcategory', params.subcategory)
-        if (params?.page !== undefined && params?.size) {
-          const from = params.page * params.size
-          const to = from + params.size - 1
-          query = query.range(from, to)
-        }
-        return await query
-      }
-
-      const { data: dataExt, error: errorExt } = await runQuery(extendedSelect)
-      if (!errorExt) {
-        const mapped = (dataExt ?? []).map((row) => mapSupabaseBook(row as unknown as SupabaseBookRow))
-        return mapped
-      }
-
-      if (!shouldRetryWithoutOptionalBookImageColumns(errorExt)) throw errorExt
-
-      // Some environments don't have image columns yet; retry with base select.
-      const { data: dataBase, error: errorBase } = await runQuery(baseSelect)
-      if (errorBase) throw errorBase
-      const mappedBase = (dataBase ?? []).map((row) => mapSupabaseBook(row as unknown as SupabaseBookRow))
-      return mappedBase
-    } catch (error) {
-      throw new ApiError(asErrorMessage(error), 500, error)
+    let query = supabase.from('books').select(select).order('created_at', { ascending: false })
+    if (params?.search) query = query.ilike('title', `%${params.search}%`)
+    if (params?.genre) query = query.eq('genre', params.genre)
+    if (params?.subcategory) query = query.eq('subcategory', params.subcategory)
+    if (params?.page !== undefined && params?.size) {
+      const from = params.page * params.size
+      const to = from + params.size - 1
+      query = query.range(from, to)
     }
+
+    const { data, error } = await query
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return (data ?? []).map((row) => mapSupabaseBook(row as SupabaseBookRow))
   },
   
   create: async (ownerId: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) => {
@@ -408,62 +200,31 @@ export const booksApi = {
   },
   
   getById: async (id: string) => {
-    try {
-      const baseSelect = 'id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id'
-      const extendedSelect = `${baseSelect},image_url,thumbnail_url`
-
-      const { data: dataExt, error: errorExt } = await supabase.from('books').select(extendedSelect).eq('id', id).single()
-      if (!errorExt) return mapSupabaseBook(dataExt as SupabaseBookRow)
-
-      if (!shouldRetryWithoutOptionalBookImageColumns(errorExt)) throw errorExt
-
-      const { data: dataBase, error: errorBase } = await supabase.from('books').select(baseSelect).eq('id', id).single()
-      if (errorBase) throw errorBase
-      return mapSupabaseBook(dataBase as SupabaseBookRow)
-    } catch (error) {
-      throw new ApiError(asErrorMessage(error), 500, error)
-    }
+    const select =
+      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status'
+    const { data, error } = await supabase.from('books').select(select).eq('id', id).single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return mapSupabaseBook(data as SupabaseBookRow)
   },
   
   update: async (id: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) => {
-    try {
-      const baseSelect = 'id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id'
-      const extendedSelect = `${baseSelect},image_url,thumbnail_url`
-
-      const { data: updatedExt, error: errorExt } = await supabase
-        .from('books')
-        .update({
-          title: data.title,
-          author: data.author,
-          description: data.description ?? null,
-          genre: data.genre ?? null,
-          credit_price: data.price,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select(extendedSelect)
-        .single()
-      if (!errorExt) return mapSupabaseBook(updatedExt as SupabaseBookRow)
-      if (!shouldRetryWithoutOptionalBookImageColumns(errorExt)) throw errorExt
-
-      const { data: updatedBase, error: errorBase } = await supabase
-        .from('books')
-        .update({
-          title: data.title,
-          author: data.author,
-          description: data.description ?? null,
-          genre: data.genre ?? null,
-          credit_price: data.price,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select(baseSelect)
-        .single()
-      if (errorBase) throw errorBase
-      return mapSupabaseBook(updatedBase as SupabaseBookRow)
-    } catch (error) {
-      throw new ApiError(asErrorMessage(error), 500, error)
-    }
+    const select =
+      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status'
+    const { data: updated, error } = await supabase
+      .from('books')
+      .update({
+        title: data.title,
+        author: data.author,
+        description: data.description ?? null,
+        genre: data.genre ?? null,
+        credit_price: data.price,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select(select)
+      .single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return mapSupabaseBook(updated as SupabaseBookRow)
   },
   
   delete: async (id: string) => {
@@ -477,55 +238,28 @@ export const booksApi = {
   },
   
   updateStatus: async (id: string, status: string) => {
-    try {
-      const baseSelect = 'id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id'
-      const extendedSelect = `${baseSelect},image_url,thumbnail_url`
-
-      const { data: dataExt, error: errorExt } = await supabase
-        .from('books')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select(extendedSelect)
-        .single()
-      if (!errorExt) return mapSupabaseBook(dataExt as SupabaseBookRow)
-      if (!shouldRetryWithoutOptionalBookImageColumns(errorExt)) throw errorExt
-
-      const { data: dataBase, error: errorBase } = await supabase
-        .from('books')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select(baseSelect)
-        .single()
-      if (errorBase) throw errorBase
-      return mapSupabaseBook(dataBase as SupabaseBookRow)
-    } catch (error) {
-      throw new ApiError(asErrorMessage(error), 500, error)
-    }
+    const select =
+      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status'
+    const { data, error } = await supabase
+      .from('books')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select(select)
+      .single()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return mapSupabaseBook(data as SupabaseBookRow)
   },
   
   getMyBooks: async (ownerId: string) => {
-    try {
-      const baseSelect = 'id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id'
-      const extendedSelect = `${baseSelect},image_url,thumbnail_url`
-
-      const { data: dataExt, error: errorExt } = await supabase
-        .from('books')
-        .select(extendedSelect)
-        .eq('owner_id', ownerId)
-        .order('created_at', { ascending: false })
-      if (!errorExt) return (dataExt ?? []).map((row) => mapSupabaseBook(row as unknown as SupabaseBookRow))
-      if (!shouldRetryWithoutOptionalBookImageColumns(errorExt)) throw errorExt
-
-      const { data: dataBase, error: errorBase } = await supabase
-        .from('books')
-        .select(baseSelect)
-        .eq('owner_id', ownerId)
-        .order('created_at', { ascending: false })
-      if (errorBase) throw errorBase
-      return (dataBase ?? []).map((row) => mapSupabaseBook(row as unknown as SupabaseBookRow))
-    } catch (error) {
-      throw new ApiError(asErrorMessage(error), 500, error)
-    }
+    const select =
+      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status'
+    const { data, error } = await supabase
+      .from('books')
+      .select(select)
+      .eq('owner_id', ownerId)
+      .order('created_at', { ascending: false })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return (data ?? []).map((row) => mapSupabaseBook(row as SupabaseBookRow))
   },
   
   getGenres: async () => {
@@ -567,7 +301,8 @@ export const booksApi = {
 // File Upload API functions
 export const uploadApi = {
   uploadBookImage: async (file: File) => {
-    const bucket = getEnv('NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET') || 'uploads'
+    const bucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET
+    if (!bucket) throw new ApiError('Missing NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET', 500)
     const ext = file.name.includes('.') ? file.name.split('.').pop() : 'bin'
     const path = `book-images/${crypto.randomUUID()}.${ext}`
     const { error } = await supabase.storage.from(bucket).upload(path, file, {
@@ -582,7 +317,8 @@ export const uploadApi = {
   },
   
   uploadStatusImage: async (file: File) => {
-    const bucket = getEnv('NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET') || 'uploads'
+    const bucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET
+    if (!bucket) throw new ApiError('Missing NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET', 500)
     const ext = file.name.includes('.') ? file.name.split('.').pop() : 'bin'
     const path = `status-images/${crypto.randomUUID()}.${ext}`
     const { error } = await supabase.storage.from(bucket).upload(path, file, {
