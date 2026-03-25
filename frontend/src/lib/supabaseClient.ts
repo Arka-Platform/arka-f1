@@ -1,18 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 
-import { getEnv } from './env'
-
-const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL')
-const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+// ✅ Direct static access (required for Next.js)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 let hasLoggedMissingEnv = false
 
 if (!supabaseUrl || !supabaseKey) {
   if (!hasLoggedMissingEnv) {
     hasLoggedMissingEnv = true
-    // Do NOT log secret values. Only log presence and context.
-    // This is intentionally noisy only when misconfigured.
-    // Helpful on Vercel because NEXT_PUBLIC_* is inlined at build time.
+
+    // Log only metadata, never actual secrets
     // eslint-disable-next-line no-console
     console.error('[supabaseClient] Missing NEXT_PUBLIC Supabase env vars', {
       runtime: typeof window === 'undefined' ? 'server' : 'client',
@@ -22,11 +20,14 @@ if (!supabaseUrl || !supabaseKey) {
     })
   }
 
-  // Avoid Next.js build-time crashes when env isn't injected yet.
-  // On the real runtime (browser), we keep the same failure mode.
+  // Throw only in browser (prevents build-time crash)
   if (typeof window !== 'undefined') {
     throw new Error('Missing Supabase environment variables')
   }
 }
 
-export const supabase = createClient(supabaseUrl || 'http://localhost:54321', supabaseKey || 'public-anon-key')
+// ✅ Safe fallback only for build-time (never used in real prod if env is correct)
+export const supabase = createClient(
+  supabaseUrl || 'http://localhost:54321',
+  supabaseKey || 'public-anon-key'
+)
