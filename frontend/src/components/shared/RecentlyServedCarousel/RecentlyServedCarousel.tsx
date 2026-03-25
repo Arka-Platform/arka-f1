@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect, useRef } from 'react'
 import { demandApi, BookRequestResponse } from '../../../utils/api'
 import styles from './RecentlyServedCarousel.module.css'

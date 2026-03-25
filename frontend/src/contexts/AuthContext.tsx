@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useRe
 import { supabase, } from '../lib/supabaseClient'
 import type { Session } from '@supabase/supabase-js'
 import { fetchSupabasePublicUserById, syncSupabasePublicUser } from '../utils/supabaseProfileSync'
+import { getEnv } from '../lib/env'
 
 interface User {
   id: string
@@ -72,7 +73,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           : (await supabase.auth.getSession()).data.session ?? null
 
       if (!session) {
-        localStorage.removeItem('arka_user')
+        if (typeof window !== 'undefined') localStorage.removeItem('arka_user')
         setUser(null)
         lastProfileSyncedUserIdRef.current = null
         profileSyncInFlightRef.current = null
@@ -96,7 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       setUser(normalizedUser)
-      localStorage.setItem('arka_user', JSON.stringify(normalizedUser))
+      if (typeof window !== 'undefined') localStorage.setItem('arka_user', JSON.stringify(normalizedUser))
 
       // Best-effort profile sync: never block auth UX.
       // Prevent redundant syncs for the same user within a session, and avoid races.
@@ -263,7 +264,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Use an absolute redirectTo so localhost vs production ports match Supabase config.
       const redirectToDefault = `${window.location.origin}/auth/callback`
-      const redirectToOverride = import.meta.env.VITE_SUPABASE_OAUTH_REDIRECT_TO as string | undefined
+      const redirectToOverride = getEnv(
+        'NEXT_PUBLIC_SUPABASE_OAUTH_REDIRECT_TO',
+        'VITE_SUPABASE_OAUTH_REDIRECT_TO',
+      ) as string | undefined
       const redirectTo = redirectToOverride
         ? normalizeRedirectTo(redirectToOverride)
         : redirectToDefault
@@ -301,7 +305,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true)
     try {
       await supabase.auth.signOut()
-      localStorage.removeItem('arka_user')
+      if (typeof window !== 'undefined') localStorage.removeItem('arka_user')
       setUser(null)
     } finally {
       setIsLoading(false)

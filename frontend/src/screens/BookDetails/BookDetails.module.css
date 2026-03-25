@@ -1,0 +1,345 @@
+.page {
+  width: 100%;
+  padding: 2.75rem 0 4rem;
+}
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: rgba(15, 23, 42, 0.65);
+  margin-bottom: 1.5rem;
+}
+
+.crumb {
+  color: rgba(15, 23, 42, 0.78);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.crumb:hover {
+  text-decoration: underline;
+}
+
+.divider {
+  opacity: 0.7;
+}
+
+.current {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 52ch;
+}
+
+.topGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.75rem;
+}
+
+.left {
+  display: grid;
+  gap: 1rem;
+}
+
+.cover {
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.cover img {
+  width: 100%;
+  height: 520px;
+  object-fit: cover;
+  display: block;
+}
+
+.coverFallback {
+  height: 520px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  padding: 1.25rem;
+  background: linear-gradient(180deg, rgba(245, 247, 251, 1) 0%, rgba(255, 255, 255, 1) 100%);
+  position: relative;
+}
+
+.coverFallback::before {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  background: radial-gradient(circle at 35% 10%, rgba(255, 171, 64, 0.22), transparent 55%);
+  transform: rotate(7deg);
+}
+
+.coverTitle,
+.coverAuthor {
+  position: relative;
+}
+
+.coverTitle {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: rgba(15, 23, 42, 0.92);
+  line-height: 1.15;
+}
+
+.coverAuthor {
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: rgba(15, 23, 42, 0.68);
+}
+
+.factsCard {
+  border-radius: 18px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  padding: 1.1rem 1.1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.factRow {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+.factLabel {
+  font-size: 0.85rem;
+  color: rgba(15, 23, 42, 0.6);
+}
+
+.factValue {
+  font-size: 0.9rem;
+  color: rgba(15, 23, 42, 0.88);
+  font-weight: 650;
+}
+
+.factValueMono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: rgba(15, 23, 42, 0.88);
+  font-weight: 600;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.titleBlock {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 2.25rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: rgba(15, 23, 42, 0.95);
+}
+
+.author {
+  margin: 0.6rem 0 0;
+  font-size: 0.95rem;
+  color: rgba(15, 23, 42, 0.66);
+  font-weight: 600;
+}
+
+.priceBlock {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.price {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: rgba(15, 23, 42, 0.95);
+}
+
+.ratingLine {
+  margin-top: 0.35rem;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: rgba(15, 23, 42, 0.62);
+}
+
+.star {
+  color: rgba(245, 158, 11, 0.95);
+}
+
+.ratingValue {
+  font-weight: 750;
+  color: rgba(15, 23, 42, 0.82);
+}
+
+.ratingCount {
+  color: rgba(15, 23, 42, 0.55);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(15, 23, 42, 0.7);
+}
+
+.summary {
+  margin: 0;
+  max-width: 64ch;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: rgba(15, 23, 42, 0.7);
+}
+
+.primaryActions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.lowerGrid {
+  margin-top: 0.25rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tab,
+.tabActive {
+  height: 36px;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(15, 23, 42, 0.72);
+  cursor: pointer;
+}
+
+.tabActive {
+  background: rgba(15, 23, 42, 0.92);
+  color: white;
+  border-color: rgba(15, 23, 42, 0.92);
+}
+
+.sectionCard {
+  border-radius: 22px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  padding: 1.25rem 1.25rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: rgba(15, 23, 42, 0.92);
+  letter-spacing: -0.01em;
+}
+
+.sectionBody {
+  margin: 0.6rem 0 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: rgba(15, 23, 42, 0.68);
+}
+
+.bullets {
+  margin: 0.75rem 0 0;
+  padding-left: 1.2rem;
+  color: rgba(15, 23, 42, 0.68);
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.92rem;
+}
+
+.skeleton {
+  margin-top: 0.8rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.line,
+.lineShort {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.lineShort {
+  width: 72%;
+}
+
+@media (min-width: 860px) {
+  .topGrid {
+    grid-template-columns: 420px 1fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .primaryActions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .titleRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .priceBlock {
+    text-align: left;
+  }
+
+  .cover img,
+  .coverFallback {
+    height: 420px;
+  }
+}

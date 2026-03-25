@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import Toast, { ToastProps } from '../Toast/Toast'
 import styles from './ToastContainer.module.css'

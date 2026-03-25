@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useId, useState, useEffect, useRef } from 'react'
 import { booksApi, BookResponse } from '../../../utils/api'
 import styles from './BookSearchInput.module.css'

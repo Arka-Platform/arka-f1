@@ -35,6 +35,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   // Load cart from localStorage on mount
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const storedCart = localStorage.getItem('arka_cart')
     if (storedCart) {
       try {
@@ -48,6 +49,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
+    if (typeof window === 'undefined') return
     localStorage.setItem('arka_cart', JSON.stringify(items))
   }, [items])
 

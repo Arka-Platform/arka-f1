@@ -3,13 +3,14 @@ import { createAdminApi, createExchangesApi } from './api/domains/adminExchanges
 import { createBehaviorApi, createCommunityApi, createOrdersApi, createUsersApi } from './api/domains/communityUserOps'
 import { createDemandApi, createRecyclingApi } from './api/domains/demandRecycling'
 import { createAnalyticsApi, createBookshelfApi, createTrustScoreApi, createWishlistApi } from './api/domains/insightsLibrary'
+import { getEnv, isProd } from '../lib/env'
 
 // Legacy backend HTTP transport (Spring) is kept as an escape hatch only.
 // Primary runtime path is Supabase client + Supabase Edge Functions.
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-  (import.meta.env.PROD ? '' : 'http://localhost:8080');
-const API_LATENCY_WARN_MS = Number(import.meta.env.VITE_API_LATENCY_WARN_MS || 800);
-const ENABLE_LEGACY_BACKEND_API = String(import.meta.env.VITE_ENABLE_LEGACY_BACKEND_API || 'false') === 'true';
+const API_BASE_URL = getEnv('NEXT_PUBLIC_API_BASE_URL', 'VITE_API_BASE_URL') ||
+  (isProd() ? '' : 'http://localhost:8080');
+const API_LATENCY_WARN_MS = Number(getEnv('NEXT_PUBLIC_API_LATENCY_WARN_MS', 'VITE_API_LATENCY_WARN_MS') || 800);
+const ENABLE_LEGACY_BACKEND_API = String(getEnv('NEXT_PUBLIC_ENABLE_LEGACY_BACKEND_API', 'VITE_ENABLE_LEGACY_BACKEND_API') || 'false') === 'true';
 
 type ApiMetric = {
   endpoint: string;
@@ -539,7 +540,7 @@ export const booksApi = {
 // File Upload API functions
 export const uploadApi = {
   uploadBookImage: async (file: File) => {
-    const bucket = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'uploads'
+    const bucket = getEnv('NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET', 'VITE_SUPABASE_STORAGE_BUCKET') || 'uploads'
     const ext = file.name.includes('.') ? file.name.split('.').pop() : 'bin'
     const path = `book-images/${crypto.randomUUID()}.${ext}`
     const { error } = await supabase.storage.from(bucket).upload(path, file, {
@@ -554,7 +555,7 @@ export const uploadApi = {
   },
   
   uploadStatusImage: async (file: File) => {
-    const bucket = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || 'uploads'
+    const bucket = getEnv('NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET', 'VITE_SUPABASE_STORAGE_BUCKET') || 'uploads'
     const ext = file.name.includes('.') ? file.name.split('.').pop() : 'bin'
     const path = `status-images/${crypto.randomUUID()}.${ext}`
     const { error } = await supabase.storage.from(bucket).upload(path, file, {

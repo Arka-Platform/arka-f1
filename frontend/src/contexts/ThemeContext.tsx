@@ -25,12 +25,23 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setThemeState] = useState<ThemeName>(() => {
+    if (typeof window === 'undefined') return 'default'
     const storedTheme = localStorage.getItem(THEME_STORAGE_KEY)
     return storedTheme === 'home' ? 'home' : 'default'
   })
 
+  // After hydration (where server render defaulted), sync with localStorage.
+  // This preserves original runtime behavior in the browser.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY)
+    const nextTheme: ThemeName = storedTheme === 'home' ? 'home' : 'default'
+    setThemeState(nextTheme)
+  }, [])
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
+    if (typeof window === 'undefined') return
     localStorage.setItem(THEME_STORAGE_KEY, theme)
   }, [theme])
 

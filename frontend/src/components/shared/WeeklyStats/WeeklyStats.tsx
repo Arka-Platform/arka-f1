@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect } from 'react'
 import { demandApi, WeeklyStats as WeeklyStatsType } from '../../../utils/api'
 import styles from './WeeklyStats.module.css'

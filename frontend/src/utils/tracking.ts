@@ -3,6 +3,7 @@ import { behaviorApi } from './api'
 
 // Get current user ID from auth context or localStorage
 function getUserId(): string | null {
+  if (typeof window === 'undefined') return null
   try {
     const user = localStorage.getItem('arka_user');
     if (user) {
