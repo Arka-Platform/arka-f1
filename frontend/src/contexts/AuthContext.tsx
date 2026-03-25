@@ -264,10 +264,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Use an absolute redirectTo so localhost vs production ports match Supabase config.
       const redirectToDefault = `${window.location.origin}/auth/callback`
-      const redirectToOverride = getEnv(
-        'NEXT_PUBLIC_SUPABASE_OAUTH_REDIRECT_TO',
-        'VITE_SUPABASE_OAUTH_REDIRECT_TO',
-      ) as string | undefined
+      const redirectToOverride = getEnv('NEXT_PUBLIC_SUPABASE_OAUTH_REDIRECT_TO') as string | undefined
       const redirectTo = redirectToOverride
         ? normalizeRedirectTo(redirectToOverride)
         : redirectToDefault

@@ -2,8 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 
 import { getEnv } from './env'
 
-const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL', 'VITE_SUPABASE_URL')
-const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'VITE_SUPABASE_ANON_KEY')
+const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL')
+const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 
 if (!supabaseUrl || !supabaseKey) {
   // Avoid Next.js build-time crashes when env isn't injected yet.
