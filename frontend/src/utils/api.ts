@@ -314,6 +314,39 @@ function asErrorMessage(error: unknown): string {
   return 'Supabase error'
 }
 
+function shouldRetryWithoutOptionalBookImageColumns(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const err = error as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown; status?: unknown }
+  const msg = String(err.message ?? '').toLowerCase()
+  const details = String(err.details ?? '').toLowerCase()
+  const hint = String(err.hint ?? '').toLowerCase()
+  const code = String(err.code ?? '').toUpperCase()
+  const status = Number(err.status ?? NaN)
+
+  // PostgREST "unknown column" commonly surfaces as PGRSTxxx or "column ... does not exist".
+  const mentionsOptionalColumns =
+    msg.includes('image_url') ||
+    msg.includes('thumbnail_url') ||
+    details.includes('image_url') ||
+    details.includes('thumbnail_url') ||
+    hint.includes('image_url') ||
+    hint.includes('thumbnail_url')
+
+  const looksLikeMissingColumn =
+    msg.includes('does not exist') ||
+    details.includes('does not exist') ||
+    msg.includes('unknown column') ||
+    details.includes('unknown column') ||
+    code === 'PGRST204' ||
+    code === 'PGRST200' ||
+    code === '42703'
+
+  // Some clients only surface status 400 without strong typing; we still gate on column mentions.
+  const isBadRequest = status === 400
+
+  return mentionsOptionalColumns && (looksLikeMissingColumn || isBadRequest)
+}
+
 // Book API functions
 export const booksApi = {
   list: async (params?: { search?: string; genre?: string; subcategory?: string; page?: number; size?: number }) => {
@@ -340,10 +373,7 @@ export const booksApi = {
         return mapped
       }
 
-      const extMsg = String((errorExt as any)?.message ?? '')
-      const canRetryWithoutOptionalColumns =
-        extMsg.toLowerCase().includes('column') && extMsg.toLowerCase().includes('does not exist')
-      if (!canRetryWithoutOptionalColumns) throw errorExt
+      if (!shouldRetryWithoutOptionalBookImageColumns(errorExt)) throw errorExt
 
       // Some environments don't have image columns yet; retry with base select.
       const { data: dataBase, error: errorBase } = await runQuery(baseSelect)
@@ -385,10 +415,7 @@ export const booksApi = {
       const { data: dataExt, error: errorExt } = await supabase.from('books').select(extendedSelect).eq('id', id).single()
       if (!errorExt) return mapSupabaseBook(dataExt as SupabaseBookRow)
 
-      const extMsg = String((errorExt as any)?.message ?? '')
-      const canRetryWithoutOptionalColumns =
-        extMsg.toLowerCase().includes('column') && extMsg.toLowerCase().includes('does not exist')
-      if (!canRetryWithoutOptionalColumns) throw errorExt
+      if (!shouldRetryWithoutOptionalBookImageColumns(errorExt)) throw errorExt
 
       const { data: dataBase, error: errorBase } = await supabase.from('books').select(baseSelect).eq('id', id).single()
       if (errorBase) throw errorBase
