@@ -281,8 +281,8 @@ type SupabaseBookRow = {
   status: string
   created_at: string
   owner_id: string | null
-  image_url: string | null
-  thumbnail_url: string | null
+  image_url?: string | null
+  thumbnail_url?: string | null
 }
 
 function mapSupabaseBook(row: SupabaseBookRow): BookResponse {
@@ -361,7 +361,7 @@ export const booksApi = {
   list: async (params?: { search?: string; genre?: string; subcategory?: string; page?: number; size?: number }) => {
     try {
       const hasFilters = Boolean(params?.search || params?.genre || params?.subcategory)
-      const shouldTryLegacyFallback = !hasFilters
+      const shouldTryLegacyFallback = !hasFilters && ENABLE_LEGACY_BACKEND_API && Boolean(API_BASE_URL)
 
       const legacyUrl = `${API_BASE_URL}/api/v1/books?page=${params?.page ?? 0}&size=${params?.size ?? 40}`
       const legacyRequest = shouldTryLegacyFallback
@@ -375,31 +375,45 @@ export const booksApi = {
             .catch(() => [] as BookResponse[])
         : Promise.resolve([] as BookResponse[])
 
-      let query = supabase
-        .from('books')
-        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id,image_url,thumbnail_url')
-        .order('created_at', { ascending: false })
+      const baseSelect = 'id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id'
+      const extendedSelect = `${baseSelect},image_url,thumbnail_url`
 
-      if (params?.search) query = query.ilike('title', `%${params.search}%`)
-      if (params?.genre) query = query.eq('genre', params.genre)
-      if (params?.subcategory) query = query.eq('subcategory', params.subcategory)
-      if (params?.page !== undefined && params?.size) {
-        const from = params.page * params.size
-        const to = from + params.size - 1
-        query = query.range(from, to)
+      const runQuery = async (select: string) => {
+        let query = supabase.from('books').select(select).order('created_at', { ascending: false })
+        if (params?.search) query = query.ilike('title', `%${params.search}%`)
+        if (params?.genre) query = query.eq('genre', params.genre)
+        if (params?.subcategory) query = query.eq('subcategory', params.subcategory)
+        if (params?.page !== undefined && params?.size) {
+          const from = params.page * params.size
+          const to = from + params.size - 1
+          query = query.range(from, to)
+        }
+        return await query
       }
 
-      const { data, error } = await query
-      if (error) throw error
-      const mapped = (data ?? []).map((row) => mapSupabaseBook(row as SupabaseBookRow))
-      if (mapped.length > 0 || hasFilters) {
-        return mapped
+      const { data: dataExt, error: errorExt } = await runQuery(extendedSelect)
+      if (!errorExt) {
+        const mapped = (dataExt ?? []).map((row) => mapSupabaseBook(row as unknown as SupabaseBookRow))
+        if (mapped.length > 0 || hasFilters) return mapped
+        const legacyMapped = await legacyRequest
+        return legacyMapped.length > 0 ? legacyMapped : mapped
       }
+
+      const extMsg = String((errorExt as any)?.message ?? '')
+      const canRetryWithoutOptionalColumns =
+        extMsg.toLowerCase().includes('column') && extMsg.toLowerCase().includes('does not exist')
+      if (!canRetryWithoutOptionalColumns) throw errorExt
+
+      // Some environments don't have image columns yet; retry with base select.
+      const { data: dataBase, error: errorBase } = await runQuery(baseSelect)
+      if (errorBase) throw errorBase
+      const mappedBase = (dataBase ?? []).map((row) => mapSupabaseBook(row as unknown as SupabaseBookRow))
+      if (mappedBase.length > 0 || hasFilters) return mappedBase
 
       // Fallback for environments where catalog data exists in backend API.
       // Started in parallel above to reduce perceived wait time.
       const legacyMapped = await legacyRequest
-      return legacyMapped.length > 0 ? legacyMapped : mapped
+      return legacyMapped.length > 0 ? legacyMapped : mappedBase
     } catch (error) {
       throw new ApiError(asErrorMessage(error), 500, error)
     }
@@ -429,13 +443,20 @@ export const booksApi = {
   
   getById: async (id: string) => {
     try {
-      const { data, error } = await supabase
-        .from('books')
-        .select('id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id,image_url,thumbnail_url')
-        .eq('id', id)
-        .single()
-      if (error) throw error
-      return mapSupabaseBook(data as SupabaseBookRow)
+      const baseSelect = 'id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id'
+      const extendedSelect = `${baseSelect},image_url,thumbnail_url`
+
+      const { data: dataExt, error: errorExt } = await supabase.from('books').select(extendedSelect).eq('id', id).single()
+      if (!errorExt) return mapSupabaseBook(dataExt as SupabaseBookRow)
+
+      const extMsg = String((errorExt as any)?.message ?? '')
+      const canRetryWithoutOptionalColumns =
+        extMsg.toLowerCase().includes('column') && extMsg.toLowerCase().includes('does not exist')
+      if (!canRetryWithoutOptionalColumns) throw errorExt
+
+      const { data: dataBase, error: errorBase } = await supabase.from('books').select(baseSelect).eq('id', id).single()
+      if (errorBase) throw errorBase
+      return mapSupabaseBook(dataBase as SupabaseBookRow)
     } catch (error) {
       throw new ApiError(asErrorMessage(error), 500, error)
     }
