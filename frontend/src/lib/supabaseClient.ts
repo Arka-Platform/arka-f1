@@ -20,10 +20,9 @@ if (!supabaseUrl || !supabaseKey) {
     })
   }
 
-  // Throw only in browser (prevents build-time crash)
-  if (typeof window !== 'undefined') {
-    throw new Error('Missing Supabase environment variables')
-  }
+  // IMPORTANT: Don't hard-crash the entire app in the browser.
+  // When misconfigured, downstream API calls will fail and UIs can show errors,
+  // but the homepage should still render.
 }
 
 // ✅ Safe fallback only for build-time (never used in real prod if env is correct)

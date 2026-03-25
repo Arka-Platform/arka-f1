@@ -307,48 +307,6 @@ function mapSupabaseBook(row: SupabaseBookRow): BookResponse {
   }
 }
 
-type LegacyBookRow = {
-  id: string
-  title: string
-  author: string
-  description?: string | null
-  genre?: string | null
-  category?: string | null
-  subcategory?: string | null
-  price?: number | null
-  status?: string | null
-  createdAt?: string | null
-  isbn?: string | null
-  publisher?: string | null
-  publicationYear?: number | null
-  imageUrl?: string | null
-  thumbnailUrl?: string | null
-  averageRating?: number | null
-  ratingsCount?: number | null
-}
-
-function mapLegacyBook(row: LegacyBookRow): BookResponse {
-  return {
-    id: row.id,
-    title: row.title,
-    author: row.author,
-    description: row.description ?? '',
-    genre: row.genre ?? null,
-    category: row.category ?? null,
-    subcategory: row.subcategory ?? null,
-    price: row.price ?? null,
-    status: row.status ?? 'AVAILABLE',
-    createdAt: row.createdAt ?? new Date().toISOString(),
-    isbn: row.isbn ?? null,
-    publisher: row.publisher ?? null,
-    publicationYear: row.publicationYear ?? null,
-    imageUrl: row.imageUrl ?? null,
-    thumbnailUrl: row.thumbnailUrl ?? null,
-    averageRating: row.averageRating ?? null,
-    ratingsCount: row.ratingsCount ?? null,
-  }
-}
-
 function asErrorMessage(error: unknown): string {
   if (error && typeof error === 'object' && 'message' in error) {
     return String((error as { message?: string }).message ?? 'Supabase error')
@@ -360,21 +318,6 @@ function asErrorMessage(error: unknown): string {
 export const booksApi = {
   list: async (params?: { search?: string; genre?: string; subcategory?: string; page?: number; size?: number }) => {
     try {
-      const hasFilters = Boolean(params?.search || params?.genre || params?.subcategory)
-      const shouldTryLegacyFallback = !hasFilters && ENABLE_LEGACY_BACKEND_API && Boolean(API_BASE_URL)
-
-      const legacyUrl = `${API_BASE_URL}/api/v1/books?page=${params?.page ?? 0}&size=${params?.size ?? 40}`
-      const legacyRequest = shouldTryLegacyFallback
-        ? fetch(legacyUrl, { method: 'GET' })
-            .then(async (res) => {
-              if (!res.ok) return [] as BookResponse[]
-              const rows = (await res.json()) as LegacyBookRow[]
-              if (!Array.isArray(rows)) return [] as BookResponse[]
-              return rows.map(mapLegacyBook)
-            })
-            .catch(() => [] as BookResponse[])
-        : Promise.resolve([] as BookResponse[])
-
       const baseSelect = 'id,title,author,description,genre,category,subcategory,credit_price,status,created_at,owner_id'
       const extendedSelect = `${baseSelect},image_url,thumbnail_url`
 
@@ -394,9 +337,7 @@ export const booksApi = {
       const { data: dataExt, error: errorExt } = await runQuery(extendedSelect)
       if (!errorExt) {
         const mapped = (dataExt ?? []).map((row) => mapSupabaseBook(row as unknown as SupabaseBookRow))
-        if (mapped.length > 0 || hasFilters) return mapped
-        const legacyMapped = await legacyRequest
-        return legacyMapped.length > 0 ? legacyMapped : mapped
+        return mapped
       }
 
       const extMsg = String((errorExt as any)?.message ?? '')
@@ -408,12 +349,7 @@ export const booksApi = {
       const { data: dataBase, error: errorBase } = await runQuery(baseSelect)
       if (errorBase) throw errorBase
       const mappedBase = (dataBase ?? []).map((row) => mapSupabaseBook(row as unknown as SupabaseBookRow))
-      if (mappedBase.length > 0 || hasFilters) return mappedBase
-
-      // Fallback for environments where catalog data exists in backend API.
-      // Started in parallel above to reduce perceived wait time.
-      const legacyMapped = await legacyRequest
-      return legacyMapped.length > 0 ? legacyMapped : mappedBase
+      return mappedBase
     } catch (error) {
       throw new ApiError(asErrorMessage(error), 500, error)
     }
