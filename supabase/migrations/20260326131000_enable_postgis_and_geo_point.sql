@@ -1,5 +1,8 @@
 -- Enables PostGIS (required for geography(Point,4326))
 -- and ensures geo_point exists for marketplace proximity features.
+--
+-- NOTE: This migration exists because version 20260323127000 was already
+-- present in supabase_migrations.schema_migrations in the target DB.
 
 CREATE EXTENSION IF NOT EXISTS postgis;
 

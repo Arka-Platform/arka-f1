@@ -177,12 +177,12 @@ export const booksApi = {
     return (data ?? []).map((row) => mapSupabaseBook(row as SupabaseBookRow))
   },
   
-  create: async (ownerId: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) => {
+  create: async (_ownerId: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) => {
     try {
       const { data: inserted, error } = await supabase
         .from('books')
         .insert({
-          owner_id: ownerId,
+          // Owner is authored by the database (auth.uid()) to avoid FK mismatches.
           title: data.title,
           author: data.author,
           description: data.description ?? null,

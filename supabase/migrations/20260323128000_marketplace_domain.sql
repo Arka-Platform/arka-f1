@@ -41,6 +41,16 @@ CREATE TABLE IF NOT EXISTS public.book_listings (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- If a prior attempt created the table without these columns, repair it idempotently.
+ALTER TABLE public.book_listings
+  ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION;
+
+ALTER TABLE public.book_listings
+  ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION;
+
+ALTER TABLE public.book_listings
+  ADD COLUMN IF NOT EXISTS geo_point geography(POINT, 4326);
+
 CREATE INDEX IF NOT EXISTS idx_book_listings_owner_status
     ON public.book_listings(owner_id, status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_book_listings_status_created
@@ -111,6 +121,10 @@ CREATE TABLE IF NOT EXISTS public.user_locations (
     CHECK (longitude >= -180 AND longitude <= 180)
 );
 
+-- If a prior attempt created the table without geo_point, repair it idempotently.
+ALTER TABLE public.user_locations
+  ADD COLUMN IF NOT EXISTS geo_point geography(POINT, 4326);
+
 CREATE INDEX IF NOT EXISTS idx_user_locations_geo_gist
     ON public.user_locations USING GIST(geo_point);
 
@@ -174,6 +188,41 @@ BEFORE INSERT OR UPDATE OF latitude, longitude
 ON public.user_locations
 FOR EACH ROW
 EXECUTE FUNCTION public.set_user_geo_point();
+
+-- Ensure books.owner_id is authored by Supabase auth (auth.uid()).
+DO $$
+BEGIN
+  BEGIN
+    ALTER TABLE public.books
+      ALTER COLUMN owner_id SET DEFAULT auth.uid();
+  EXCEPTION
+    WHEN undefined_table THEN
+      NULL;
+  END;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.set_books_owner_id_from_auth()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.owner_id IS NULL THEN
+    NEW.owner_id := auth.uid();
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DO $$
+BEGIN
+  IF to_regclass('public.books') IS NOT NULL THEN
+    DROP TRIGGER IF EXISTS trg_set_books_owner_id_from_auth ON public.books;
+    CREATE TRIGGER trg_set_books_owner_id_from_auth
+      BEFORE INSERT ON public.books
+      FOR EACH ROW
+      EXECUTE FUNCTION public.set_books_owner_id_from_auth();
+  END IF;
+END $$;
 
 CREATE OR REPLACE FUNCTION public.enforce_swap_request_updates()
 RETURNS trigger
