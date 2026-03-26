@@ -298,6 +298,198 @@ export const booksApi = {
   search: async (query: string) => booksApi.list({ search: query }),
 };
 
+// ---------------------------------------------------------------------------
+// Marketplace listing API (source of cover + condition images)
+// ---------------------------------------------------------------------------
+
+export type ListingCondition = 'new' | 'like_new' | 'good' | 'fair' | 'poor'
+
+export interface ListingResponse {
+  listingId: string
+  ownerId: string
+  inventoryBookId: string
+  bookId: string
+  title: string
+  author: string
+  description: string
+  genre: string | null
+  category: string | null
+  subcategory: string | null
+  creditPrice: number
+  condition: ListingCondition
+  askingNotes: string | null
+  tags: string[]
+  coverUrl: string | null
+  conditionImageUrls: string[]
+  createdAt: string
+}
+
+type SupabaseBookListingRow = {
+  id: string
+  owner_id: string
+  inventory_book_id: string
+  title_override: string | null
+  condition: ListingCondition
+  tags: string[] | null
+  image_cover_url: string | null
+  asking_notes: string | null
+  status: 'active' | 'paused' | 'swapped' | 'archived'
+  created_at: string
+}
+
+type SupabaseInventoryBookRow = {
+  id: string
+  book_id: string
+  condition: ListingCondition
+  notes: string | null
+}
+
+type SupabaseListingImageRow = {
+  id: string
+  listing_id: string
+  image_url: string
+  sort_order: number
+  created_at: string
+}
+
+function asNumber(value: unknown, fallback: number): number {
+  const n = typeof value === 'string' ? Number(value) : typeof value === 'number' ? value : NaN
+  return Number.isFinite(n) ? n : fallback
+}
+
+export const listingsApi = {
+  listActive: async (params?: { limit?: number }) => {
+    const limit = Math.min(Math.max(params?.limit ?? 12, 1), 50)
+
+    const { data: listings, error: listingsError } = await supabase
+      .from('book_listings')
+      .select('id,owner_id,inventory_book_id,title_override,condition,tags,image_cover_url,asking_notes,status,created_at')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (listingsError) throw new ApiError(asErrorMessage(listingsError), 500, listingsError)
+
+    const listingRows = (listings ?? []) as unknown as SupabaseBookListingRow[]
+    const inventoryIds = listingRows.map((l) => l.inventory_book_id)
+
+    const { data: inventory, error: inventoryError } = await supabase
+      .from('inventory_books')
+      .select('id,book_id,condition,notes')
+      .in('id', inventoryIds)
+
+    if (inventoryError) throw new ApiError(asErrorMessage(inventoryError), 500, inventoryError)
+    const inventoryRows = (inventory ?? []) as unknown as SupabaseInventoryBookRow[]
+    const inventoryById = new Map(inventoryRows.map((r) => [r.id, r]))
+
+    const bookIds = Array.from(new Set(inventoryRows.map((r) => r.book_id)))
+    const bookSelect =
+      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status'
+    const { data: books, error: booksError } = await supabase.from('books').select(bookSelect).in('id', bookIds)
+    if (booksError) throw new ApiError(asErrorMessage(booksError), 500, booksError)
+    const booksById = new Map(((books ?? []) as unknown as SupabaseBookRow[]).map((b) => [b.id, b]))
+
+    const listingIds = listingRows.map((l) => l.id)
+    const { data: images, error: imagesError } = await supabase
+      .from('listing_images')
+      .select('id,listing_id,image_url,sort_order,created_at')
+      .in('listing_id', listingIds)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false })
+    if (imagesError) throw new ApiError(asErrorMessage(imagesError), 500, imagesError)
+
+    const imagesByListingId = new Map<string, string[]>()
+    for (const row of (images ?? []) as unknown as SupabaseListingImageRow[]) {
+      const list = imagesByListingId.get(row.listing_id) ?? []
+      list.push(row.image_url)
+      imagesByListingId.set(row.listing_id, list)
+    }
+
+    return listingRows.map((l) => {
+      const inv = inventoryById.get(l.inventory_book_id)
+      if (!inv) throw new ApiError('Listing inventory link is missing', 500, { listingId: l.id })
+      const book = booksById.get(inv.book_id)
+      if (!book) throw new ApiError('Listing book link is missing', 500, { listingId: l.id, bookId: inv.book_id })
+
+      const conditionImages = imagesByListingId.get(l.id) ?? []
+      const coverUrl = l.image_cover_url ?? conditionImages[0] ?? null
+
+      return {
+        listingId: l.id,
+        ownerId: l.owner_id,
+        inventoryBookId: l.inventory_book_id,
+        bookId: inv.book_id,
+        title: (l.title_override && l.title_override.trim().length > 0 ? l.title_override : book.title) ?? book.title,
+        author: book.author,
+        description: book.description ?? '',
+        genre: book.genre,
+        category: book.category,
+        subcategory: book.subcategory,
+        creditPrice: asNumber(book.credit_price, 0),
+        condition: l.condition,
+        askingNotes: l.asking_notes ?? inv.notes ?? null,
+        tags: Array.isArray(l.tags) ? l.tags : [],
+        coverUrl,
+        conditionImageUrls: conditionImages,
+        createdAt: l.created_at,
+      } satisfies ListingResponse
+    })
+  },
+
+  getById: async (listingId: string) => {
+    const { data: listing, error: listingError } = await supabase
+      .from('book_listings')
+      .select('id,owner_id,inventory_book_id,title_override,condition,tags,image_cover_url,asking_notes,status,created_at')
+      .eq('id', listingId)
+      .single()
+    if (listingError) throw new ApiError(asErrorMessage(listingError), 500, listingError)
+    const l = listing as unknown as SupabaseBookListingRow
+
+    const { data: inv, error: invError } = await supabase
+      .from('inventory_books')
+      .select('id,book_id,condition,notes')
+      .eq('id', l.inventory_book_id)
+      .single()
+    if (invError) throw new ApiError(asErrorMessage(invError), 500, invError)
+
+    const bookSelect =
+      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status'
+    const { data: book, error: bookError } = await supabase.from('books').select(bookSelect).eq('id', inv.book_id).single()
+    if (bookError) throw new ApiError(asErrorMessage(bookError), 500, bookError)
+
+    const { data: images, error: imagesError } = await supabase
+      .from('listing_images')
+      .select('id,listing_id,image_url,sort_order,created_at')
+      .eq('listing_id', listingId)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false })
+    if (imagesError) throw new ApiError(asErrorMessage(imagesError), 500, imagesError)
+
+    const conditionImages = ((images ?? []) as unknown as SupabaseListingImageRow[]).map((r) => r.image_url)
+    const coverUrl = l.image_cover_url ?? conditionImages[0] ?? null
+
+    return {
+      listingId: l.id,
+      ownerId: l.owner_id,
+      inventoryBookId: l.inventory_book_id,
+      bookId: inv.book_id,
+      title: (l.title_override && l.title_override.trim().length > 0 ? l.title_override : (book as any).title) ?? (book as any).title,
+      author: (book as any).author,
+      description: (book as any).description ?? '',
+      genre: (book as any).genre ?? null,
+      category: (book as any).category ?? null,
+      subcategory: (book as any).subcategory ?? null,
+      creditPrice: asNumber((book as any).credit_price, 0),
+      condition: l.condition,
+      askingNotes: l.asking_notes ?? inv.notes ?? null,
+      tags: Array.isArray(l.tags) ? l.tags : [],
+      coverUrl,
+      conditionImageUrls: conditionImages,
+      createdAt: l.created_at,
+    } satisfies ListingResponse
+  },
+}
+
 // File Upload API functions
 export const uploadApi = {
   uploadBookImage: async (file: File) => {
