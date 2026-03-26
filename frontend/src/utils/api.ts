@@ -177,7 +177,7 @@ export const booksApi = {
     return (data ?? []).map((row) => mapSupabaseBook(row as SupabaseBookRow))
   },
   
-  create: async (_ownerId: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) => {
+  create: async (ownerId: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) => {
     try {
       const { data: inserted, error } = await supabase
         .from('books')
@@ -193,6 +193,39 @@ export const booksApi = {
         .select('id')
         .single()
       if (error) throw error
+
+      const { data: inventoryRow, error: inventoryError } = await supabase
+        .from('inventory_books')
+        .insert({
+          user_id: ownerId,
+          book_id: inserted.id,
+          condition: 'good',
+          notes: data.description ?? null,
+          status: 'listed',
+        })
+        .select('id')
+        .single()
+      if (inventoryError) {
+        await supabase.from('books').delete().eq('id', inserted.id)
+        throw inventoryError
+      }
+
+      const { error: listingError } = await supabase
+        .from('book_listings')
+        .insert({
+          owner_id: ownerId,
+          inventory_book_id: inventoryRow.id,
+          condition: 'good',
+          image_cover_url: data.imageUrl ?? null,
+          asking_notes: data.description ?? null,
+          status: 'active',
+        })
+      if (listingError) {
+        await supabase.from('inventory_books').delete().eq('id', inventoryRow.id)
+        await supabase.from('books').delete().eq('id', inserted.id)
+        throw listingError
+      }
+
       return { id: inserted.id as string }
     } catch (error) {
       throw new ApiError(asErrorMessage(error), 500, error)
