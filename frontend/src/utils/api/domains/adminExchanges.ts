@@ -40,65 +40,27 @@ export function createAdminApi(
     getNGOs: () => donationsApi.getNGOs(),
 
     createNGO: async (data: CreateNGORequest): Promise<NGOResponse> => {
-      const { data: created, error } = await supabase
-        .from('ngos')
-        .insert({
-          name: data.name,
-          description: data.description ?? null,
-          contact_email: data.contactEmail ?? null,
-          contact_phone: data.contactPhone ?? null,
-          website: data.website ?? null,
-          verified: !!data.verified,
-        })
-        .select('*')
-        .single()
-      if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return {
-        id: created.id,
-        name: created.name,
-        description: created.description ?? null,
-        location: null,
-        verified: !!created.verified,
-        booksReceived: null,
-        categories: null,
-        contactEmail: created.contact_email ?? null,
-        contactPhone: created.contact_phone ?? null,
-        website: created.website ?? null,
-      }
+      throw new ApiError(
+        'NGO write operations are disabled in the client app. Use Supabase SQL editor/service role backend for admin writes.',
+        501,
+        { operation: 'createNGO', input: data }
+      )
     },
 
     updateNGO: async (ngoId: string, data: UpdateNGORequest): Promise<NGOResponse> => {
-      const { data: updated, error } = await supabase
-        .from('ngos')
-        .update({
-          name: data.name,
-          description: data.description,
-          contact_email: data.contactEmail,
-          contact_phone: data.contactPhone,
-          website: data.website,
-          verified: data.verified,
-        })
-        .eq('id', ngoId)
-        .select('*')
-        .single()
-      if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return {
-        id: updated.id,
-        name: updated.name,
-        description: updated.description ?? null,
-        location: null,
-        verified: !!updated.verified,
-        booksReceived: null,
-        categories: null,
-        contactEmail: updated.contact_email ?? null,
-        contactPhone: updated.contact_phone ?? null,
-        website: updated.website ?? null,
-      }
+      throw new ApiError(
+        'NGO write operations are disabled in the client app. Use Supabase SQL editor/service role backend for admin writes.',
+        501,
+        { operation: 'updateNGO', ngoId, input: data }
+      )
     },
 
     deleteNGO: async (ngoId: string) => {
-      const { error } = await supabase.from('ngos').delete().eq('id', ngoId)
-      if (error) throw new ApiError(asErrorMessage(error), 500, error)
+      throw new ApiError(
+        'NGO write operations are disabled in the client app. Use Supabase SQL editor/service role backend for admin writes.',
+        501,
+        { operation: 'deleteNGO', ngoId }
+      )
     },
 
     verifyNGO: async (ngoId: string) => adminApi.updateNGO(ngoId, { verified: true }),
@@ -143,7 +105,7 @@ export function createExchangesApi({ supabase, ApiError, asErrorMessage }: Deps)
     confirm: async (exchangeId: string, _userId?: string): Promise<ExchangeResponse> => {
       const { data, error } = await supabase.rpc('update_exchange_status', {
         p_exchange_id: exchangeId,
-        p_new_status: 'PENDING',
+        p_new_status: 'COMPLETED',
       })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
       return data as unknown as ExchangeResponse

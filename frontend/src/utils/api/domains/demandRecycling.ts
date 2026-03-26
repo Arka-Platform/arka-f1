@@ -52,6 +52,44 @@ export function createRecyclingApi({ supabase, ApiError, asErrorMessage }: Deps)
 }
 
 export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
+  const requestSelect = `
+    id,user_id,book_id,status,notes,matching_metadata,created_at,updated_at,cancelled_at,
+    books:book_id(id,title,author,genre,category,subcategory),
+    requester:user_id(id,email,first_name,last_name)
+  `
+
+  const mapRequestRow = (row: any): BookRequestResponse => {
+    const book = row?.books ?? {}
+    const requester = row?.requester ?? {}
+    return {
+      id: row.id,
+      requesterId: row.user_id ?? '',
+      requesterName: `${requester.first_name ?? ''} ${requester.last_name ?? ''}`.trim() || 'Reader',
+      requesterEmail: requester.email ?? null,
+      title: book.title ?? 'Unknown title',
+      author: book.author ?? 'Unknown author',
+      description: row.notes ?? null,
+      genre: book.genre ?? null,
+      category: book.category ?? null,
+      subcategory: book.subcategory ?? null,
+      isbn: null,
+      maxPrice: null,
+      preferredCondition: null,
+      urgency: null,
+      location: null,
+      additionalNotes: row.notes ?? null,
+      status: row.status ?? 'OPEN',
+      expiresAt: null,
+      fulfilledBy: null,
+      fulfilledByName: null,
+      fulfilledAt: row.status === 'FULFILLED' ? row.updated_at ?? null : null,
+      viewsCount: 0,
+      offersCount: 0,
+      createdAt: row.created_at ?? new Date().toISOString(),
+      updatedAt: row.updated_at ?? row.created_at ?? new Date().toISOString(),
+    }
+  }
+
   const demandApi = {
     createRequest: async (_requesterId: string, data: CreateBookRequestRequest): Promise<CreateRequestResponse> => {
       const { data: book, error: bookError } = await supabase
@@ -69,25 +107,29 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
         p_idempotency_key: crypto.randomUUID(),
       })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return { request: req as unknown as BookRequestResponse, matches: [], totalMatches: 0 }
+      return { request: mapRequestRow(req), matches: [], totalMatches: 0 }
     },
 
     getOpenRequests: async (): Promise<BookRequestResponse[]> => {
-      const { data, error } = await supabase.from('v_open_book_requests').select('*').order('created_at', { ascending: false })
+      const { data, error } = await supabase.from('v_open_book_requests').select(requestSelect).order('created_at', { ascending: false })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return (data ?? []) as unknown as BookRequestResponse[]
+      return (data ?? []).map(mapRequestRow)
     },
 
     getMyRequests: async (userId: string): Promise<BookRequestResponse[]> => {
-      const { data, error } = await supabase.from('book_requests').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+      const { data, error } = await supabase
+        .from('book_requests')
+        .select(requestSelect)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return (data ?? []) as unknown as BookRequestResponse[]
+      return (data ?? []).map(mapRequestRow)
     },
 
     getRequest: async (requestId: string): Promise<BookRequestResponse> => {
-      const { data, error } = await supabase.from('book_requests').select('*').eq('id', requestId).single()
+      const { data, error } = await supabase.from('book_requests').select(requestSelect).eq('id', requestId).single()
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return data as unknown as BookRequestResponse
+      return mapRequestRow(data)
     },
 
     searchRequests: async (query: string): Promise<BookRequestResponse[]> => {
@@ -95,22 +137,43 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
       if (!q) return demandApi.getOpenRequests()
       const { data, error } = await supabase
         .from('v_open_book_requests')
-        .select('*')
-        .or(`title.ilike.%${q}%,author.ilike.%${q}%,genre.ilike.%${q}%,category.ilike.%${q}%`)
+        .select(requestSelect)
         .order('created_at', { ascending: false })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return (data ?? []) as unknown as BookRequestResponse[]
+      const rows: BookRequestResponse[] = (data ?? []).map(mapRequestRow)
+      const needle = q.toLowerCase()
+      return rows.filter((row: BookRequestResponse) =>
+        [row.title, row.author, row.genre, row.category].filter(Boolean).join(' ').toLowerCase().includes(needle)
+      )
     },
 
     fulfillRequest: async (requestId: string, _sellerId: string, data: FulfillRequestRequest): Promise<BookRequestResponse> => {
-      const { data: updated, error } = await supabase
+      const { data: requestRow, error: requestError } = await supabase
         .from('book_requests')
-        .update({ status: 'FULFILLED', updated_at: new Date().toISOString(), matching_metadata: { offeredPrice: data.offeredPrice, condition: data.condition, notes: data.notes ?? null } })
+        .select('id')
         .eq('id', requestId)
-        .select('*')
         .single()
-      if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return updated as unknown as BookRequestResponse
+      if (requestError) throw new ApiError(asErrorMessage(requestError), 500, requestError)
+
+      const { data: book, error: bookError } = await supabase
+        .from('books')
+        .select('owner_id')
+        .eq('id', data.bookId)
+        .single()
+      if (bookError) throw new ApiError(asErrorMessage(bookError), 500, bookError)
+      if (!book.owner_id) throw new ApiError('Book owner missing', 400)
+
+      const { error: exchangeError } = await supabase.rpc('perform_exchange', {
+        p_seller_id: book.owner_id,
+        p_book_id: data.bookId,
+        p_request_id: requestRow.id,
+        p_gross_amount: Number(data.offeredPrice ?? 1),
+        p_platform_fee: 0,
+        p_idempotency_key: crypto.randomUUID(),
+      })
+      if (exchangeError) throw new ApiError(asErrorMessage(exchangeError), 500, exchangeError)
+
+      return demandApi.getRequest(requestId)
     },
 
     cancelRequest: async (requestId: string, _userId: string): Promise<BookRequestResponse> => {
@@ -129,14 +192,15 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
 
       let booksQuery = supabase
         .from('books')
-        .select('id,title,author,genre,credit_price,image_url,owner_id,status')
+        .select('id,title,author,genre,category,credit_price,owner_id,status')
         .eq('status', 'AVAILABLE')
         .limit(50)
 
-      if (req.title) booksQuery = booksQuery.ilike('title', `%${req.title}%`)
-      if (req.author) booksQuery = booksQuery.ilike('author', `%${req.author}%`)
-      if (req.genre) booksQuery = booksQuery.eq('genre', req.genre)
-      if (req.category) booksQuery = booksQuery.eq('category', req.category)
+      const requestBook = req.books ?? null
+      if (requestBook?.title) booksQuery = booksQuery.ilike('title', `%${requestBook.title}%`)
+      if (requestBook?.author) booksQuery = booksQuery.ilike('author', `%${requestBook.author}%`)
+      if (requestBook?.genre) booksQuery = booksQuery.eq('genre', requestBook.genre)
+      if (requestBook?.category) booksQuery = booksQuery.eq('category', requestBook.category)
       if (requesterId) booksQuery = booksQuery.neq('owner_id', requesterId)
 
       const { data: books, error: booksError } = await booksQuery
@@ -155,15 +219,15 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
       const matches = (books ?? []).map((b: any) => {
         let score = 60
         const reasons: string[] = []
-        if (req.title && String(b.title).toLowerCase() === String(req.title).toLowerCase()) {
+        if (requestBook?.title && String(b.title).toLowerCase() === String(requestBook.title).toLowerCase()) {
           score += 20
           reasons.push('Exact title match')
         }
-        if (req.author && String(b.author).toLowerCase() === String(req.author).toLowerCase()) {
+        if (requestBook?.author && String(b.author).toLowerCase() === String(requestBook.author).toLowerCase()) {
           score += 15
           reasons.push('Exact author match')
         }
-        if (req.genre && b.genre && String(req.genre).toLowerCase() === String(b.genre).toLowerCase()) {
+        if (requestBook?.genre && b.genre && String(requestBook.genre).toLowerCase() === String(b.genre).toLowerCase()) {
           score += 5
           reasons.push('Same genre')
         }
@@ -174,7 +238,7 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
           bookAuthor: b.author,
           bookGenre: b.genre ?? null,
           bookPrice: Number(b.credit_price ?? 0),
-          bookImageUrl: b.image_url ?? null,
+          bookImageUrl: null,
           sellerId: b.owner_id ?? '',
           sellerName: owner ? `${owner.first_name ?? ''} ${owner.last_name ?? ''}`.trim() || 'Seller' : 'Seller',
           matchScore: Math.min(score, 100),
@@ -195,34 +259,34 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
 
       let reqQuery = supabase
         .from('v_open_book_requests')
-        .select('*')
+        .select(requestSelect)
         .limit(50)
 
-      reqQuery = reqQuery.or(`title.ilike.%${book.title}%,author.ilike.%${book.author}%`)
-      if (sellerId) reqQuery = reqQuery.neq('requester_id', sellerId)
+      reqQuery = reqQuery.or(`notes.ilike.%${book.title}%,notes.ilike.%${book.author}%`)
+      if (sellerId) reqQuery = reqQuery.neq('user_id', sellerId)
       const { data: requests, error: reqError } = await reqQuery
       if (reqError) throw new ApiError(asErrorMessage(reqError), 500, reqError)
 
       const matches = (requests ?? []).map((r: any) => {
         let score = 60
         const reasons: string[] = []
-        if (String(r.title).toLowerCase() === String(book.title).toLowerCase()) {
+        if (String(r.books?.title ?? '').toLowerCase() === String(book.title ?? '').toLowerCase()) {
           score += 20
           reasons.push('Exact title match')
         }
-        if (String(r.author).toLowerCase() === String(book.author).toLowerCase()) {
+        if (String(r.books?.author ?? '').toLowerCase() === String(book.author ?? '').toLowerCase()) {
           score += 15
           reasons.push('Exact author match')
         }
-        if (r.genre && book.genre && String(r.genre).toLowerCase() === String(book.genre).toLowerCase()) {
+        if (r.books?.genre && book.genre && String(r.books.genre).toLowerCase() === String(book.genre).toLowerCase()) {
           score += 5
           reasons.push('Same genre')
         }
         return {
           requestId: r.id,
-          requestTitle: r.title,
-          requestAuthor: r.author,
-          requestGenre: r.genre ?? null,
+          requestTitle: r.books?.title ?? 'Unknown title',
+          requestAuthor: r.books?.author ?? 'Unknown author',
+          requestGenre: r.books?.genre ?? null,
           maxPrice: r.max_price ?? null,
           urgency: r.urgency ?? null,
           location: r.location ?? null,
@@ -281,12 +345,13 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
       if (!q) return []
       const { data, error } = await supabase
         .from('v_open_book_requests')
-        .select('*')
-        .or(`title.ilike.%${q}%,author.ilike.%${q}%`)
+        .select(requestSelect)
         .order('created_at', { ascending: false })
         .limit(limit)
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return (data ?? []) as unknown as BookRequestResponse[]
+      const rows: BookRequestResponse[] = (data ?? []).map(mapRequestRow)
+      const needle = q.toLowerCase()
+      return rows.filter((row: BookRequestResponse) => [row.title, row.author].join(' ').toLowerCase().includes(needle))
     },
 
     getRecentlyServedRequests: async (limit?: number): Promise<BookRequestResponse[]> => {
@@ -299,7 +364,7 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
       const [{ count: openCount, error: openError }, { count: completedCount, error: completedError }, { count: createdCount, error: createdError }] =
         await Promise.all([
           supabase.from('book_requests').select('*', { count: 'exact', head: true }).eq('status', 'OPEN'),
-          supabase.from('book_requests').select('*', { count: 'exact', head: true }).eq('status', 'COMPLETED').gte('updated_at', weekAgo),
+          supabase.from('book_requests').select('*', { count: 'exact', head: true }).eq('status', 'FULFILLED').gte('updated_at', weekAgo),
           supabase.from('book_requests').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo),
         ])
       if (openError || completedError || createdError) {
@@ -315,17 +380,19 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
     getMostRequestedBooks: async (limit: number = 10): Promise<Array<{ title: string; author: string; requestCount: number }>> => {
       const { data, error } = await supabase
         .from('book_requests')
-        .select('title,author')
+        .select('books:book_id(title,author)')
         .neq('status', 'CANCELLED')
         .limit(500)
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
 
       const freq = new Map<string, { title: string; author: string; requestCount: number }>()
       ;(data ?? []).forEach((r: any) => {
-        const key = `${r.title}::${r.author}`
+        const title = r.books?.title ?? 'Unknown title'
+        const author = r.books?.author ?? 'Unknown author'
+        const key = `${title}::${author}`
         const existing = freq.get(key)
         if (existing) existing.requestCount += 1
-        else freq.set(key, { title: r.title, author: r.author, requestCount: 1 })
+        else freq.set(key, { title, author, requestCount: 1 })
       })
 
       return Array.from(freq.values())

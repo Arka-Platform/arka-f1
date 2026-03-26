@@ -631,12 +631,9 @@ export const donationsApi = {
     } as DonationResponse
   },
   cancelDonation: async (donationId: string) => {
-    const { data, error } = await supabase
-      .from('donations')
-      .update({ status: 'CANCELLED' })
-      .eq('id', donationId)
-      .select('*')
-      .single()
+    const { data, error } = await supabase.rpc('cancel_donation', {
+      p_donation_id: donationId,
+    })
     if (error) throw new ApiError(asErrorMessage(error), 500, error)
     return {
       id: data.id,

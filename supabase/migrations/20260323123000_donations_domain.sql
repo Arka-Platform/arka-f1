@@ -63,7 +63,9 @@ BEGIN
     END IF;
 
     IF NOT v_is_service AND NEW.status <> OLD.status THEN
-        RAISE EXCEPTION 'Only service role can transition donation status';
+        IF NOT (OLD.status = 'CREATED' AND NEW.status = 'CANCELLED' AND NEW.user_id = auth.uid()) THEN
+            RAISE EXCEPTION 'Only service role can transition donation status';
+        END IF;
     END IF;
 
     IF v_is_service AND NEW.status <> OLD.status THEN
@@ -143,13 +145,51 @@ $$;
 REVOKE ALL ON FUNCTION public.create_donation(UUID, INTEGER, TEXT, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.create_donation(UUID, INTEGER, TEXT, TEXT) TO authenticated;
 
+CREATE OR REPLACE FUNCTION public.cancel_donation(
+    p_donation_id UUID
+)
+RETURNS public.donations
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_uid UUID := auth.uid();
+    v_row public.donations%ROWTYPE;
+BEGIN
+    IF v_uid IS NULL THEN
+        RAISE EXCEPTION 'Not authenticated';
+    END IF;
+
+    UPDATE public.donations
+    SET status = 'CANCELLED'
+    WHERE id = p_donation_id
+      AND user_id = v_uid
+      AND status = 'CREATED'
+    RETURNING * INTO v_row;
+
+    IF v_row.id IS NULL THEN
+        SELECT * INTO v_row
+        FROM public.donations
+        WHERE id = p_donation_id
+          AND user_id = v_uid
+        LIMIT 1;
+    END IF;
+
+    RETURN v_row;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.cancel_donation(UUID) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.cancel_donation(UUID) TO authenticated;
+
 ALTER TABLE public.ngos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ngos FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.donations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.donations FORCE ROW LEVEL SECURITY;
 
 GRANT SELECT ON public.ngos TO authenticated, anon;
-GRANT SELECT, INSERT ON public.donations TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.donations TO authenticated;
 
 DO $$
 BEGIN
@@ -177,6 +217,16 @@ BEGIN
         CREATE POLICY donations_insert_own
             ON public.donations
             FOR INSERT
+            WITH CHECK (user_id = auth.uid());
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'donations' AND policyname = 'donations_update_own'
+    ) THEN
+        CREATE POLICY donations_update_own
+            ON public.donations
+            FOR UPDATE
+            USING (user_id = auth.uid())
             WITH CHECK (user_id = auth.uid());
     END IF;
 END $$;
