@@ -123,6 +123,8 @@ type SupabaseBookRow = {
   credit_price: number | string
   owner_id: string | null
   status: string
+  image_url?: string | null
+  thumbnail_url?: string | null
 }
 
 function mapSupabaseBook(row: SupabaseBookRow): BookResponse {
@@ -140,10 +142,8 @@ function mapSupabaseBook(row: SupabaseBookRow): BookResponse {
     isbn: null,
     publisher: null,
     publicationYear: null,
-    // `public.books` does not store images. Images belong to listings (`book_listings.image_cover_url`)
-    // or `listing_images.image_url` in the marketplace domain.
-    imageUrl: null,
-    thumbnailUrl: null,
+    imageUrl: row.image_url ?? null,
+    thumbnailUrl: row.thumbnail_url ?? null,
     averageRating: null,
     ratingsCount: null,
   }
@@ -160,7 +160,7 @@ function asErrorMessage(error: unknown): string {
 export const booksApi = {
   list: async (params?: { search?: string; genre?: string; subcategory?: string; page?: number; size?: number }) => {
     const select =
-      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status'
+      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status,image_url,thumbnail_url'
 
     let query = supabase.from('books').select(select).order('created_at', { ascending: false })
     if (params?.search) query = query.ilike('title', `%${params.search}%`)
@@ -189,6 +189,8 @@ export const booksApi = {
           genre: data.genre ?? null,
           credit_price: data.price,
           status: 'AVAILABLE',
+          image_url: data.imageUrl ?? null,
+          thumbnail_url: data.imageUrl ?? null,
         })
         .select('id')
         .single()
@@ -234,7 +236,7 @@ export const booksApi = {
   
   getById: async (id: string) => {
     const select =
-      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status'
+      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status,image_url,thumbnail_url'
     const { data, error } = await supabase.from('books').select(select).eq('id', id).single()
     if (error) throw new ApiError(asErrorMessage(error), 500, error)
     return mapSupabaseBook(data as SupabaseBookRow)
@@ -242,7 +244,7 @@ export const booksApi = {
   
   update: async (id: string, data: { title: string; author: string; description?: string; genre?: string; price: number; imageUrl?: string }) => {
     const select =
-      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status'
+      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status,image_url,thumbnail_url'
     const { data: updated, error } = await supabase
       .from('books')
       .update({
@@ -252,6 +254,7 @@ export const booksApi = {
         genre: data.genre ?? null,
         credit_price: data.price,
         updated_at: new Date().toISOString(),
+        ...(data.imageUrl ? { image_url: data.imageUrl, thumbnail_url: data.imageUrl } : {}),
       })
       .eq('id', id)
       .select(select)
@@ -272,7 +275,7 @@ export const booksApi = {
   
   updateStatus: async (id: string, status: string) => {
     const select =
-      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status'
+      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status,image_url,thumbnail_url'
     const { data, error } = await supabase
       .from('books')
       .update({ status, updated_at: new Date().toISOString() })
@@ -285,7 +288,7 @@ export const booksApi = {
   
   getMyBooks: async (ownerId: string) => {
     const select =
-      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status'
+      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status,image_url,thumbnail_url'
     const { data, error } = await supabase
       .from('books')
       .select(select)
