@@ -4,14 +4,14 @@ import dynamic from 'next/dynamic'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-import { listingsApi, type ListingResponse } from '../../../utils/api'
-import ListingActionOverlay from '../../../components/books/overlay/ListingActionOverlay'
+import { booksApi, type BookResponse } from '../../../utils/api'
+import BookActionOverlay from '../../../components/books/overlay/BookActionOverlay'
 
-const ListingsBrowseScene = dynamic(() => import('../../../components/books/three/ListingsBrowseScene'), { ssr: false })
+const BooksBrowseScene = dynamic(() => import('../../../components/books/three/BooksBrowseScene'), { ssr: false })
 
 export default function ThreeBrowsePage() {
   const router = useRouter()
-  const [listings, setListings] = useState<ListingResponse[]>([])
+  const [books, setBooks] = useState<BookResponse[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -22,12 +22,12 @@ export default function ThreeBrowsePage() {
       setLoading(true)
       setErrorMsg(null)
       try {
-        const data = await listingsApi.listActive({ limit: 12 })
+        const data = await booksApi.list({ page: 0, size: 12 })
         if (!mounted) return
-        setListings(data)
+        setBooks(data)
       } catch (e: any) {
         if (!mounted) return
-        setErrorMsg(e?.message || 'Failed to load listings')
+        setErrorMsg(e?.message || 'Failed to load books')
       } finally {
         if (!mounted) return
         setLoading(false)
@@ -39,14 +39,14 @@ export default function ThreeBrowsePage() {
     }
   }, [])
 
-  const activeListing = useMemo(() => listings.find((l) => l.listingId === activeId) ?? null, [listings, activeId])
-  const layoutId = activeId ? `listing-${activeId}` : 'listing-none'
+  const activeBook = useMemo(() => books.find((b) => b.id === activeId) ?? null, [books, activeId])
+  const layoutId = activeId ? `book-${activeId}` : 'book-none'
 
   return (
     <div className="relative h-screen overflow-hidden bg-[#070A12]">
       {loading ? (
         <div className="absolute inset-0 z-[1] grid place-items-center text-white/80">
-          Loading listings…
+          Loading books…
         </div>
       ) : null}
       {errorMsg ? (
@@ -54,26 +54,26 @@ export default function ThreeBrowsePage() {
           {errorMsg}
         </div>
       ) : null}
-      {!loading && !errorMsg && listings.length === 0 ? (
+      {!loading && !errorMsg && books.length === 0 ? (
         <div className="absolute inset-0 z-[2] grid place-items-center text-center text-white/80">
           <div>
-            <p className="text-base font-medium">No active listings yet.</p>
-            <p className="mt-2 text-sm text-white/60">Add inventory and publish a listing to see books here.</p>
+            <p className="text-base font-medium">No books yet.</p>
+            <p className="mt-2 text-sm text-white/60">Add a book to see it here.</p>
           </div>
         </div>
       ) : null}
 
-      <ListingsBrowseScene
-        listings={listings}
-        activeListingId={activeId}
+      <BooksBrowseScene
+        books={books}
+        activeBookId={activeId}
         onHoverChange={setActiveId}
-        onSelectListing={(listingId) => router.push(`/three/listings/${listingId}`)}
+        onSelectBook={(bookId) => router.push(`/books/${bookId}`)}
       />
 
-      <ListingActionOverlay
-        activeListing={activeListing}
+      <BookActionOverlay
+        activeBook={activeBook}
         layoutId={layoutId}
-        onSelectDetail={(listingId) => router.push(`/three/listings/${listingId}`)}
+        onSelectDetail={(bookId) => router.push(`/books/${bookId}`)}
       />
     </div>
   )
