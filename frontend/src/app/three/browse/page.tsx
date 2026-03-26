@@ -54,6 +54,14 @@ export default function ThreeBrowsePage() {
           {errorMsg}
         </div>
       ) : null}
+      {!loading && !errorMsg && listings.length === 0 ? (
+        <div className="absolute inset-0 z-[2] grid place-items-center text-center text-white/80">
+          <div>
+            <p className="text-base font-medium">No active listings yet.</p>
+            <p className="mt-2 text-sm text-white/60">Add inventory and publish a listing to see books here.</p>
+          </div>
+        </div>
+      ) : null}
 
       <ListingsBrowseScene
         listings={listings}

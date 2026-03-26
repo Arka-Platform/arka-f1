@@ -52,15 +52,9 @@ export function createRecyclingApi({ supabase, ApiError, asErrorMessage }: Deps)
 }
 
 export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
-  const requestSelect = `
-    id,user_id,book_id,status,notes,matching_metadata,created_at,updated_at,cancelled_at,
-    books:book_id(id,title,author,genre,category,subcategory),
-    requester:user_id(id,email,first_name,last_name)
-  `
+  const requestSelect = 'id,user_id,book_id,status,notes,matching_metadata,created_at,updated_at,cancelled_at'
 
-  const mapRequestRow = (row: any): BookRequestResponse => {
-    const book = row?.books ?? {}
-    const requester = row?.requester ?? {}
+  const mapRequestRow = (row: any, book: any, requester: any): BookRequestResponse => {
     return {
       id: row.id,
       requesterId: row.user_id ?? '',
@@ -90,6 +84,28 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
     }
   }
 
+  const hydrateRequests = async (rows: any[]): Promise<BookRequestResponse[]> => {
+    const bookIds = Array.from(new Set((rows ?? []).map((row: any) => row.book_id).filter(Boolean)))
+    const userIds = Array.from(new Set((rows ?? []).map((row: any) => row.user_id).filter(Boolean)))
+
+    const [booksResult, usersResult] = await Promise.all([
+      bookIds.length > 0
+        ? supabase.from('books').select('id,title,author,genre,category,subcategory').in('id', bookIds)
+        : Promise.resolve({ data: [], error: null }),
+      userIds.length > 0
+        ? supabase.from('users').select('id,email,first_name,last_name').in('id', userIds)
+        : Promise.resolve({ data: [], error: null }),
+    ])
+
+    if (booksResult.error) throw new ApiError(asErrorMessage(booksResult.error), 500, booksResult.error)
+    if (usersResult.error) throw new ApiError(asErrorMessage(usersResult.error), 500, usersResult.error)
+
+    const booksById = new Map((booksResult.data ?? []).map((book: any) => [book.id, book]))
+    const usersById = new Map((usersResult.data ?? []).map((user: any) => [user.id, user]))
+
+    return (rows ?? []).map((row: any) => mapRequestRow(row, booksById.get(row.book_id) ?? {}, usersById.get(row.user_id) ?? {}))
+  }
+
   const demandApi = {
     createRequest: async (_requesterId: string, data: CreateBookRequestRequest): Promise<CreateRequestResponse> => {
       const { data: book, error: bookError } = await supabase
@@ -107,13 +123,14 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
         p_idempotency_key: crypto.randomUUID(),
       })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return { request: mapRequestRow(req), matches: [], totalMatches: 0 }
+      const [request] = await hydrateRequests([req])
+      return { request, matches: [], totalMatches: 0 }
     },
 
     getOpenRequests: async (): Promise<BookRequestResponse[]> => {
       const { data, error } = await supabase.from('v_open_book_requests').select(requestSelect).order('created_at', { ascending: false })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return (data ?? []).map(mapRequestRow)
+      return hydrateRequests(data ?? [])
     },
 
     getMyRequests: async (userId: string): Promise<BookRequestResponse[]> => {
@@ -123,13 +140,14 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return (data ?? []).map(mapRequestRow)
+      return hydrateRequests(data ?? [])
     },
 
     getRequest: async (requestId: string): Promise<BookRequestResponse> => {
       const { data, error } = await supabase.from('book_requests').select(requestSelect).eq('id', requestId).single()
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return mapRequestRow(data)
+      const [request] = await hydrateRequests([data])
+      return request
     },
 
     searchRequests: async (query: string): Promise<BookRequestResponse[]> => {
@@ -140,7 +158,7 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
         .select(requestSelect)
         .order('created_at', { ascending: false })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      const rows: BookRequestResponse[] = (data ?? []).map(mapRequestRow)
+      const rows = await hydrateRequests(data ?? [])
       const needle = q.toLowerCase()
       return rows.filter((row: BookRequestResponse) =>
         [row.title, row.author, row.genre, row.category].filter(Boolean).join(' ').toLowerCase().includes(needle)
@@ -190,13 +208,20 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
         .single()
       if (reqError) throw new ApiError(asErrorMessage(reqError), 500, reqError)
 
+      const { data: reqBook, error: reqBookError } = await supabase
+        .from('books')
+        .select('id,title,author,genre,category')
+        .eq('id', req.book_id)
+        .maybeSingle()
+      if (reqBookError) throw new ApiError(asErrorMessage(reqBookError), 500, reqBookError)
+
       let booksQuery = supabase
         .from('books')
         .select('id,title,author,genre,category,credit_price,owner_id,status')
         .eq('status', 'AVAILABLE')
         .limit(50)
 
-      const requestBook = req.books ?? null
+      const requestBook = reqBook ?? null
       if (requestBook?.title) booksQuery = booksQuery.ilike('title', `%${requestBook.title}%`)
       if (requestBook?.author) booksQuery = booksQuery.ilike('author', `%${requestBook.author}%`)
       if (requestBook?.genre) booksQuery = booksQuery.eq('genre', requestBook.genre)
@@ -266,31 +291,32 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
       if (sellerId) reqQuery = reqQuery.neq('user_id', sellerId)
       const { data: requests, error: reqError } = await reqQuery
       if (reqError) throw new ApiError(asErrorMessage(reqError), 500, reqError)
+      const hydratedRequests = await hydrateRequests(requests ?? [])
 
-      const matches = (requests ?? []).map((r: any) => {
+      const matches = hydratedRequests.map((r: BookRequestResponse) => {
         let score = 60
         const reasons: string[] = []
-        if (String(r.books?.title ?? '').toLowerCase() === String(book.title ?? '').toLowerCase()) {
+        if (String(r.title ?? '').toLowerCase() === String(book.title ?? '').toLowerCase()) {
           score += 20
           reasons.push('Exact title match')
         }
-        if (String(r.books?.author ?? '').toLowerCase() === String(book.author ?? '').toLowerCase()) {
+        if (String(r.author ?? '').toLowerCase() === String(book.author ?? '').toLowerCase()) {
           score += 15
           reasons.push('Exact author match')
         }
-        if (r.books?.genre && book.genre && String(r.books.genre).toLowerCase() === String(book.genre).toLowerCase()) {
+        if (r.genre && book.genre && String(r.genre).toLowerCase() === String(book.genre).toLowerCase()) {
           score += 5
           reasons.push('Same genre')
         }
         return {
           requestId: r.id,
-          requestTitle: r.books?.title ?? 'Unknown title',
-          requestAuthor: r.books?.author ?? 'Unknown author',
-          requestGenre: r.books?.genre ?? null,
-          maxPrice: r.max_price ?? null,
+          requestTitle: r.title ?? 'Unknown title',
+          requestAuthor: r.author ?? 'Unknown author',
+          requestGenre: r.genre ?? null,
+          maxPrice: r.maxPrice ?? null,
           urgency: r.urgency ?? null,
           location: r.location ?? null,
-          viewsCount: Number(r.views_count ?? 0),
+          viewsCount: Number(r.viewsCount ?? 0),
           matchScore: Math.min(score, 100),
           matchReasons: reasons.length > 0 ? reasons : ['Similar request'],
         } as RequestMatchResponse
@@ -349,7 +375,7 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
         .order('created_at', { ascending: false })
         .limit(limit)
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      const rows: BookRequestResponse[] = (data ?? []).map(mapRequestRow)
+      const rows = await hydrateRequests(data ?? [])
       const needle = q.toLowerCase()
       return rows.filter((row: BookRequestResponse) => [row.title, row.author].join(' ').toLowerCase().includes(needle))
     },
@@ -380,15 +406,25 @@ export function createDemandApi({ supabase, ApiError, asErrorMessage }: Deps) {
     getMostRequestedBooks: async (limit: number = 10): Promise<Array<{ title: string; author: string; requestCount: number }>> => {
       const { data, error } = await supabase
         .from('book_requests')
-        .select('books:book_id(title,author)')
+        .select('book_id')
         .neq('status', 'CANCELLED')
         .limit(500)
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
 
+      const bookIds = Array.from(new Set((data ?? []).map((r: any) => r.book_id).filter(Boolean)))
+      const { data: books, error: booksError } = bookIds.length
+        ? await supabase.from('books').select('id,title,author').in('id', bookIds)
+        : { data: [], error: null as any }
+      if (booksError) throw new ApiError(asErrorMessage(booksError), 500, booksError)
+      const booksById = new Map<string, { title?: string | null; author?: string | null }>(
+        (books ?? []).map((row: any) => [row.id, row])
+      )
+
       const freq = new Map<string, { title: string; author: string; requestCount: number }>()
       ;(data ?? []).forEach((r: any) => {
-        const title = r.books?.title ?? 'Unknown title'
-        const author = r.books?.author ?? 'Unknown author'
+        const bookRow = booksById.get(r.book_id)
+        const title = bookRow?.title ?? 'Unknown title'
+        const author = bookRow?.author ?? 'Unknown author'
         const key = `${title}::${author}`
         const existing = freq.get(key)
         if (existing) existing.requestCount += 1

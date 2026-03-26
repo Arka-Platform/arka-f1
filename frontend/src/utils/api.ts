@@ -371,6 +371,7 @@ export const listingsApi = {
     if (listingsError) throw new ApiError(asErrorMessage(listingsError), 500, listingsError)
 
     const listingRows = (listings ?? []) as unknown as SupabaseBookListingRow[]
+    if (listingRows.length === 0) return []
     const inventoryIds = listingRows.map((l) => l.inventory_book_id)
 
     const { data: inventory, error: inventoryError } = await supabase
@@ -380,6 +381,7 @@ export const listingsApi = {
 
     if (inventoryError) throw new ApiError(asErrorMessage(inventoryError), 500, inventoryError)
     const inventoryRows = (inventory ?? []) as unknown as SupabaseInventoryBookRow[]
+    if (inventoryRows.length === 0) return []
     const inventoryById = new Map(inventoryRows.map((r) => [r.id, r]))
 
     const bookIds = Array.from(new Set(inventoryRows.map((r) => r.book_id)))
