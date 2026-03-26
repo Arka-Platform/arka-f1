@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useToast } from '../../../contexts/ToastContext'
 import Input from '../../../components/shared/Input/Input'
@@ -8,7 +8,7 @@ import { adminApi, NGOResponse, CreateNGORequest, UpdateNGORequest } from '../..
 import styles from './AdminNGOs.module.css'
 
 const AdminNGOs: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { isAuthenticated, isLoading, user, logout } = useAuth()
   const { success, error: showError } = useToast()
   const [ngos, setNgos] = useState<NGOResponse[]>([])
@@ -30,16 +30,16 @@ const AdminNGOs: React.FC = () => {
   useEffect(() => {
     if (isLoading) return
     if (!isAuthenticated) {
-      navigate('/admin/login')
+      router.replace('/admin/login')
       return
     }
     if (!user?.isAdmin) {
       showError('Admin access denied')
-      navigate('/home')
+      router.replace('/home')
       return
     }
     loadNGOs()
-  }, [isAuthenticated, isLoading, user?.isAdmin])
+  }, [isAuthenticated, isLoading, router, showError, user?.isAdmin])
 
   const loadNGOs = async () => {
     try {
@@ -48,7 +48,7 @@ const AdminNGOs: React.FC = () => {
       setNgos(data)
     } catch (err: any) {
       if (err.message?.includes('401') || err.message?.includes('Unauthorized')) {
-        navigate('/admin/login')
+        router.replace('/admin/login')
       } else {
         showError(err.message || 'Failed to load NGOs')
       }
@@ -59,7 +59,7 @@ const AdminNGOs: React.FC = () => {
 
   const handleLogout = async () => {
     await logout()
-    navigate('/admin/login')
+    router.replace('/admin/login')
   }
 
   const resetForm = () => {
@@ -186,7 +186,7 @@ const AdminNGOs: React.FC = () => {
         <div className={styles.headerActions}>
           <Button
             variant="secondary"
-            onClick={() => navigate('/admin/shipments')}
+            onClick={() => router.push('/admin/shipments')}
           >
             Shipments
           </Button>

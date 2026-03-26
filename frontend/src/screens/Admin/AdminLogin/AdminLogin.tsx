@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useToast } from '../../../contexts/ToastContext'
 import Input from '../../../components/shared/Input/Input'
@@ -8,7 +8,7 @@ import { adminApi } from '../../../utils/api'
 import styles from './AdminLogin.module.css'
 
 const AdminLogin: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { refreshUser } = useAuth()
   const { success, error: showError } = useToast()
   const [email, setEmail] = useState('')
@@ -29,7 +29,7 @@ const AdminLogin: React.FC = () => {
       await refreshUser()
       
       success('Admin login successful')
-      navigate('/admin/ngos')
+      router.push('/admin/ngos')
     } catch (err: any) {
       showError(err.message || 'Invalid admin credentials')
     } finally {

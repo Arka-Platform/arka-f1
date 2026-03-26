@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { booksApi, bookshelfApi, exchangesApi, wishlistApi, type BookResponse } from '../../utils/api'
@@ -7,8 +8,9 @@ import Button from '../../components/shared/Button/Button'
 import styles from './BookDetails.module.css'
 
 const BookDetails: React.FC = () => {
-  const { bookId } = useParams<{ bookId: string }>()
-  const navigate = useNavigate()
+  const router = useRouter()
+  const params = useParams<{ bookId?: string }>()
+  const bookId = params?.bookId
   const { user } = useAuth()
   const { success, error: showError } = useToast()
   const [book, setBook] = useState<BookResponse | null>(null)
@@ -40,7 +42,7 @@ const BookDetails: React.FC = () => {
   const requireAuth = () => {
     if (!user?.id) {
       showError('Please log in to continue')
-      navigate('/login')
+      router.push('/login')
       return false
     }
     return true
@@ -78,7 +80,7 @@ const BookDetails: React.FC = () => {
       setSubmitting(true)
       await exchangesApi.create({ bookId: book.id }, user!.id)
       success('Swap request sent successfully')
-      navigate('/exchanges/my')
+      router.push('/exchanges/my')
     } catch (err: any) {
       showError(err.message || 'Failed to send swap request')
     } finally {
@@ -98,7 +100,7 @@ const BookDetails: React.FC = () => {
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.breadcrumbs}>
-          <Link to="/browse" className={styles.crumb}>Browse</Link>
+          <Link href="/browse" className={styles.crumb}>Browse</Link>
           <span className={styles.divider}>/</span>
           <span className={styles.current}>{book.title}</span>
         </div>

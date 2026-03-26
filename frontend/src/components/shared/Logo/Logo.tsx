@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import styles from './Logo.module.css'
 
 interface LogoProps {
@@ -11,7 +11,7 @@ interface LogoProps {
 
 const Logo: React.FC<LogoProps> = ({ showTagline = false, size = 'medium' }) => {
   return (
-    <Link to="/home" className={styles.logoLink}>
+    <Link href="/home" className={styles.logoLink}>
       <div className={`${styles.logoContainer} ${styles[size]}`}>
         <svg
           viewBox="0 0 200 200"

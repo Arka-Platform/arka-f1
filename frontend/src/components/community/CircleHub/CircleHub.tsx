@@ -1,13 +1,13 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { communityApi, CommunityCircleResponse } from '../../../utils/api'
 import { useToast } from '../../../contexts/ToastContext'
 import styles from './CircleHub.module.css'
 
 const CircleHub: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { error: showError } = useToast()
   const [circles, setCircles] = useState<CommunityCircleResponse[]>([])
   const [loading, setLoading] = useState(true)
@@ -30,7 +30,7 @@ const CircleHub: React.FC = () => {
   }, [showError])
 
   const handleCircleClick = (circleId: string) => {
-    navigate(`/circles/${circleId}`)
+    router.push(`/circles/${circleId}`)
   }
 
   if (loading) {

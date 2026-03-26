@@ -1,5 +1,5 @@
 import React, { useId, useRef, useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import BookCard, { Book } from '../../components/shared/BookCard/BookCard'
@@ -278,7 +278,7 @@ const BooksMarketplace: React.FC = () => {
   const { user, register } = useAuth()
   const { success, error: showError } = useToast()
   const { addToCart } = useCart()
-  const [searchParams] = useSearchParams()
+  const searchParams = useSearchParams()
   
   // Book browsing state
   const searchQuery = searchParams.get('search') || searchParams.get('q') || ''

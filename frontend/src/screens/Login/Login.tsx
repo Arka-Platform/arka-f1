@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { getOtpCooldownRemainingSeconds, markOtpSentNow } from '../../utils/otpRateLimit'
@@ -8,8 +9,8 @@ import Button from '../../components/shared/Button/Button'
 import styles from './Login.module.css'
 
 const Login: React.FC = () => {
-  const location = useLocation()
-  const navigate = useNavigate()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { login, loginWithPhone, loginWithEmailOtp, loginWithGoogle, isAuthenticated, isLoading } = useAuth()
   const { success, error: showError } = useToast()
 
@@ -27,14 +28,14 @@ const Login: React.FC = () => {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) navigate('/home')
-  }, [isAuthenticated, navigate])
+    if (isAuthenticated) router.replace('/home')
+  }, [isAuthenticated, router])
 
   useEffect(() => {
-    const prefill = (location.state as { prefillEmailOrPhone?: string } | null)?.prefillEmailOrPhone
+    const prefill = searchParams.get('prefill')
     if (!prefill) return
     setFormData((prev) => ({ ...prev, emailOrPhone: prefill }))
-  }, [location.state])
+  }, [searchParams])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -72,9 +73,7 @@ const Login: React.FC = () => {
         await loginWithPhone(formData.emailOrPhone)
         markOtpSentNow('phone', formData.emailOrPhone)
         success('OTP sent to your phone!')
-        navigate('/otp-verification', {
-          state: { channel: 'phone', value: formData.emailOrPhone },
-        })
+        router.push(`/otp-verification?channel=phone&value=${encodeURIComponent(formData.emailOrPhone)}`)
       } else {
         if (formData.password.trim()) {
           await login(formData.emailOrPhone, formData.password)
@@ -163,7 +162,7 @@ const Login: React.FC = () => {
 
             <p className={styles.signupText}>
               Don't have an account?{' '}
-              <Link to="/register" className={styles.signupLink}>
+              <Link href="/register" className={styles.signupLink}>
                 Sign up
               </Link>
             </p>

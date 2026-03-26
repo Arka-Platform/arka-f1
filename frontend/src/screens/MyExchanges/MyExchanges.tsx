@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { exchangesApi, ExchangeResponse } from '../../utils/api'
@@ -7,7 +7,7 @@ import Button from '../../components/shared/Button/Button'
 import styles from './MyExchanges.module.css'
 
 const MyExchanges: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { success, error: showError } = useToast()
   const { user } = useAuth()
   const [exchanges, setExchanges] = useState<ExchangeResponse[]>([])
@@ -50,7 +50,7 @@ const MyExchanges: React.FC = () => {
   }
 
   const handleViewDetails = (exchangeId: string) => {
-    navigate(`/exchanges/${exchangeId}`)
+    router.push(`/exchanges/${exchangeId}`)
   }
 
   const getStatusColor = (status: string) => {
@@ -120,7 +120,7 @@ const MyExchanges: React.FC = () => {
         </div>
         <Button
           variant="primary"
-          onClick={() => navigate('/exchange')}
+          onClick={() => router.push('/exchange')}
           className={styles.browseButton}
         >
           Browse Books for Exchange
@@ -132,7 +132,7 @@ const MyExchanges: React.FC = () => {
       ) : filteredExchanges.length === 0 ? (
         <div className={styles.emptyState}>
           <p>No exchanges found.</p>
-          <Button variant="primary" onClick={() => navigate('/exchange')}>
+          <Button variant="primary" onClick={() => router.push('/exchange')}>
             Start an Exchange
           </Button>
         </div>

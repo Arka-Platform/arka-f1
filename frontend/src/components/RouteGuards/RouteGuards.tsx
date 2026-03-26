@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 
 interface GuardProps {
@@ -10,7 +10,15 @@ interface GuardProps {
 
 export const ProtectedRoute: React.FC<GuardProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth()
-  const location = useLocation()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  React.useEffect(() => {
+    if (isLoading) return
+    if (isAuthenticated) return
+    const next = encodeURIComponent(pathname || '/home')
+    router.replace(`/login?next=${next}`)
+  }, [isAuthenticated, isLoading, pathname, router])
 
   if (isLoading) {
     return (
@@ -20,14 +28,27 @@ export const ProtectedRoute: React.FC<GuardProps> = ({ children }) => {
     )
   }
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+    return null
   }
   return children
 }
 
 export const AdminRoute: React.FC<GuardProps> = ({ children }) => {
   const { isAuthenticated, isLoading, user } = useAuth()
-  const location = useLocation()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  React.useEffect(() => {
+    if (isLoading) return
+    if (!isAuthenticated) {
+      const next = encodeURIComponent(pathname || '/home')
+      router.replace(`/admin/login?next=${next}`)
+      return
+    }
+    if (!user?.isAdmin) {
+      router.replace('/home')
+    }
+  }, [isAuthenticated, isLoading, pathname, router, user?.isAdmin])
 
   if (isLoading) {
     return (
@@ -37,10 +58,10 @@ export const AdminRoute: React.FC<GuardProps> = ({ children }) => {
     )
   }
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace state={{ from: location.pathname }} />
+    return null
   }
   if (!user?.isAdmin) {
-    return <Navigate to="/home" replace />
+    return null
   }
   return children
 }

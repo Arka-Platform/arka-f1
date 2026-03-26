@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useRouter } from 'next/navigation'
 import { useToast } from '../../contexts/ToastContext'
 import { communityApi, CommunityCircleResponse, BookResponse } from '../../utils/api'
 import BookCard, { Book } from '../../components/shared/BookCard/BookCard'
@@ -8,8 +8,9 @@ import Button from '../../components/shared/Button/Button'
 import styles from './CircleDetail.module.css'
 
 const CircleDetail: React.FC = () => {
-  const { circleId } = useParams<{ circleId: string }>()
-  const navigate = useNavigate()
+  const params = useParams<{ circleId?: string }>()
+  const circleId = params?.circleId
+  const router = useRouter()
   const { error: showError } = useToast()
   const { addToCart } = useCart()
   const [circle, setCircle] = useState<CommunityCircleResponse | null>(null)
@@ -87,7 +88,7 @@ const CircleDetail: React.FC = () => {
         <div className={styles.container}>
           <div className={styles.error}>
             <p>Circle not found</p>
-            <Button variant="primary" onClick={() => navigate('/home')}>
+            <Button variant="primary" onClick={() => router.push('/home')}>
               Back to Home
             </Button>
           </div>
@@ -99,7 +100,7 @@ const CircleDetail: React.FC = () => {
   return (
     <div className={styles.circleDetail}>
       <div className={styles.container}>
-        <Button variant="outline" onClick={() => navigate('/home')} className={styles.backButton}>
+        <Button variant="outline" onClick={() => router.push('/home')} className={styles.backButton}>
           ← Back to Circles
         </Button>
 

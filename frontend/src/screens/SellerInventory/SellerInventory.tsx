@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { booksApi, BookResponse, uploadApi } from '../../utils/api'
@@ -565,10 +565,10 @@ const SellerInventory: React.FC = () => {
               Sign in to your account or create a new one to get started.
             </p>
             <div className={styles.authPromptActions}>
-              <Link to="/login" className={styles.authButtonPrimary}>
+              <Link href="/login" className={styles.authButtonPrimary}>
                 Log In
               </Link>
-              <Link to="/register" className={styles.authButtonOutline}>
+              <Link href="/register" className={styles.authButtonOutline}>
                 Sign Up
               </Link>
             </div>

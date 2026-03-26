@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { useCart } from '../../contexts/CartContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { subscriptionsApi } from '../../utils/api'
@@ -49,7 +49,7 @@ const Cart: React.FC = () => {
           <h1 className={styles.title}>Your Cart</h1>
           <div className={styles.empty}>
             <p className={styles.emptyText}>Your cart is empty</p>
-            <Link to="/books">
+            <Link href="/books">
               <Button variant="primary">Browse Books</Button>
             </Link>
           </div>
@@ -161,7 +161,7 @@ const Cart: React.FC = () => {
                     <span>Cancel anytime</span>
                   </div>
                 </div>
-                <Link to="/subscriptions">
+                <Link href="/subscriptions">
                   <Button variant="secondary" fullWidth className={styles.subscriptionUpsellButton}>
                     View Plans
                   </Button>
@@ -184,12 +184,12 @@ const Cart: React.FC = () => {
                 <span>Total</span>
                 <span>₹{total.toFixed(2)}</span>
               </div>
-              <Link to="/order">
+              <Link href="/order">
                 <Button variant="primary" fullWidth className={styles.checkoutButton}>
                   Proceed to Checkout
                 </Button>
               </Link>
-              <Link to="/books" className={styles.continueShopping}>
+              <Link href="/books" className={styles.continueShopping}>
                 Continue Shopping
               </Link>
             </div>

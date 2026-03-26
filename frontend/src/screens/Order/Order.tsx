@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
 import { useToast } from '../../contexts/ToastContext'
@@ -10,7 +10,7 @@ import Button from '../../components/shared/Button/Button'
 import styles from './Order.module.css'
 
 const Order: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { user } = useAuth()
   const { items, getTotalPrice, clearCart } = useCart()
   const { success, error: showError } = useToast()
@@ -29,14 +29,14 @@ const Order: React.FC = () => {
 
   useEffect(() => {
     if (!user) {
-      navigate('/login')
+      router.replace('/login')
       return
     }
     if (items.length === 0) {
-      navigate('/cart')
+      router.replace('/cart')
       return
     }
-  }, [user, items, navigate])
+  }, [user, items, router])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -63,7 +63,7 @@ const Order: React.FC = () => {
       const order = await ordersApi.create(user.id, orderRequest)
       success('Order placed successfully!')
       clearCart()
-      navigate(`/tracking/${order.id}`)
+      router.push(`/tracking/${order.id}`)
     } catch (err: any) {
       showError(err.message || 'Failed to place order')
     } finally {
@@ -81,7 +81,7 @@ const Order: React.FC = () => {
         <div className={styles.mainContent}>
           {/* Header */}
           <div className={styles.header}>
-            <button className={styles.backButton} onClick={() => navigate('/cart')}>
+            <button className={styles.backButton} onClick={() => router.push('/cart')}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
@@ -239,7 +239,7 @@ const Order: React.FC = () => {
           <div className={styles.cartCard}>
             <div className={styles.cartHeader}>
               <h3 className={styles.cartTitle}>Your Cart</h3>
-              <button className={styles.editButton} onClick={() => navigate('/cart')}>
+              <button className={styles.editButton} onClick={() => router.push('/cart')}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />

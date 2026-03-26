@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { booksApi, exchangesApi, BookResponse } from '../../utils/api'
@@ -22,7 +22,7 @@ const genres = [
 ]
 
 const Exchange: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { success, error: showError } = useToast()
   const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
@@ -91,7 +91,7 @@ const Exchange: React.FC = () => {
   const handleExchangeRequest = async (bookId: string) => {
     if (!user?.id) {
       showError('Please login to request an exchange')
-      navigate('/login')
+      router.push('/login')
       return
     }
 
@@ -99,7 +99,7 @@ const Exchange: React.FC = () => {
       setExchangingBookId(bookId)
       await exchangesApi.create({ bookId }, user.id)
       success('Exchange request created successfully!')
-      navigate('/exchanges/my')
+      router.push('/exchanges/my')
     } catch (err: any) {
       showError(err.message || 'Failed to create exchange request')
       console.error('Error creating exchange:', err)
@@ -145,7 +145,7 @@ const Exchange: React.FC = () => {
         </Select>
         <Button
           variant="secondary"
-          onClick={() => navigate('/exchanges/my')}
+          onClick={() => router.push('/exchanges/my')}
           className={styles.myExchangesButton}
         >
           My Exchanges
@@ -184,7 +184,7 @@ const Exchange: React.FC = () => {
       ) : books.length === 0 ? (
         <div className={styles.emptyState}>
           <p>No books available for exchange at the moment.</p>
-          <Button variant="primary" onClick={() => navigate('/books')}>
+          <Button variant="primary" onClick={() => router.push('/books')}>
             Browse All Books
           </Button>
         </div>

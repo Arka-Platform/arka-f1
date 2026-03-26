@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useRouter } from 'next/navigation'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { exchangesApi, ExchangeResponse, trustScoreApi } from '../../utils/api'
@@ -8,8 +8,9 @@ import TrustScoreBadge from '../../components/shared/TrustScoreBadge/TrustScoreB
 import styles from './ExchangeDetail.module.css'
 
 const ExchangeDetail: React.FC = () => {
-  const { exchangeId } = useParams<{ exchangeId: string }>()
-  const navigate = useNavigate()
+  const params = useParams<{ exchangeId?: string }>()
+  const exchangeId = params?.exchangeId
+  const router = useRouter()
   const { success, error: showError } = useToast()
   const { user } = useAuth()
   const [exchange, setExchange] = useState<ExchangeResponse | null>(null)
@@ -53,12 +54,12 @@ const ExchangeDetail: React.FC = () => {
         setExchange(found)
       } else {
         showError('Exchange not found')
-        navigate('/exchanges/my')
+        router.push('/exchanges/my')
       }
     } catch (err) {
       showError('Failed to load exchange details')
       console.error('Error loading exchange:', err)
-      navigate('/exchanges/my')
+      router.push('/exchanges/my')
     } finally {
       setLoading(false)
     }
@@ -116,7 +117,7 @@ const ExchangeDetail: React.FC = () => {
       setProcessing(true)
       await exchangesApi.cancel(exchangeId, user.id)
       success('Exchange cancelled successfully')
-      navigate('/exchanges/my')
+      router.push('/exchanges/my')
     } catch (err: any) {
       showError(err.message || 'Failed to cancel exchange')
       setProcessing(false)
@@ -159,7 +160,7 @@ const ExchangeDetail: React.FC = () => {
       <div className={styles.exchangeDetail}>
         <div className={styles.emptyState}>
           <p>Exchange not found.</p>
-          <Button variant="primary" onClick={() => navigate('/exchanges/my')}>
+          <Button variant="primary" onClick={() => router.push('/exchanges/my')}>
             Back to My Exchanges
           </Button>
         </div>
@@ -172,7 +173,7 @@ const ExchangeDetail: React.FC = () => {
       <div className={styles.header}>
         <Button
           variant="secondary"
-          onClick={() => navigate('/exchanges/my')}
+          onClick={() => router.push('/exchanges/my')}
           className={styles.backButton}
         >
           ← Back to My Exchanges

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useToast } from '../../../contexts/ToastContext'
 import Button from '../../../components/shared/Button/Button'
@@ -21,7 +21,7 @@ const statusOptions: ShipmentStatus[] = [
 const defaultProviderChoices = ['india_post', 'rapido', 'porter', 'custom']
 
 const AdminShipments: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { isAuthenticated, isLoading, user } = useAuth()
   const { success, error: showError } = useToast()
 
@@ -52,16 +52,16 @@ const AdminShipments: React.FC = () => {
   useEffect(() => {
     if (isLoading) return
     if (!isAuthenticated) {
-      navigate('/admin/login')
+      router.replace('/admin/login')
       return
     }
     if (!user?.isAdmin) {
       showError('Admin access denied')
-      navigate('/home')
+      router.replace('/home')
       return
     }
     void loadShipments(activeStatusFilter)
-  }, [isAuthenticated, isLoading, user?.isAdmin, activeStatusFilter])
+  }, [activeStatusFilter, isAuthenticated, isLoading, router, showError, user?.isAdmin])
 
   const hydrateDrafts = (rows: ShipmentResponse[]) => {
     const map: Record<string, { provider_name: string; tracking_id: string; status: ShipmentStatus }> = {}
@@ -185,7 +185,7 @@ const AdminShipments: React.FC = () => {
           <h1 className={styles.title}>Manual Logistics</h1>
           <p className={styles.subtitle}>Create and manage shipments manually</p>
         </div>
-        <Button variant="secondary" onClick={() => navigate('/admin/ngos')}>
+        <Button variant="secondary" onClick={() => router.push('/admin/ngos')}>
           Back to Admin
         </Button>
       </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { useSearchParams, Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { usersApi, trustScoreApi } from '../../utils/api'
@@ -13,8 +14,8 @@ import styles from './Account.module.css'
 const Account: React.FC = () => {
   const { user, logout } = useAuth()
   const { success, error: showError } = useToast()
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<'profile' | 'settings' | 'orderPreferences'>('profile')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -75,7 +76,7 @@ const Account: React.FC = () => {
         showError('Your session has expired. Please log in again.')
         logout()
         setTimeout(() => {
-          navigate('/login')
+          router.push('/login')
         }, 2000)
       }
     } finally {
@@ -180,7 +181,7 @@ const Account: React.FC = () => {
         <div className={styles.container}>
           <div className={styles.authPrompt}>
             <p>Please log in to view your account.</p>
-            <Link to="/login" className={styles.loginButton}>Log In</Link>
+            <Link href="/login" className={styles.loginButton}>Log In</Link>
           </div>
         </div>
       </div>
@@ -233,10 +234,10 @@ const Account: React.FC = () => {
               >
                 Order Preferences
               </button>
-              <Link to="/subscriptions" className={styles.navLink}>
+              <Link href="/subscriptions" className={styles.navLink}>
                 Subscriptions
               </Link>
-              <Link to="/analytics" className={styles.navLink}>
+              <Link href="/analytics" className={styles.navLink}>
                 Analytics
               </Link>
             </nav>

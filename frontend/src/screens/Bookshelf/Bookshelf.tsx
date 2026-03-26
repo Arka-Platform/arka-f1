@@ -4,7 +4,7 @@ import { useToast } from '../../contexts/ToastContext'
 import { bookshelfApi, BookshelfItemResponse } from '../../utils/api'
 import styles from './Bookshelf.module.css'
 import Button from '../../components/shared/Button/Button'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 
 const Bookshelf: React.FC = () => {
   const { user } = useAuth()
@@ -53,7 +53,7 @@ const Bookshelf: React.FC = () => {
       <div className={styles.bookshelf}>
         <div className={styles.authPrompt}>
           <p>Please log in to view your bookshelf.</p>
-          <Link to="/login" className={styles.loginButton}>Log In</Link>
+          <Link href="/login" className={styles.loginButton}>Log In</Link>
         </div>
       </div>
     )
@@ -76,13 +76,13 @@ const Bookshelf: React.FC = () => {
             </svg>
           </div>
           <p>Your bookshelf is empty. Start adding books you own!</p>
-          <Link to="/books" className={styles.browseButton}>Browse Books</Link>
+          <Link href="/books" className={styles.browseButton}>Browse Books</Link>
         </div>
       ) : (
         <div className={styles.bookshelfGrid}>
           {bookshelf.map((item) => (
             <div key={item.id} className={styles.bookshelfItem}>
-              <Link to={`/books/${item.bookId}`} className={styles.bookImageWrapper}>
+              <Link href={`/books/${item.bookId}`} className={styles.bookImageWrapper}>
                 <img 
                   src={item.bookImageUrl || '/images/default-book.png'} 
                   alt={item.bookTitle} 
@@ -90,7 +90,7 @@ const Bookshelf: React.FC = () => {
                 />
               </Link>
               <div className={styles.bookDetails}>
-                <Link to={`/books/${item.bookId}`} className={styles.bookTitle}>{item.bookTitle}</Link>
+                <Link href={`/books/${item.bookId}`} className={styles.bookTitle}>{item.bookTitle}</Link>
                 <p className={styles.bookAuthor}>{item.bookAuthor}</p>
                 {item.notes && (
                   <p className={styles.bookNotes}>{item.notes}</p>

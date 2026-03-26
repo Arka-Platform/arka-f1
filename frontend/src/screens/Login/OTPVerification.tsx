@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import React, { useMemo, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { getOtpCooldownRemainingSeconds, markOtpSentNow } from '../../utils/otpRateLimit'
@@ -8,14 +8,12 @@ import Button from '../../components/shared/Button/Button'
 import styles from './Login.module.css'
 
 const OTPVerification: React.FC = () => {
-  const navigate = useNavigate()
-  const location = useLocation()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { verifyPhoneOtp, loginWithPhone } = useAuth()
   const { success, error: showError } = useToast()
-  const otpContext =
-    (location.state as { channel?: 'phone' | 'email'; value?: string } | null) ?? null
-  const channel = otpContext?.channel
-  const value = otpContext?.value ?? ''
+  const channel = useMemo(() => searchParams.get('channel') as 'phone' | 'email' | null, [searchParams])
+  const value = useMemo(() => searchParams.get('value') ?? '', [searchParams])
   const isPhone = channel === 'phone'
   const isEmail = channel === 'email'
 
@@ -26,13 +24,13 @@ const OTPVerification: React.FC = () => {
   const handleVerify = async () => {
     if (!isPhone && !isEmail) {
       showError('OTP context missing. Please try again.')
-      navigate('/login', { replace: true })
+      router.replace('/login')
       return
     }
 
     if (isEmail) {
       showError('Email sign-in uses magic link. Please open the link from your email inbox.')
-      navigate('/login', { replace: true })
+      router.replace('/login')
       return
     }
 
@@ -45,7 +43,7 @@ const OTPVerification: React.FC = () => {
     try {
       await verifyPhoneOtp(value, otp)
       success('Phone verified successfully!')
-      navigate('/home')
+      router.push('/home')
     } catch (err: unknown) {
       console.error(err)
       const message = err instanceof Error ? err.message : 'Failed to verify OTP'
@@ -58,7 +56,7 @@ const OTPVerification: React.FC = () => {
   const handleResend = async () => {
     if (!value) {
       showError('Missing destination. Please retry login.')
-      navigate('/login', { replace: true })
+      router.replace('/login')
       return
     }
 

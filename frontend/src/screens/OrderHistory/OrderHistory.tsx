@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { ordersApi, OrderResponse } from '../../utils/api'
@@ -7,7 +7,7 @@ import Button from '../../components/shared/Button/Button'
 import styles from './OrderHistory.module.css'
 
 const OrderHistory: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { user } = useAuth()
   const { error: showError } = useToast()
   const [orders, setOrders] = useState<OrderResponse[]>([])
@@ -80,7 +80,7 @@ const OrderHistory: React.FC = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate(`/tracking/${order.id}`)}
+                  onClick={() => router.push(`/tracking/${order.id}`)}
                 >
                   Track Order
                 </Button>
@@ -100,7 +100,7 @@ const OrderHistory: React.FC = () => {
             <p className={styles.emptyDescription}>
               Your order history will appear here once you place your first order.
             </p>
-            <Button variant="primary" onClick={() => navigate('/books')}>
+            <Button variant="primary" onClick={() => router.push('/books')}>
               Browse Books
             </Button>
           </div>

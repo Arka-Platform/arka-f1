@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import Providers from '../components/providers/Providers'
 import '../index.css'
 import RoutePresence from '../components/motion/RoutePresence'
+import AppShell from '../components/app/AppShell'
 
 export const metadata = {
   title: 'Arka',
@@ -13,7 +14,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body>
         <Providers>
-          <RoutePresence>{children}</RoutePresence>
+          <AppShell>
+            <RoutePresence>{children}</RoutePresence>
+          </AppShell>
         </Providers>
       </body>
     </html>

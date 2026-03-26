@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import styles from './FeatureSlider.module.css'
 
 interface Feature {
@@ -71,7 +71,7 @@ const features: Feature[] = [
 ]
 
 const FeatureSlider: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
 
@@ -86,7 +86,7 @@ const FeatureSlider: React.FC = () => {
   }, [isAutoPlaying])
 
   const handleFeatureClick = (link: string) => {
-    navigate(link)
+    router.push(link)
   }
 
   const goToSlide = (index: number) => {

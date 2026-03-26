@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import Input from '../../components/shared/Input/Input'
 import Select from '../../components/shared/Select/Select'
 import Button from '../../components/shared/Button/Button'
@@ -61,7 +61,7 @@ const WastePaperCard: React.FC<WastePaperCardProps> = ({ item, onSchedulePickup 
 }
 
 const Recycling: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [items, setItems] = useState<WastePaperResponse[]>([])
@@ -162,7 +162,7 @@ const Recycling: React.FC = () => {
               </div>
               <div className={styles.itemsGrid}>
                 {items.map((item) => (
-                  <WastePaperCard key={item.id} item={item} onSchedulePickup={() => navigate(`/order?recycling=${item.id}`)} />
+                  <WastePaperCard key={item.id} item={item} onSchedulePickup={() => router.push(`/order?recycling=${item.id}`)} />
                 ))}
               </div>
             </>

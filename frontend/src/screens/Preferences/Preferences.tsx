@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useToast } from '../../contexts/ToastContext'
 import Button from '../../components/shared/Button/Button'
 import Select from '../../components/shared/Select/Select'
@@ -7,7 +7,7 @@ import SelectableTag from '../../components/shared/SelectableTag/SelectableTag'
 import styles from './Preferences.module.css'
 
 const Preferences: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { success } = useToast()
   const [formData, setFormData] = useState({
     favoriteGenres: [] as string[],
@@ -139,13 +139,13 @@ const Preferences: React.FC = () => {
       localStorage.setItem('arka_user_preferences', JSON.stringify(formData))
       success('Preferences saved successfully!')
       // Navigate to home page after successful preferences submission
-      navigate('/home')
+      router.push('/home')
     }
   }
 
   const handleSkip = () => {
     // Allow users to skip and go to home
-    navigate('/home')
+    router.push('/home')
   }
 
   return (

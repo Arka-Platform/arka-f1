@@ -1,14 +1,14 @@
 'use client'
 
 import React, { useMemo, useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import styles from './ChainStories.module.css'
 import Button from '../../shared/Button/Button'
 import { communityApi, ChainStoryResponse } from '../../../utils/api'
 import { useToast } from '../../../contexts/ToastContext'
 
 const ChainStories: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { success, error: showError } = useToast()
   const [stories, setStories] = useState<ChainStoryResponse[]>([])
   const [selectedStory, setSelectedStory] = useState<ChainStoryResponse | null>(null)
@@ -107,7 +107,7 @@ const ChainStories: React.FC = () => {
           <Button 
             variant="primary" 
             onClick={() => {
-              navigate('/start-chain')
+              router.push('/start-chain')
             }}
           >
             Start a Chain

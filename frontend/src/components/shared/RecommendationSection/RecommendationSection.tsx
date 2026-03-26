@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import BookCard, { Book } from '../BookCard/BookCard'
 import { recommendationsApi, BookResponse } from '../../../utils/api'
 import { useAuth } from '../../../contexts/AuthContext'
@@ -137,7 +137,7 @@ const RecommendationSection: React.FC<RecommendationSectionProps> = ({
       <div className={styles.header}>
         <h2 className={styles.title}>{title}</h2>
         {showViewAll && (
-          <Link className={styles.viewAll} to="/books">
+          <Link className={styles.viewAll} href="/books">
             View all
           </Link>
         )}

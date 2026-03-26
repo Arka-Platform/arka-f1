@@ -1,14 +1,14 @@
 'use client'
 
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import styles from './Hero.module.css'
 
 const Hero: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const handleGetStarted = () => {
-    navigate('/home')
+    router.push('/home')
   }
 
   return (

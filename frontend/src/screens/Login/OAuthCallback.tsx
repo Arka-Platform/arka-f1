@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabaseClient'
 import { useToast } from '../../contexts/ToastContext'
 import type { Session } from '@supabase/supabase-js'
@@ -15,9 +15,9 @@ async function waitForSession(timeoutMs: number, intervalMs: number): Promise<Se
 }
 
 const OAuthCallback: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { error: showError } = useToast()
-  const [searchParams] = useSearchParams()
+  const searchParams = useSearchParams()
   const handledRef = useRef(false)
 
   const nextPath = useMemo(() => {
@@ -49,7 +49,7 @@ const OAuthCallback: React.FC = () => {
       // eslint-disable-next-line no-console
       console.error('[OAuthCallback] Supabase OAuth error', { oauthError })
       showError('Google login failed. Please try again.')
-      navigate('/login', { replace: true })
+      router.replace('/login')
       return
     }
 
@@ -57,17 +57,17 @@ const OAuthCallback: React.FC = () => {
       const session = await waitForSession(8000, 250)
       if (!session?.user?.id) {
         showError('Login session was not established. Please try again.')
-        navigate('/login', { replace: true })
+        router.replace('/login')
         return
       }
 
       // If we already have a valid session, proceed. `AuthContext` will do idempotent upserts.
-      navigate(nextPath, { replace: true })
+      router.replace(nextPath)
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('[OAuthCallback] Failed to finalize OAuth session', err)
       showError('Authentication failed. Please try again.')
-      navigate('/login', { replace: true })
+      router.replace('/login')
     }
   }
 

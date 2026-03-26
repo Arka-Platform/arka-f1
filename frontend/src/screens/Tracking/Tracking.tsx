@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { ordersApi, OrderTrackingResponse } from '../../utils/api'
@@ -8,7 +9,8 @@ import Button from '../../components/shared/Button/Button'
 import styles from './Tracking.module.css'
 
 const Tracking: React.FC = () => {
-  const { orderId } = useParams<{ orderId: string }>()
+  const params = useParams<{ orderId?: string }>()
+  const orderId = params?.orderId
   const { user } = useAuth()
   const { error: showError } = useToast()
   const [trackingNumber, setTrackingNumber] = useState(orderId || '')
@@ -73,7 +75,7 @@ const Tracking: React.FC = () => {
     <div className={styles.tracking}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <Link to="/orders" className={styles.backLink}>
+          <Link href="/orders" className={styles.backLink}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import styles from './JoinBookCycle.module.css'
 
 interface JoinOption {
@@ -12,7 +12,7 @@ interface JoinOption {
 }
 
 const JoinBookCycle: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [isExpanded, setIsExpanded] = useState(true)
 
   const options: JoinOption[] = [
@@ -115,7 +115,7 @@ const JoinBookCycle: React.FC = () => {
                   <p className={styles.optionDescription}>{option.description}</p>
                   <button 
                     className={styles.optionButton}
-                    onClick={() => navigate('/register')}
+                    onClick={() => router.push('/register')}
                     type="button"
                   >
                     {option.buttonText}

@@ -8,8 +8,6 @@ const __dirname = path.dirname(__filename)
 const nextConfig = {
   reactStrictMode: true,
   productionBrowserSourceMaps: true,
-  // Workspace has multiple lockfiles; set explicit root for stable output tracing.
-  outputFileTracingRoot: __dirname,
 }
 
 export default nextConfig

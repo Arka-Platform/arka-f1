@@ -1,15 +1,15 @@
 'use client'
 
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import styles from './AdBanner.module.css'
 
 const AdBanner: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const handleBannerClick = () => {
     // Navigate to browse page
-    navigate('/books')
+    router.push('/books')
   }
 
   return (

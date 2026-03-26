@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import styles from './Browse.module.css'
 import { browseBooks } from '../../lib/browseBooks'
 
@@ -21,7 +21,7 @@ const Browse: React.FC = () => {
 
         <section className={styles.grid}>
           {browseBooks.map((b) => (
-            <Link key={b.id} to={`/books/${b.id}`} className={styles.card} aria-label={`View ${b.title}`}>
+            <Link key={b.id} href={`/books/${b.id}`} className={styles.card} aria-label={`View ${b.title}`}>
               <div className={styles.cover} role="presentation">
                 <div className={styles.coverInner}>
                   <div className={styles.coverTitle}>{b.title}</div>

@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -12,8 +13,8 @@ import styles from './Header.module.css'
 
 const Header: React.FC = () => {
   const genresMenuId = 'genres-menu'
-  const location = useLocation()
-  const navigate = useNavigate()
+  const pathname = usePathname()
+  const router = useRouter()
   const { isAuthenticated, user } = useAuth()
   const { getItemCount } = useCart()
   const { theme, toggleTheme } = useTheme()
@@ -75,7 +76,7 @@ const Header: React.FC = () => {
   useEffect(() => {
     setIsMobileMenuOpen(false)
     setActiveGenreDropdown(false)
-  }, [location.pathname])
+  }, [pathname])
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -152,21 +153,21 @@ const Header: React.FC = () => {
   }
 
   const handleGenreClick = (genre: string) => {
-    navigate(`/books?genre=${encodeURIComponent(genre)}`)
+    router.push(`/books?genre=${encodeURIComponent(genre)}`)
     setActiveGenreDropdown(false)
     setHoveredGenre(null)
     closeMobileMenu()
   }
 
   const handleSubcategoryClick = (genre: string, subcategory: string) => {
-    navigate(`/books?genre=${encodeURIComponent(genre)}&subcategory=${encodeURIComponent(subcategory)}`)
+    router.push(`/books?genre=${encodeURIComponent(genre)}&subcategory=${encodeURIComponent(subcategory)}`)
     setActiveGenreDropdown(false)
     setHoveredGenre(null)
     closeMobileMenu()
   }
 
   const isActiveLink = (path: string) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/')
+    return pathname === path || pathname.startsWith(path + '/')
   }
 
   return (
@@ -179,7 +180,7 @@ const Header: React.FC = () => {
           <nav className={styles.nav} aria-label="Main navigation">
             {/* Home */}
             <Link
-              to="/home"
+              href="/home"
               className={`${styles.navLink} ${isActiveLink('/home') ? styles.active : ''}`}
             >
               Home
@@ -192,7 +193,7 @@ const Header: React.FC = () => {
             >
               <div className={styles.navButtonWrapper}>
                 <Link
-                  to="/books"
+                  href="/books"
                   className={`${styles.navButtonLink} ${isActiveLink('/books') ? styles.active : ''}`}
                 >
                   Browse
@@ -277,7 +278,7 @@ const Header: React.FC = () => {
 
             {/* Sell */}
             <Link
-              to="/inventory"
+              href="/inventory"
               className={`${styles.navLink} ${isActiveLink('/inventory') ? styles.active : ''}`}
             >
               Sell
@@ -285,7 +286,7 @@ const Header: React.FC = () => {
 
             {/* Recycle */}
             <Link
-              to="/recycling"
+              href="/recycling"
               className={`${styles.navLink} ${isActiveLink('/recycling') ? styles.active : ''}`}
             >
               Recycle
@@ -293,7 +294,7 @@ const Header: React.FC = () => {
 
             {/* Book Requests */}
             <Link
-              to="/requests"
+              href="/requests"
               className={`${styles.navLink} ${isActiveLink('/requests') ? styles.active : ''}`}
             >
               Requests
@@ -301,7 +302,7 @@ const Header: React.FC = () => {
 
             {/* Donation */}
             <Link
-              to="/donation"
+              href="/donation"
               className={`${styles.navLink} ${isActiveLink('/donation') ? styles.active : ''}`}
             >
               Donate
@@ -309,7 +310,7 @@ const Header: React.FC = () => {
 
             {/* Community */}
             <Link
-              to="/community"
+              href="/community"
               className={`${styles.navLink} ${isActiveLink('/community') || isActiveLink('/circles') || isActiveLink('/start-chain') ? styles.active : ''}`}
             >
               Community
@@ -317,7 +318,7 @@ const Header: React.FC = () => {
 
             {/* Help */}
             <Link
-              to="/contact"
+              href="/contact"
               className={`${styles.navLink} ${isActiveLink('/contact') ? styles.active : ''}`}
             >
               Help
@@ -364,14 +365,14 @@ const Header: React.FC = () => {
             </button>
             {/* Wishlist - Heart Icon */}
             {isAuthenticated && (
-              <Link to="/wishlist" className={styles.wishlistLink} aria-label="Wishlist">
+              <Link href="/wishlist" className={styles.wishlistLink} aria-label="Wishlist">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
                 </svg>
                 {wishlistCount > 0 && <span className={styles.wishlistBadge}>{wishlistCount}</span>}
               </Link>
             )}
-            <Link to="/cart" className={styles.cartLink} aria-label="Shopping cart">
+            <Link href="/cart" className={styles.cartLink} aria-label="Shopping cart">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M9 2L7 6m6-4l2 4M3 6h18l-2 13H5L3 6z" />
                 <path d="M9 10v6m6-6v6" />
@@ -382,10 +383,10 @@ const Header: React.FC = () => {
               <UserMenu />
             ) : (
               <div className={styles.authButtons}>
-                <Link to="/login" className={styles.buttonSecondary}>
+                <Link href="/login" className={styles.buttonSecondary}>
                   Log in
                 </Link>
-                <Link to="/register" className={styles.buttonPrimary}>
+                <Link href="/register" className={styles.buttonPrimary}>
                   Sign up
                 </Link>
               </div>
@@ -426,7 +427,7 @@ const Header: React.FC = () => {
       >
         <div className={styles.mobileMenuContent}>
           <Link
-            to="/home"
+            href="/home"
             className={`${styles.mobileNavLink} ${isActiveLink('/home') ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
@@ -434,7 +435,7 @@ const Header: React.FC = () => {
           </Link>
 
           <Link
-            to="/books"
+            href="/books"
             className={`${styles.mobileNavLink} ${isActiveLink('/books') ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
@@ -482,7 +483,7 @@ const Header: React.FC = () => {
           </div>
 
           <Link
-            to="/inventory"
+            href="/inventory"
             className={`${styles.mobileNavLink} ${isActiveLink('/inventory') ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
@@ -490,7 +491,7 @@ const Header: React.FC = () => {
           </Link>
 
           <Link
-            to="/recycling"
+            href="/recycling"
             className={`${styles.mobileNavLink} ${isActiveLink('/recycling') ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
@@ -498,7 +499,7 @@ const Header: React.FC = () => {
           </Link>
 
           <Link
-            to="/requests"
+            href="/requests"
             className={`${styles.mobileNavLink} ${isActiveLink('/requests') ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
@@ -506,7 +507,7 @@ const Header: React.FC = () => {
           </Link>
 
           <Link
-            to="/donation"
+            href="/donation"
             className={`${styles.mobileNavLink} ${isActiveLink('/donation') ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
@@ -514,7 +515,7 @@ const Header: React.FC = () => {
           </Link>
 
           <Link
-            to="/community"
+            href="/community"
             className={`${styles.mobileNavLink} ${isActiveLink('/community') || isActiveLink('/circles') || isActiveLink('/start-chain') ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
@@ -522,7 +523,7 @@ const Header: React.FC = () => {
           </Link>
 
           <Link
-            to="/contact"
+            href="/contact"
             className={`${styles.mobileNavLink} ${isActiveLink('/contact') ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
@@ -542,7 +543,7 @@ const Header: React.FC = () => {
 
           {isAuthenticated && (
             <Link
-              to="/wishlist"
+              href="/wishlist"
               className={`${styles.mobileNavLink} ${isActiveLink('/wishlist') ? styles.mobileNavLinkActive : ''}`}
               onClick={closeMobileMenu}
             >
@@ -555,7 +556,7 @@ const Header: React.FC = () => {
             </Link>
           )}
           <Link
-            to="/cart"
+            href="/cart"
             className={`${styles.mobileNavLink} ${isActiveLink('/cart') ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
@@ -574,14 +575,14 @@ const Header: React.FC = () => {
           ) : (
             <div className={styles.mobileAuthButtons}>
               <Link
-                to="/login"
+                href="/login"
                 className={styles.mobileButton}
                 onClick={closeMobileMenu}
               >
                 Log in
               </Link>
               <Link
-                to="/register"
+                href="/register"
                 className={`${styles.mobileButton} ${styles.mobileButtonPrimary}`}
                 onClick={closeMobileMenu}
               >

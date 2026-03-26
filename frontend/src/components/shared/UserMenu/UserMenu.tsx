@@ -1,13 +1,14 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../../../contexts/AuthContext'
 import styles from './UserMenu.module.css'
 
 const UserMenu: React.FC = () => {
   const { user, logout } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -30,7 +31,7 @@ const UserMenu: React.FC = () => {
   const handleLogout = () => {
     logout()
     setIsOpen(false)
-    navigate('/')
+    router.push('/')
   }
 
   const getInitials = () => {
@@ -95,7 +96,7 @@ const UserMenu: React.FC = () => {
           </div>
           <div className={styles.dropdownDivider} />
           <Link
-            to="/account"
+            href="/account"
             className={styles.dropdownItem}
             onClick={() => setIsOpen(false)}
             role="menuitem"
@@ -107,7 +108,7 @@ const UserMenu: React.FC = () => {
             Account Settings
           </Link>
           <Link
-            to="/analytics"
+            href="/analytics"
             className={styles.dropdownItem}
             onClick={() => setIsOpen(false)}
             role="menuitem"
@@ -120,7 +121,7 @@ const UserMenu: React.FC = () => {
             Analytics
           </Link>
           <Link
-            to="/bookshelf"
+            href="/bookshelf"
             className={styles.dropdownItem}
             onClick={() => setIsOpen(false)}
             role="menuitem"
@@ -132,7 +133,7 @@ const UserMenu: React.FC = () => {
             My Bookshelf
           </Link>
           <Link
-            to="/subscriptions"
+            href="/subscriptions"
             className={`${styles.dropdownItem} ${styles.subscriptionItem}`}
             onClick={() => setIsOpen(false)}
             role="menuitem"
@@ -148,7 +149,7 @@ const UserMenu: React.FC = () => {
             <span className={styles.subscriptionBadge}>Save</span>
           </Link>
           <Link
-            to="/orders"
+            href="/orders"
             className={styles.dropdownItem}
             onClick={() => setIsOpen(false)}
             role="menuitem"

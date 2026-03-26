@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { getOtpCooldownRemainingSeconds, markOtpSentNow } from '../../utils/otpRateLimit'
@@ -21,7 +22,7 @@ function isExistingAccountError(err: unknown): boolean {
 }
 
 const Signup: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { register, loginWithPhone, loginWithEmailOtp, loginWithGoogle, isAuthenticated, isLoading } = useAuth()
   const { success, error: showError } = useToast()
 
@@ -46,8 +47,8 @@ const Signup: React.FC = () => {
 
   // Redirect if already authenticated
   React.useEffect(() => {
-    if (isAuthenticated) navigate('/home')
-  }, [isAuthenticated, navigate])
+    if (isAuthenticated) router.replace('/home')
+  }, [isAuthenticated, router])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -92,9 +93,7 @@ const Signup: React.FC = () => {
         await loginWithPhone(formData.emailOrPhone)
         markOtpSentNow('phone', formData.emailOrPhone)
         success('OTP sent to your phone!')
-        navigate('/otp-verification', {
-          state: { channel: 'phone', value: formData.emailOrPhone },
-        })
+        router.push(`/otp-verification?channel=phone&value=${encodeURIComponent(formData.emailOrPhone)}`)
       } else {
         if (formData.password.trim()) {
           await register({
@@ -104,7 +103,7 @@ const Signup: React.FC = () => {
             password: formData.password,
           })
           success('Account created successfully!')
-          navigate('/home')
+          router.push('/home')
         } else {
           const waitSeconds = getOtpCooldownRemainingSeconds('email', formData.emailOrPhone)
           if (waitSeconds > 0) {
@@ -118,10 +117,7 @@ const Signup: React.FC = () => {
           })
           markOtpSentNow('email', formData.emailOrPhone)
           success('Magic link sent. Please check your email and open the link.')
-          navigate('/login', {
-            replace: true,
-            state: { prefillEmailOrPhone: formData.emailOrPhone },
-          })
+          router.replace(`/login?prefill=${encodeURIComponent(formData.emailOrPhone)}`)
         }
       }
     } catch (err) {
@@ -132,10 +128,7 @@ const Signup: React.FC = () => {
       }
       if (isExistingAccountError(err)) {
         showError('Account already exists. Please log in.')
-        navigate('/login', {
-          replace: true,
-          state: { prefillEmailOrPhone: formData.emailOrPhone },
-        })
+        router.replace(`/login?prefill=${encodeURIComponent(formData.emailOrPhone)}`)
         return
       }
       showError('Signup failed. Please try again.')
@@ -227,7 +220,7 @@ const Signup: React.FC = () => {
 
             <p className={styles.loginText}>
               Already have an account?{' '}
-              <Link to="/login" className={styles.loginLink}>
+              <Link href="/login" className={styles.loginLink}>
                 Log in
               </Link>
             </p>

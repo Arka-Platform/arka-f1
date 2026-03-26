@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useToast } from '../../contexts/ToastContext'
 import { communityApi, CreateChainRequest } from '../../utils/api'
 import { booksApi, BookResponse } from '../../utils/api'
@@ -10,7 +10,7 @@ import Button from '../../components/shared/Button/Button'
 import styles from './StartChain.module.css'
 
 const StartChain: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { success, error: showError } = useToast()
   const [formData, setFormData] = useState({
     title: '',
@@ -76,7 +76,7 @@ const StartChain: React.FC = () => {
       }
       await communityApi.createChain(request)
       success('Chain started successfully!')
-      navigate('/home')
+      router.push('/home')
     } catch (err: any) {
       showError(err.message || 'Failed to start chain')
     } finally {
@@ -87,7 +87,7 @@ const StartChain: React.FC = () => {
   return (
     <div className={styles.startChain}>
       <div className={styles.container}>
-        <Button variant="outline" onClick={() => navigate('/home')} className={styles.backButton}>
+        <Button variant="outline" onClick={() => router.push('/home')} className={styles.backButton}>
           ← Back to Home
         </Button>
 
@@ -150,7 +150,7 @@ const StartChain: React.FC = () => {
                 type="button"
                 variant="outline"
                 fullWidth
-                onClick={() => navigate('/home')}
+                onClick={() => router.push('/home')}
               >
                 Cancel
               </Button>
