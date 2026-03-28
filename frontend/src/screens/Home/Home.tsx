@@ -14,17 +14,35 @@ const Home: React.FC = () => {
 
   const quickActions = [
     { title: 'Swap Books', subtitle: 'List & exchange', route: '/exchange', icon: '🔁' },
-    { title: 'Nearby Finds', subtitle: 'Books around you', route: '/books', icon: '📍' },
+    { title: 'Browse catalog', subtitle: 'Books to discover', route: '/books', icon: '📚' },
     { title: 'Wishlist', subtitle: 'Saved for later', route: '/wishlist', icon: '💛' },
-    { title: 'My Library', subtitle: 'Owned & swapped', route: '/bookshelf', icon: '📚' },
+    { title: 'My Library', subtitle: 'Owned & swapped', route: '/bookshelf', icon: '📖' },
+  ]
+
+  const exploreActions = [
+    {
+      title: 'Browse books',
+      subtitle: "See what's in the pool",
+      route: '/books',
+      icon: '🔎',
+    },
+    {
+      title: 'See requests',
+      subtitle: 'What others hope to find',
+      route: '/books#community-gets',
+      icon: '💬',
+    },
   ]
 
   return (
     <div className={styles.home}>
       <section className={styles.hero}>
         <div className={styles.overlay}>
-          <h1 className={styles.title}>Explore &amp; Exchange Books</h1>
-          <p className={styles.subtitle}>Discover stories from around the world</p>
+          <h1 className={styles.title}>Explore first — then take part</h1>
+          <p className={styles.subtitle}>
+            Browse the catalog, read what people are looking for, and feel the circle. When you claim a book, we ask
+            you to give back so the shelf stays real.
+          </p>
 
           <div className={styles.searchWrap}>
             <BookSearchInput
@@ -50,6 +68,26 @@ const Home: React.FC = () => {
                 <span className={styles.actionText}>
                   <span className={styles.actionTitle}>{action.title}</span>
                   <span className={styles.actionSubtitle}>{action.subtitle}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <p className={styles.exploreLead}>Start with the ecosystem</p>
+          <div className={styles.exploreRow}>
+            {exploreActions.map((action) => (
+              <button
+                key={action.title}
+                type="button"
+                className={styles.exploreCard}
+                onClick={() => router.push(action.route)}
+              >
+                <span className={styles.exploreIcon} aria-hidden>
+                  {action.icon}
+                </span>
+                <span className={styles.exploreText}>
+                  <span className={styles.exploreTitle}>{action.title}</span>
+                  <span className={styles.exploreSubtitle}>{action.subtitle}</span>
                 </span>
               </button>
             ))}

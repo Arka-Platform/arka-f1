@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
+import { useContribution } from '../../contexts/ContributionContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { booksApi, wishlistApi } from '../../utils/api'
 import Logo from '../shared/Logo/Logo'
@@ -17,6 +18,7 @@ const Header: React.FC = () => {
   const router = useRouter()
   const { isAuthenticated, user } = useAuth()
   const { getItemCount } = useCart()
+  const { hydrated: contributionHydrated, presenceLabel, presenceCount, freeIntroClaimConsumed } = useContribution()
   const { theme, toggleTheme } = useTheme()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeGenreDropdown, setActiveGenreDropdown] = useState(false)
@@ -327,6 +329,19 @@ const Header: React.FC = () => {
 
           {/* Desktop Right Section */}
           <div className={styles.rightSection}>
+            {contributionHydrated && (presenceCount > 0 || freeIntroClaimConsumed) ? (
+              <span
+                className={styles.presenceChip}
+                title={
+                  presenceCount > 0
+                    ? 'Your presence reflects how you give back to the circle — not a score.'
+                    : 'You used your welcome pickup. Share a book when you can to keep the library open.'
+                }
+              >
+                <span className={styles.presenceDot} aria-hidden />
+                {presenceCount > 0 ? presenceLabel : 'In the circle'}
+              </span>
+            ) : null}
             <button
               type="button"
               className={styles.themeToggle}

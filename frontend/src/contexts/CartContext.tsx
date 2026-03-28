@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { Book } from '../components/shared/BookCard/BookCard'
+import { useContribution } from './ContributionContext'
 import { trackCartAdd, trackCartRemove } from '../utils/tracking'
 
 interface CartItem extends Book {
@@ -31,6 +32,7 @@ interface CartProviderProps {
 }
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
+  const { hydrated, mayClaimAdditionalBook, openContributionGate, afterSuccessfulNewLineAdd } = useContribution()
   const [items, setItems] = useState<CartItem[]>([])
 
   // Load cart from localStorage on mount
@@ -54,22 +56,27 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [items])
 
   const addToCart = (book: Book) => {
+    const isNewLine = !items.some((item) => item.id === book.id)
+    if (hydrated && isNewLine && !mayClaimAdditionalBook()) {
+      openContributionGate(book)
+      return
+    }
+
     trackCartAdd(book.id)
     setItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.id === book.id)
-      
+
       if (existingItem) {
-        // Increase quantity if item already exists
         return prevItems.map((item) =>
-          item.id === book.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
+          item.id === book.id ? { ...item, quantity: item.quantity + 1 } : item
         )
-      } else {
-        // Add new item with quantity 1
-        return [...prevItems, { ...book, quantity: 1 }]
       }
+      return [...prevItems, { ...book, quantity: 1 }]
     })
+
+    if (hydrated && isNewLine) {
+      afterSuccessfulNewLineAdd()
+    }
   }
 
   const removeFromCart = (bookId: string) => {

@@ -966,7 +966,7 @@ const BooksMarketplace: React.FC = () => {
 
       {/* Share If You Have Section - After Recommendations */}
       {!showMatchSelection && (
-        <div className={styles.content}>
+        <div className={styles.content} id="community-gets">
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Share If You Have</h2>
           </div>

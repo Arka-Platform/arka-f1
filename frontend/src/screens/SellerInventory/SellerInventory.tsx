@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
+import { useContribution } from '../../contexts/ContributionContext'
 import { booksApi, BookResponse, uploadApi } from '../../utils/api'
 import Input from '../../components/shared/Input/Input'
 import Textarea from '../../components/shared/Textarea/Textarea'
@@ -61,6 +63,8 @@ const bookToInventory = (book: BookResponse): InventoryBook => {
 const SellerInventory: React.FC = () => {
   const { success, error: showError } = useToast()
   const { user } = useAuth()
+  const searchParams = useSearchParams()
+  const { registerPresence } = useContribution()
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingBook, setEditingBook] = useState<InventoryBook | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -185,6 +189,12 @@ const SellerInventory: React.FC = () => {
       setLoading(false)
     }
   }, [user?.id, loadInventory])
+
+  useEffect(() => {
+    if (searchParams.get('focus') !== 'add' || !user?.id) return
+    setShowAddForm(true)
+    setEditingBook(null)
+  }, [searchParams, user?.id])
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -361,8 +371,9 @@ const SellerInventory: React.FC = () => {
           // },
         })
         success('Book added to marketplace! It is now available for purchase.')
+        registerPresence('listed_book')
       }
-      
+
       // Reload inventory
       await loadInventory()
       
