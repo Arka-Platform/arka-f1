@@ -12,9 +12,15 @@ CREATE TABLE IF NOT EXISTS public.books (
     category TEXT,
     subcategory TEXT,
     credit_price NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (credit_price >= 0),
+    image_url TEXT,
+    thumbnail_url TEXT,
     owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     status TEXT NOT NULL DEFAULT 'AVAILABLE'
 );
+
+ALTER TABLE public.books
+    ADD COLUMN IF NOT EXISTS image_url TEXT,
+    ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_books_title_author ON public.books(title, author);
 CREATE INDEX IF NOT EXISTS idx_books_created_at ON public.books(created_at DESC);

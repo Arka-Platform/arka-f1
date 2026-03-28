@@ -171,7 +171,12 @@ const BookCard: React.FC<BookCardProps> = ({
     <div className={styles.bookCard} onClick={handleCardClick}>
       <div className={styles.imageContainer}>
         {coverImage ? (
-          <img src={coverImage} alt={book.title} className={styles.image} />
+          <img
+            src={coverImage}
+            alt={book.title}
+            className={styles.image}
+            referrerPolicy="no-referrer"
+          />
         ) : (
           <div className={styles.placeholderImage}>
             <svg viewBox="0 0 200 200" className={styles.placeholderSvg}>
