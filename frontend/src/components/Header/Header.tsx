@@ -178,12 +178,17 @@ const Header: React.FC = () => {
 
           {/* Desktop Navigation */}
           <nav className={styles.nav} aria-label="Main navigation">
-            {/* Home */}
+            {/* Home (icon) */}
             <Link
               href="/home"
-              className={`${styles.navLink} ${isActiveLink('/home') ? styles.active : ''}`}
+              className={`${styles.navIconLink} ${isActiveLink('/home') ? styles.active : ''}`}
+              aria-label="Home"
+              title="Home"
             >
-              Home
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
             </Link>
 
             {/* Browse with Genres Dropdown */}
@@ -300,14 +305,6 @@ const Header: React.FC = () => {
               Looking for
             </Link>
 
-            {/* Offer (list into pool) */}
-            <Link
-              href="/inventory"
-              className={`${styles.navLink} ${isActiveLink('/inventory') ? styles.active : ''}`}
-            >
-              Offer
-            </Link>
-
             {/* Community */}
             <Link
               href="/community"
@@ -316,13 +313,6 @@ const Header: React.FC = () => {
               Community
             </Link>
 
-            {/* Help */}
-            <Link
-              href="/contact"
-              className={`${styles.navLink} ${isActiveLink('/contact') ? styles.active : ''}`}
-            >
-              Help
-            </Link>
           </nav>
 
           {/* Desktop Right Section */}
@@ -363,14 +353,38 @@ const Header: React.FC = () => {
                 </svg>
               )}
             </button>
-            {/* Wishlist - Heart Icon */}
+            {/* Bookshelf, Wishlist, Offer — icon row */}
             {isAuthenticated && (
-              <Link href="/wishlist" className={styles.wishlistLink} aria-label="Wishlist">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
-                </svg>
-                {wishlistCount > 0 && <span className={styles.wishlistBadge}>{wishlistCount}</span>}
-              </Link>
+              <>
+                <Link
+                  href="/bookshelf"
+                  className={`${styles.headerIconLink} ${isActiveLink('/bookshelf') ? styles.headerIconActive : ''}`}
+                  aria-label="My Bookshelf"
+                  title="My Bookshelf"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                </Link>
+                <Link href="/wishlist" className={styles.wishlistLink} aria-label="Wishlist" title="Wishlist">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
+                  </svg>
+                  {wishlistCount > 0 && <span className={styles.wishlistBadge}>{wishlistCount}</span>}
+                </Link>
+                <Link
+                  href="/inventory?focus=add"
+                  className={`${styles.headerIconLink} ${isActiveLink('/inventory') ? styles.headerIconActive : ''}`}
+                  aria-label="Offer a book"
+                  title="Offer a book"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 8v8M8 12h8" strokeLinecap="round" />
+                  </svg>
+                </Link>
+              </>
             )}
             <Link href="/cart" className={styles.cartLink} aria-label="Shopping cart">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -428,10 +442,15 @@ const Header: React.FC = () => {
         <div className={styles.mobileMenuContent}>
           <Link
             href="/home"
-            className={`${styles.mobileNavLink} ${isActiveLink('/home') ? styles.mobileNavLinkActive : ''}`}
+            className={`${styles.mobileNavLink} ${styles.mobileNavLinkIcon} ${isActiveLink('/home') ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
+            aria-label="Home"
           >
-            Home
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            <span className={styles.mobileNavIconLabel}>Home</span>
           </Link>
 
           <Link
@@ -507,27 +526,11 @@ const Header: React.FC = () => {
           </Link>
 
           <Link
-            href="/inventory"
-            className={`${styles.mobileNavLink} ${isActiveLink('/inventory') ? styles.mobileNavLinkActive : ''}`}
-            onClick={closeMobileMenu}
-          >
-            Offer
-          </Link>
-
-          <Link
             href="/community"
             className={`${styles.mobileNavLink} ${isActiveLink('/community') || isActiveLink('/circles') || isActiveLink('/start-chain') ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
             Community
-          </Link>
-
-          <Link
-            href="/contact"
-            className={`${styles.mobileNavLink} ${isActiveLink('/contact') ? styles.mobileNavLinkActive : ''}`}
-            onClick={closeMobileMenu}
-          >
-            Help
           </Link>
 
           <button
@@ -542,18 +545,46 @@ const Header: React.FC = () => {
           </button>
 
           {isAuthenticated && (
-            <Link
-              href="/wishlist"
-              className={`${styles.mobileNavLink} ${isActiveLink('/wishlist') ? styles.mobileNavLinkActive : ''}`}
-              onClick={closeMobileMenu}
-            >
-              <span className={styles.mobileNavIcon}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
-                </svg>
-              </span>
-              Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
-            </Link>
+            <>
+              <Link
+                href="/bookshelf"
+                className={`${styles.mobileNavLink} ${isActiveLink('/bookshelf') ? styles.mobileNavLinkActive : ''}`}
+                onClick={closeMobileMenu}
+              >
+                <span className={styles.mobileNavIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                </span>
+                My Bookshelf
+              </Link>
+              <Link
+                href="/wishlist"
+                className={`${styles.mobileNavLink} ${isActiveLink('/wishlist') ? styles.mobileNavLinkActive : ''}`}
+                onClick={closeMobileMenu}
+              >
+                <span className={styles.mobileNavIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
+                  </svg>
+                </span>
+                Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
+              </Link>
+              <Link
+                href="/inventory?focus=add"
+                className={`${styles.mobileNavLink} ${isActiveLink('/inventory') ? styles.mobileNavLinkActive : ''}`}
+                onClick={closeMobileMenu}
+              >
+                <span className={styles.mobileNavIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 8v8M8 12h8" strokeLinecap="round" />
+                  </svg>
+                </span>
+                Offer
+              </Link>
+            </>
           )}
           <Link
             href="/cart"

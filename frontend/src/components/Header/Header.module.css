@@ -347,10 +347,12 @@
 }
 
 .navLink:focus-visible,
+.navIconLink:focus-visible,
 .navButtonLink:focus-visible,
 .dropdownToggle:focus-visible,
 .themeToggle:focus-visible,
 .wishlistLink:focus-visible,
+.headerIconLink:focus-visible,
 .cartLink:focus-visible,
 .buttonPrimary:focus-visible,
 .buttonSecondary:focus-visible,
@@ -371,6 +373,39 @@
 }
 
 .navLink.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background-color: var(--color-primary, #2196F3);
+  border-radius: 50%;
+}
+
+/* Home in main nav — icon only */
+.navIconLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem;
+  border-radius: 8px;
+  color: var(--app-text);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.navIconLink:hover {
+  background-color: color-mix(in srgb, var(--app-text) 8%, transparent);
+}
+
+.navIconLink.active {
+  color: var(--color-primary, #2196F3);
+}
+
+.navIconLink.active::after {
   content: '';
   position: absolute;
   bottom: -1.5rem;
@@ -429,7 +464,8 @@
   opacity: 1;
 }
 
-.wishlistLink {
+.wishlistLink,
+.headerIconLink {
   position: relative;
   display: flex;
   align-items: center;
@@ -443,8 +479,14 @@
   opacity: 0.7;
 }
 
-.wishlistLink:hover {
+.wishlistLink:hover,
+.headerIconLink:hover {
   background-color: color-mix(in srgb, var(--app-text) 8%, transparent);
+  opacity: 1;
+}
+
+.headerIconLink.headerIconActive {
+  color: var(--color-primary, #2196f3);
   opacity: 1;
 }
 
@@ -697,6 +739,16 @@
   border-radius: 10px;
   transition: all 0.2s ease;
   min-height: 48px;
+}
+
+/* Home row: house icon + “Home” label */
+.mobileNavLinkIcon {
+  gap: 0.65rem;
+}
+
+.mobileNavIconLabel {
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 .mobileNavLink:hover {

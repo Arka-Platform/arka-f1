@@ -107,6 +107,18 @@ const UserMenu: React.FC = () => {
             </svg>
             Account Settings
           </Link>
+          <Link
+            href="/contact"
+            className={styles.dropdownItem}
+            onClick={() => setIsOpen(false)}
+            role="menuitem"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" strokeLinecap="round" />
+            </svg>
+            Help
+          </Link>
           {user.isAdmin && (
             <Link
               href="/admin/analytics"
@@ -122,18 +134,6 @@ const UserMenu: React.FC = () => {
               Analytics
             </Link>
           )}
-          <Link
-            href="/bookshelf"
-            className={styles.dropdownItem}
-            onClick={() => setIsOpen(false)}
-            role="menuitem"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            </svg>
-            My Bookshelf
-          </Link>
           <Link
             href="/orders"
             className={styles.dropdownItem}
