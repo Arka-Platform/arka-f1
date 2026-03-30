@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useBookExpandedOverlay } from './useBookInteractions'
+import paper from './BookScenePaper.module.css'
 
 export interface BookExpandedViewProps {
   open: boolean
@@ -157,25 +158,23 @@ export function BookExpandedView({
           </div>
 
           <div className="relative z-20 mt-8 w-full md:mt-0 md:max-w-md md:flex-[0.95] lg:max-w-lg">
-            <div className="relative px-1 py-2 shadow-[0_32px_90px_-20px_rgba(0,0,0,0.55)]">
+            <div className="relative px-1 py-2 shadow-[0_32px_90px_-20px_rgba(42,32,24,0.28)]">
               <div
                 className={[
+                  paper.paperPanel,
                   'relative overflow-hidden rounded-[1.75rem] px-7 py-8 sm:px-9 sm:py-9',
-                  'bg-gradient-to-br from-white/[0.09] to-white/[0.02]',
-                  'backdrop-blur-2xl',
-                  'shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]',
                 ].join(' ')}
               >
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" aria-hidden />
+                <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-b from-white/35 via-transparent to-transparent" aria-hidden />
 
                 <div className="relative space-y-2">
                   <h2
                     id="book-expanded-title"
-                    className="font-serif text-[1.65rem] font-semibold leading-[1.12] tracking-tight text-[#faf6f0] sm:text-3xl md:text-[1.85rem]"
+                    className="font-serif text-[1.65rem] font-semibold leading-[1.12] tracking-tight text-stone-900 sm:text-3xl md:text-[1.85rem]"
                   >
                     {title}
                   </h2>
-                  <p className="text-sm text-stone-400/95">by {author}</p>
+                  <p className="text-sm text-stone-600">by {author}</p>
                   {(genre || condition) && (
                     <p className="pt-3 text-[0.8125rem] text-stone-500">
                       {[genre, condition].filter(Boolean).join(' · ')}
@@ -188,10 +187,10 @@ export function BookExpandedView({
                     {(price || availability) && (
                       <div className="flex flex-wrap items-end gap-4">
                         {price ? (
-                          <p className="font-serif text-3xl font-semibold tracking-tight text-amber-100/95">{price}</p>
+                          <p className="font-serif text-3xl font-semibold tracking-tight text-amber-900/95">{price}</p>
                         ) : null}
                         {availability ? (
-                          <p className="max-w-[14rem] text-[0.75rem] leading-snug text-stone-500">{availability}</p>
+                          <p className="max-w-[14rem] text-[0.75rem] leading-snug text-stone-600">{availability}</p>
                         ) : null}
                       </div>
                     )}

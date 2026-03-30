@@ -2,6 +2,7 @@
 
 import React from 'react'
 import type { BookIconAction } from './useBookInteractions'
+import paper from './BookScenePaper.module.css'
 
 const glassIcon =
   'flex h-10 w-10 items-center justify-center rounded-full text-stone-100/90 shadow-[0_8px_28px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-md transition duration-200 hover:scale-[1.06] hover:bg-black/35 hover:shadow-[0_12px_36px_rgba(0,0,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/45'
@@ -138,10 +139,14 @@ export function BookTile({
         <button
           type="button"
           onClick={onExpand}
-          className="mt-2.5 w-full cursor-pointer bg-transparent text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950"
+          className={[
+            paper.paperTileStrip,
+            'mt-2.5 w-full cursor-pointer rounded-md px-2.5 py-2 text-left',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f5efe6]',
+          ].join(' ')}
         >
-          <span className="line-clamp-2 text-[0.8125rem] font-medium leading-snug tracking-tight text-stone-100">{title}</span>
-          <span className="mt-0.5 block text-[0.6875rem] text-stone-500">{status}</span>
+          <span className="line-clamp-2 text-[0.8125rem] font-medium leading-snug tracking-tight text-stone-800">{title}</span>
+          <span className="mt-0.5 block text-[0.6875rem] text-stone-600">{status}</span>
         </button>
       </div>
     </div>
