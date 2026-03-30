@@ -98,7 +98,7 @@ const Exchange: React.FC = () => {
     try {
       setExchangingBookId(bookId)
       await exchangesApi.create({ bookId }, user.id)
-      success('Exchange request created successfully!')
+      success('Exchange recorded successfully!')
       router.push('/exchanges/my')
     } catch (err: any) {
       showError(err.message || 'Failed to create exchange request')

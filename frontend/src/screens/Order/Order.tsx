@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
+import { useContribution } from '../../contexts/ContributionContext'
 import { useToast } from '../../contexts/ToastContext'
 import { ordersApi, CreateOrderRequest } from '../../utils/api'
 import Input from '../../components/shared/Input/Input'
@@ -13,6 +14,7 @@ const Order: React.FC = () => {
   const router = useRouter()
   const { user } = useAuth()
   const { items, getTotalPrice, clearCart } = useCart()
+  const { refreshParticipation } = useContribution()
   const { success, error: showError } = useToast()
   const [loading, setLoading] = useState(false)
 
@@ -24,7 +26,7 @@ const Order: React.FC = () => {
     address: '',
     instructions: '',
     pickupTime: 'asap',
-    paymentMethod: 'credit',
+    paymentMethod: 'card',
   })
 
   useEffect(() => {
@@ -62,6 +64,7 @@ const Order: React.FC = () => {
 
       const order = await ordersApi.create(user.id, orderRequest)
       success('Order placed successfully!')
+      void refreshParticipation()
       clearCart()
       router.push(`/tracking/${order.id}`)
     } catch (err: any) {
@@ -184,8 +187,8 @@ const Order: React.FC = () => {
                   <input
                     type="radio"
                     name="paymentMethod"
-                    value="credit"
-                    checked={formData.paymentMethod === 'credit'}
+                    value="card"
+                    checked={formData.paymentMethod === 'card'}
                     onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
                     className={styles.radio}
                   />

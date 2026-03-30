@@ -12,7 +12,7 @@ const MyExchanges: React.FC = () => {
   const { user } = useAuth()
   const [exchanges, setExchanges] = useState<ExchangeResponse[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'>('all')
+  const [filter, setFilter] = useState<'all' | 'PENDING' | 'COMPLETED' | 'FAILED' | 'CANCELLED'>('all')
 
   useEffect(() => {
     if (user?.id) {
@@ -57,10 +57,10 @@ const MyExchanges: React.FC = () => {
     switch (status) {
       case 'PENDING':
         return '#FF9800'
-      case 'CONFIRMED':
-        return '#2196F3'
       case 'COMPLETED':
         return '#4CAF50'
+      case 'FAILED':
+        return '#9E9E9E'
       case 'CANCELLED':
         return '#F44336'
       default:
@@ -81,7 +81,7 @@ const MyExchanges: React.FC = () => {
       <div className={styles.header}>
         <h1 className={styles.title}>My Exchanges</h1>
         <p className={styles.subtitle}>
-          Manage your book exchange requests and track their status.
+          Track your exchange threads and where they stand.
         </p>
       </div>
 
@@ -100,10 +100,10 @@ const MyExchanges: React.FC = () => {
             Pending
           </button>
           <button
-            className={`${styles.filterButton} ${filter === 'CONFIRMED' ? styles.active : ''}`}
-            onClick={() => setFilter('CONFIRMED')}
+            className={`${styles.filterButton} ${filter === 'FAILED' ? styles.active : ''}`}
+            onClick={() => setFilter('FAILED')}
           >
-            Confirmed
+            Failed
           </button>
           <button
             className={`${styles.filterButton} ${filter === 'COMPLETED' ? styles.active : ''}`}
@@ -169,8 +169,8 @@ const MyExchanges: React.FC = () => {
                   </span>
                 </div>
                 <div className={styles.detailRow}>
-                  <span className={styles.label}>Credit Amount:</span>
-                  <span className={styles.value}>₹{exchange.creditAmount.toFixed(2)}</span>
+                  <span className={styles.label}>Amount:</span>
+                  <span className={styles.value}>₹{exchange.amount.toFixed(2)}</span>
                 </div>
                 <div className={styles.detailRow}>
                   <span className={styles.label}>Service Fee:</span>

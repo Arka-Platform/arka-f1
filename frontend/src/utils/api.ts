@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient'
 import { createAdminApi, createExchangesApi } from './api/domains/adminExchanges'
+import { createContactInquiriesApi } from './api/domains/contactInquiries'
 import { createBehaviorApi, createCommunityApi, createOrdersApi, createUsersApi } from './api/domains/communityUserOps'
 import { createDemandApi, createRecyclingApi } from './api/domains/demandRecycling'
 import { createAnalyticsApi, createBookshelfApi, createTrustScoreApi, createWishlistApi } from './api/domains/insightsLibrary'
@@ -45,7 +46,7 @@ export interface WastePaperResponse {
   description: string
   category: string | null
   weightKg: number
-  creditValue: number
+  estimatedValue: number
   status: string
   createdAt: string
 }
@@ -351,7 +352,7 @@ export interface ListingResponse {
   genre: string | null
   category: string | null
   subcategory: string | null
-  creditPrice: number
+  price: number
   condition: ListingCondition
   askingNotes: string | null
   tags: string[]
@@ -463,7 +464,7 @@ export const listingsApi = {
         genre: book.genre,
         category: book.category,
         subcategory: book.subcategory,
-        creditPrice: asNumber(book.credit_price, 0),
+        price: asNumber(book.credit_price, 0),
         condition: l.condition,
         askingNotes: l.asking_notes ?? inv.notes ?? null,
         tags: Array.isArray(l.tags) ? l.tags : [],
@@ -517,7 +518,7 @@ export const listingsApi = {
       genre: (book as any).genre ?? null,
       category: (book as any).category ?? null,
       subcategory: (book as any).subcategory ?? null,
-      creditPrice: asNumber((book as any).credit_price, 0),
+      price: asNumber((book as any).credit_price, 0),
       condition: l.condition,
       askingNotes: l.asking_notes ?? inv.notes ?? null,
       tags: Array.isArray(l.tags) ? l.tags : [],
@@ -573,18 +574,21 @@ export const donationsApi = {
   getNGOs: async () => {
     const { data, error } = await supabase.from('ngos').select('*').order('name')
     if (error) throw new ApiError(asErrorMessage(error), 500, error)
-    return (data ?? []).map((n: any) => ({
-      id: n.id,
-      name: n.name,
-      description: n.description ?? null,
-      location: null,
-      verified: !!n.verified,
-      booksReceived: null,
-      categories: null,
-      contactEmail: n.contact_email ?? null,
-      contactPhone: n.contact_phone ?? null,
-      website: n.website ?? null,
-    }))
+    return (data ?? []).map((n: any) => {
+      const meta = n.metadata && typeof n.metadata === 'object' ? n.metadata : {}
+      return {
+        id: n.id,
+        name: n.name,
+        description: n.description ?? null,
+        location: typeof meta.location === 'string' ? meta.location : null,
+        verified: !!n.verified,
+        booksReceived: null,
+        categories: Array.isArray(meta.categories) ? meta.categories.filter((x: unknown) => typeof x === 'string') : null,
+        contactEmail: n.contact_email ?? null,
+        contactPhone: n.contact_phone ?? null,
+        website: n.website ?? null,
+      }
+    })
   },
   createDonation: async (data: DonationRequest) => {
     const { data: created, error } = await supabase.rpc('create_donation', {
@@ -698,6 +702,10 @@ export const donationsApi = {
 // Admin API functions
 export const adminApi = {
   ...createAdminApi({ supabase, ApiError, asErrorMessage }, donationsApi),
+}
+
+export const contactInquiriesApi = {
+  ...createContactInquiriesApi({ supabase, ApiError, asErrorMessage }),
 }
 
 // Demand/Book Requests API types
@@ -838,9 +846,9 @@ export interface ExchangeResponse {
   sellerName: string
   buyerId: string
   buyerName: string
-  creditAmount: number
+  amount: number
   serviceFee: number
-  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
+  status: string
   createdAt: string
   updatedAt: string
 }
@@ -1039,128 +1047,6 @@ export const lendingApi = {
   },
 };
 
-// Subscription API types
-export interface SubscriptionResponse {
-  id: string
-  userId: string
-  plan: 'FREE' | 'BASIC' | 'PREMIUM' | 'UNLIMITED'
-  status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'SUSPENDED' | 'PENDING_PAYMENT'
-  startDate: string
-  endDate: string | null
-  renewalDate: string | null
-  monthlyPrice: number | null
-  autoRenew: boolean
-  booksPerMonth: number | null
-  booksUsedThisMonth: number | null
-  unlimitedAccess: boolean
-  prioritySupport: boolean
-  adFree: boolean
-}
-
-export interface CreateSubscriptionRequest {
-  userId: string
-  plan: string
-}
-
-// Subscription API functions
-export const subscriptionsApi = {
-  create: async (data: CreateSubscriptionRequest) => {
-    const { data: row, error } = await supabase.rpc('upsert_user_subscription', {
-      p_user_id: data.userId,
-      p_plan: data.plan,
-    })
-    if (error) throw new ApiError(asErrorMessage(error), 500, error)
-    return {
-      id: row.id,
-      userId: row.user_id,
-      plan: row.plan,
-      status: row.status,
-      startDate: row.start_date,
-      endDate: row.end_date,
-      renewalDate: row.renewal_date,
-      monthlyPrice: row.monthly_price,
-      autoRenew: row.auto_renew,
-      booksPerMonth: row.books_per_month,
-      booksUsedThisMonth: row.books_used_this_month,
-      unlimitedAccess: row.unlimited_access,
-      prioritySupport: row.priority_support,
-      adFree: row.ad_free,
-    }
-  },
-  
-  getUserSubscription: async (userId: string) => {
-    const { data, error } = await supabase
-      .from('user_subscriptions')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle()
-    if (error) throw new ApiError(asErrorMessage(error), 500, error)
-    if (!data) throw new ApiError('No subscription found', 404)
-    return {
-      id: data.id,
-      userId: data.user_id,
-      plan: data.plan,
-      status: data.status,
-      startDate: data.start_date,
-      endDate: data.end_date,
-      renewalDate: data.renewal_date,
-      monthlyPrice: data.monthly_price,
-      autoRenew: data.auto_renew,
-      booksPerMonth: data.books_per_month,
-      booksUsedThisMonth: data.books_used_this_month,
-      unlimitedAccess: data.unlimited_access,
-      prioritySupport: data.priority_support,
-      adFree: data.ad_free,
-    }
-  },
-  
-  renew: async (userId: string) => {
-    const { data, error } = await supabase.rpc('renew_user_subscription', {
-      p_user_id: userId,
-    })
-    if (error) throw new ApiError(asErrorMessage(error), 500, error)
-    return {
-      id: data.id,
-      userId: data.user_id,
-      plan: data.plan,
-      status: data.status,
-      startDate: data.start_date,
-      endDate: data.end_date,
-      renewalDate: data.renewal_date,
-      monthlyPrice: data.monthly_price,
-      autoRenew: data.auto_renew,
-      booksPerMonth: data.books_per_month,
-      booksUsedThisMonth: data.books_used_this_month,
-      unlimitedAccess: data.unlimited_access,
-      prioritySupport: data.priority_support,
-      adFree: data.ad_free,
-    }
-  },
-  
-  cancel: async (userId: string) => {
-    const { data, error } = await supabase.rpc('cancel_user_subscription', {
-      p_user_id: userId,
-    })
-    if (error) throw new ApiError(asErrorMessage(error), 500, error)
-    return {
-      id: data.id,
-      userId: data.user_id,
-      plan: data.plan,
-      status: data.status,
-      startDate: data.start_date,
-      endDate: data.end_date,
-      renewalDate: data.renewal_date,
-      monthlyPrice: data.monthly_price,
-      autoRenew: data.auto_renew,
-      booksPerMonth: data.books_per_month,
-      booksUsedThisMonth: data.books_used_this_month,
-      unlimitedAccess: data.unlimited_access,
-      prioritySupport: data.priority_support,
-      adFree: data.ad_free,
-    }
-  },
-};
-
 // Analytics API types
 export interface UserAnalyticsResponse {
   userId: string
@@ -1177,6 +1063,11 @@ export interface UserAnalyticsResponse {
   readingStreak: number
   averageRatingGiven: number
   reviewsWritten: number
+  /** From `v_analytics_user_summary` (event aggregates; not the same as books read/sold). */
+  activityTotalEvents: number
+  activityCompletedEvents: number
+  activityCancelledEvents: number
+  lastActiveDay: string | null
 }
 
 export interface BookAnalyticsResponse {
@@ -1251,6 +1142,14 @@ export interface CommunityCircleResponse {
   streakDays: number
   tags: string[]
   badge: string
+}
+
+export interface CreateCommunityCircleRequest {
+  name: string
+  description?: string
+  /** Shown as "Hosted by …"; defaults from profile name. */
+  hostDisplayName?: string
+  badge?: string
 }
 
 export interface ChainParticipant {
@@ -1506,13 +1405,16 @@ export interface UserResponse {
   email: string
   firstName: string
   lastName: string
-  creditBalance: number
+  /** Merged server-side JSON (`users.account_settings`). */
+  accountSettings?: Record<string, unknown> | null
 }
 
 export interface UpdateUserRequest {
   firstName?: string
   lastName?: string
   email?: string
+  /** Shallow-merged into existing `account_settings`. */
+  accountSettings?: Record<string, unknown>
 }
 
 // User API functions

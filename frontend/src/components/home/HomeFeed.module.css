@@ -1,0 +1,153 @@
+.feed {
+  margin: 0 1.5rem 2.5rem;
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.feedGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.75rem;
+}
+
+@media (min-width: 900px) {
+  .feedGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+}
+
+.column {
+  border-radius: 20px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  padding: 1.35rem 1.25rem 1.15rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  min-height: 280px;
+}
+
+.columnHeader {
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--app-border) 80%, transparent);
+}
+
+.columnTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--app-text);
+}
+
+.columnLead {
+  margin: 0.35rem 0 0.5rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--app-text) 62%, transparent);
+}
+
+.columnLink {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-primary, #2563eb);
+  text-decoration: none;
+}
+
+.columnLink:hover {
+  text-decoration: underline;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.35rem;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.row:hover {
+  background: color-mix(in srgb, var(--app-text) 4%, transparent);
+}
+
+.thumb {
+  width: 44px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--app-text) 8%, transparent);
+  display: grid;
+  place-items: center;
+}
+
+.thumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbFallback {
+  font-size: 1rem;
+  font-weight: 800;
+  color: color-mix(in srgb, var(--app-text) 45%, transparent);
+}
+
+.lookingBadge {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+  color: color-mix(in srgb, var(--app-text) 55%, transparent);
+  background: color-mix(in srgb, var(--app-text) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--app-text) 10%, transparent);
+}
+
+.rowBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.rowTitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--app-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rowMeta {
+  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--app-text) 58%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.muted {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--app-text) 55%, transparent);
+}

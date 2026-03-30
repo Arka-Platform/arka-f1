@@ -382,39 +382,6 @@
   border-radius: 50%;
 }
 
-.presenceChip {
-  display: none;
-  align-items: center;
-  gap: 0.4rem;
-  max-width: 140px;
-  padding: 0.35rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: color-mix(in srgb, var(--app-text) 78%, transparent);
-  background: color-mix(in srgb, var(--app-text) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--app-text) 10%, transparent);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (min-width: 1024px) {
-  .presenceChip {
-    display: inline-flex;
-  }
-}
-
-.presenceDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: color-mix(in srgb, var(--color-primary, #22c55e) 85%, transparent);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary, #22c55e) 50%, transparent);
-}
-
 .rightSection {
   display: flex;
   align-items: center;

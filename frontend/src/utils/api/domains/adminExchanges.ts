@@ -13,6 +13,49 @@ type Deps = {
   asErrorMessage: (error: unknown) => string
 }
 
+function mapExchangeRow(row: Record<string, unknown>): ExchangeResponse {
+  const r = row as Record<string, unknown>
+  const meta =
+    r.metadata && typeof r.metadata === 'object' && r.metadata !== null
+      ? (r.metadata as Record<string, unknown>)
+      : {}
+  return {
+    id: String(r.id ?? ''),
+    bookId: String(r.book_id ?? ''),
+    bookTitle: String(r.book_title ?? meta.book_title ?? ''),
+    bookAuthor: String(r.book_author ?? meta.book_author ?? ''),
+    sellerId: String(r.seller_id ?? ''),
+    sellerName: String(r.seller_name ?? meta.seller_name ?? ''),
+    buyerId: String(r.buyer_id ?? ''),
+    buyerName: String(r.buyer_name ?? meta.buyer_name ?? ''),
+    amount: Number(r.gross_amount ?? 0),
+    serviceFee: Number(r.platform_fee ?? 0),
+    status: String(r.status ?? ''),
+    createdAt: String(r.created_at ?? ''),
+    updatedAt: String(r.updated_at ?? r.completed_at ?? r.created_at ?? ''),
+  }
+}
+
+function mapNgoRow(n: Record<string, unknown>): NGOResponse {
+  const meta =
+    n.metadata && typeof n.metadata === 'object' && n.metadata !== null
+      ? (n.metadata as Record<string, unknown>)
+      : {}
+  const cats = meta.categories
+  return {
+    id: String(n.id ?? ''),
+    name: String(n.name ?? ''),
+    description: (n.description as string | null | undefined) ?? null,
+    location: typeof meta.location === 'string' ? meta.location : null,
+    verified: !!n.verified,
+    booksReceived: null,
+    categories: Array.isArray(cats) ? cats.filter((x): x is string => typeof x === 'string') : null,
+    contactEmail: (n.contact_email as string | null | undefined) ?? null,
+    contactPhone: (n.contact_phone as string | null | undefined) ?? null,
+    website: (n.website as string | null | undefined) ?? null,
+  }
+}
+
 export function createAdminApi(
   { supabase, ApiError, asErrorMessage }: Deps,
   donationsApi: { getNGOs: () => Promise<NGOResponse[]> }
@@ -40,27 +83,56 @@ export function createAdminApi(
     getNGOs: () => donationsApi.getNGOs(),
 
     createNGO: async (data: CreateNGORequest): Promise<NGOResponse> => {
-      throw new ApiError(
-        'NGO write operations are disabled in the client app. Use Supabase SQL editor/service role backend for admin writes.',
-        501,
-        { operation: 'createNGO', input: data }
-      )
+      const metadata: Record<string, unknown> = {}
+      if (data.location) metadata.location = data.location
+      if (data.categories?.length) metadata.categories = data.categories
+      const { data: row, error } = await supabase
+        .from('ngos')
+        .insert({
+          name: data.name.trim(),
+          description: data.description ?? null,
+          verified: data.verified ?? false,
+          contact_email: data.contactEmail ?? null,
+          contact_phone: data.contactPhone ?? null,
+          website: data.website ?? null,
+          metadata,
+        })
+        .select('*')
+        .single()
+      if (error) throw new ApiError(asErrorMessage(error), 500, error)
+      return mapNgoRow(row as Record<string, unknown>)
     },
 
     updateNGO: async (ngoId: string, data: UpdateNGORequest): Promise<NGOResponse> => {
-      throw new ApiError(
-        'NGO write operations are disabled in the client app. Use Supabase SQL editor/service role backend for admin writes.',
-        501,
-        { operation: 'updateNGO', ngoId, input: data }
-      )
+      const { data: existing, error: fetchErr } = await supabase.from('ngos').select('*').eq('id', ngoId).single()
+      if (fetchErr) throw new ApiError(asErrorMessage(fetchErr), 500, fetchErr)
+      const ex = existing as Record<string, unknown>
+      const prevMeta =
+        ex.metadata && typeof ex.metadata === 'object' && ex.metadata !== null
+          ? { ...(ex.metadata as Record<string, unknown>) }
+          : {}
+      if (data.location !== undefined) prevMeta.location = data.location
+      if (data.categories !== undefined) prevMeta.categories = data.categories
+
+      const patch: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+        metadata: prevMeta,
+      }
+      if (data.name !== undefined) patch.name = data.name.trim()
+      if (data.description !== undefined) patch.description = data.description
+      if (data.contactEmail !== undefined) patch.contact_email = data.contactEmail
+      if (data.contactPhone !== undefined) patch.contact_phone = data.contactPhone
+      if (data.website !== undefined) patch.website = data.website
+      if (data.verified !== undefined) patch.verified = data.verified
+
+      const { data: row, error } = await supabase.from('ngos').update(patch).eq('id', ngoId).select('*').single()
+      if (error) throw new ApiError(asErrorMessage(error), 500, error)
+      return mapNgoRow(row as Record<string, unknown>)
     },
 
     deleteNGO: async (ngoId: string) => {
-      throw new ApiError(
-        'NGO write operations are disabled in the client app. Use Supabase SQL editor/service role backend for admin writes.',
-        501,
-        { operation: 'deleteNGO', ngoId }
-      )
+      const { error } = await supabase.from('ngos').delete().eq('id', ngoId)
+      if (error) throw new ApiError(asErrorMessage(error), 500, error)
     },
 
     verifyNGO: async (ngoId: string) => adminApi.updateNGO(ngoId, { verified: true }),
@@ -85,7 +157,7 @@ export function createExchangesApi({ supabase, ApiError, asErrorMessage }: Deps)
         p_idempotency_key: crypto.randomUUID(),
       })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return created as unknown as ExchangeResponse
+      return mapExchangeRow(created as Record<string, unknown>)
     },
 
     getMyExchanges: async (userId?: string): Promise<ExchangeResponse[]> => {
@@ -93,13 +165,13 @@ export function createExchangesApi({ supabase, ApiError, asErrorMessage }: Deps)
       if (userId) query = query.or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
       const { data, error } = await query
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return (data ?? []) as unknown as ExchangeResponse[]
+      return (data ?? []).map((row: Record<string, unknown>) => mapExchangeRow(row))
     },
 
     getBookExchanges: async (bookId: string): Promise<ExchangeResponse[]> => {
       const { data, error } = await supabase.from('exchanges').select('*').eq('book_id', bookId)
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return (data ?? []) as unknown as ExchangeResponse[]
+      return (data ?? []).map((row: Record<string, unknown>) => mapExchangeRow(row))
     },
 
     confirm: async (exchangeId: string, _userId?: string): Promise<ExchangeResponse> => {
@@ -108,7 +180,7 @@ export function createExchangesApi({ supabase, ApiError, asErrorMessage }: Deps)
         p_new_status: 'COMPLETED',
       })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return data as unknown as ExchangeResponse
+      return mapExchangeRow(data as Record<string, unknown>)
     },
 
     complete: async (exchangeId: string, _userId?: string): Promise<ExchangeResponse> => {
@@ -117,7 +189,7 @@ export function createExchangesApi({ supabase, ApiError, asErrorMessage }: Deps)
         p_new_status: 'COMPLETED',
       })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return data as unknown as ExchangeResponse
+      return mapExchangeRow(data as Record<string, unknown>)
     },
 
     cancel: async (exchangeId: string, _userId?: string): Promise<ExchangeResponse> => {
@@ -126,7 +198,7 @@ export function createExchangesApi({ supabase, ApiError, asErrorMessage }: Deps)
         p_new_status: 'CANCELLED',
       })
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
-      return data as unknown as ExchangeResponse
+      return mapExchangeRow(data as Record<string, unknown>)
     },
 
     calculateFee: async (bookPrice: number): Promise<FeeCalculationResponse> => ({

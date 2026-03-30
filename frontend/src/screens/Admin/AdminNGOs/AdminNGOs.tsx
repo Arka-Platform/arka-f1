@@ -181,7 +181,7 @@ const AdminNGOs: React.FC = () => {
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>NGO Management</h1>
-          <p className={styles.subtitle}>Manage NGOs for book donations</p>
+          <p className={styles.subtitle}>Manage partner organizations for bulk book offers</p>
         </div>
         <div className={styles.headerActions}>
           <Button
@@ -310,7 +310,7 @@ const AdminNGOs: React.FC = () => {
                   checked={verified}
                   onChange={(e) => setVerified(e.target.checked)}
                 />
-                <span>Verified NGO (will appear on donations page)</span>
+                <span>Verified partner (shown on organization offer page)</span>
               </label>
             </div>
 

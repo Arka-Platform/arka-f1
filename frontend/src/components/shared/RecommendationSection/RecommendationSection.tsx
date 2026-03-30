@@ -164,7 +164,7 @@ const RecommendationSection: React.FC<RecommendationSectionProps> = ({
               <BookCard
                 book={book}
                 onButtonClick={handleBookClick}
-                buttonText="Get This Book"
+                buttonText="Add to cart"
                 enableUserCollections={false}
               />
             </div>

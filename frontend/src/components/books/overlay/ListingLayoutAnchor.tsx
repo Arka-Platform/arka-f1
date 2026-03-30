@@ -25,7 +25,7 @@ export default function ListingLayoutAnchor({ listing, layoutId, onClick, rightS
     >
       <div style={{ display: 'grid', gap: 2 }}>
         <div className={styles.anchorTitle}>{listing.title}</div>
-        <div className={styles.anchorPrice}>{subtitle ?? `Credits: ₹${listing.creditPrice}`}</div>
+        <div className={styles.anchorPrice}>{subtitle ?? `₹${listing.price}`}</div>
       </div>
       {rightSlot}
     </motion.button>

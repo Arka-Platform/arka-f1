@@ -1,8 +1,5 @@
-'use client'
-
-import Subscriptions from '../../screens/Subscriptions/Subscriptions'
+import { redirect } from 'next/navigation'
 
 export default function SubscriptionsPage() {
-  return <Subscriptions />
+  redirect('/home')
 }
-

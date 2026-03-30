@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
+import { usersApi } from '../../utils/api'
 import Button from '../../components/shared/Button/Button'
 import Select from '../../components/shared/Select/Select'
 import SelectableTag from '../../components/shared/SelectableTag/SelectableTag'
@@ -8,7 +10,8 @@ import styles from './Preferences.module.css'
 
 const Preferences: React.FC = () => {
   const router = useRouter()
-  const { success } = useToast()
+  const { user } = useAuth()
+  const { success, error: showError } = useToast()
   const [formData, setFormData] = useState({
     favoriteGenres: [] as string[],
     occupation: '',
@@ -21,6 +24,29 @@ const Preferences: React.FC = () => {
     purpose?: string
     readingFrequency?: string
   }>({})
+
+  useEffect(() => {
+    if (!user?.id) return
+    void (async () => {
+      try {
+        const row = await usersApi.getById(user.id)
+        const rp = row.accountSettings?.readingPreferences
+        if (rp && typeof rp === 'object' && !Array.isArray(rp)) {
+          const o = rp as Record<string, unknown>
+          setFormData({
+            favoriteGenres: Array.isArray(o.favoriteGenres)
+              ? o.favoriteGenres.filter((x): x is string => typeof x === 'string')
+              : [],
+            occupation: typeof o.occupation === 'string' ? o.occupation : '',
+            purpose: Array.isArray(o.purpose) ? o.purpose.filter((x): x is string => typeof x === 'string') : [],
+            readingFrequency: typeof o.readingFrequency === 'string' ? o.readingFrequency : '',
+          })
+        }
+      } catch {
+        // optional load
+      }
+    })()
+  }, [user?.id])
 
   const genres = [
     'Fiction',
@@ -131,15 +157,20 @@ const Preferences: React.FC = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (validateForm()) {
-      // TODO: Implement backend API for saving preferences
-      // For now, save to localStorage
-      localStorage.setItem('arka_user_preferences', JSON.stringify(formData))
+    if (!validateForm()) return
+    if (!user?.id) {
+      showError('Please log in to save preferences.')
+      router.push('/login')
+      return
+    }
+    try {
+      await usersApi.update(user.id, { accountSettings: { readingPreferences: formData } })
       success('Preferences saved successfully!')
-      // Navigate to home page after successful preferences submission
       router.push('/home')
+    } catch (err: any) {
+      showError(err?.message || 'Failed to save preferences')
     }
   }
 

@@ -107,19 +107,21 @@ const UserMenu: React.FC = () => {
             </svg>
             Account Settings
           </Link>
-          <Link
-            href="/analytics"
-            className={styles.dropdownItem}
-            onClick={() => setIsOpen(false)}
-            role="menuitem"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="20" x2="18" y2="10" />
-              <line x1="12" y1="20" x2="12" y2="4" />
-              <line x1="6" y1="20" x2="6" y2="14" />
-            </svg>
-            Analytics
-          </Link>
+          {user.isAdmin && (
+            <Link
+              href="/admin/analytics"
+              className={styles.dropdownItem}
+              onClick={() => setIsOpen(false)}
+              role="menuitem"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              Analytics
+            </Link>
+          )}
           <Link
             href="/bookshelf"
             className={styles.dropdownItem}
@@ -131,22 +133,6 @@ const UserMenu: React.FC = () => {
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
             </svg>
             My Bookshelf
-          </Link>
-          <Link
-            href="/subscriptions"
-            className={`${styles.dropdownItem} ${styles.subscriptionItem}`}
-            onClick={() => setIsOpen(false)}
-            role="menuitem"
-          >
-            <div className={styles.subscriptionItemContent}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                <polyline points="17 21 17 13 7 13 7 21" />
-                <polyline points="7 3 7 8 15 8" />
-              </svg>
-              <span>Subscriptions</span>
-            </div>
-            <span className={styles.subscriptionBadge}>Save</span>
           </Link>
           <Link
             href="/orders"

@@ -9,11 +9,10 @@ import styles from './ContributeToUnlockModal.module.css'
 type Props = {
   open: boolean
   book: Book | null
-  presenceLabel: string
   onClose: () => void
 }
 
-export default function ContributeToUnlockModal({ open, book, presenceLabel, onClose }: Props) {
+export default function ContributeToUnlockModal({ open, book, onClose }: Props) {
   const router = useRouter()
   const cover = book?.image || book?.thumbnail
 
@@ -52,48 +51,35 @@ export default function ContributeToUnlockModal({ open, book, presenceLabel, onC
             className={styles.panel}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="contribute-unlock-title"
+            aria-labelledby="participation-nudge-title"
             initial={{ opacity: 0, scale: 0.94, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ type: 'spring', stiffness: 320, damping: 28 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className={styles.presenceBar}>
-              <div>
-                <div className={styles.presenceLabel}>Your presence in the circle</div>
-                <div className={styles.presenceHint}>{presenceLabel} — built from how you give back, not scores.</div>
-              </div>
-              <div className={styles.presenceWave} aria-hidden>
-                <span />
-                <span />
-                <span />
-                <span />
-              </div>
-            </div>
-
             <motion.div
-              className={styles.lockedCard}
-              initial={{ rotate: -2, scale: 0.96 }}
-              animate={{ rotate: [0, -5, 5, -4, 4, 0], scale: 1 }}
-              transition={{ duration: 0.55, ease: 'easeInOut' }}
+              className={styles.bookCard}
+              initial={{ rotate: -1, scale: 0.97 }}
+              animate={{ rotate: [0, -3, 3, -2, 2, 0], scale: 1 }}
+              transition={{ duration: 0.5, ease: 'easeInOut' }}
             >
               {cover ? (
-                <img src={cover} alt="" className={styles.lockedThumb} referrerPolicy="no-referrer" />
+                <img src={cover} alt="" className={styles.bookThumb} referrerPolicy="no-referrer" />
               ) : null}
-              <div className={styles.lockedCardInner}>
-                <span className={styles.lockBadge} aria-hidden>
-                  🔒
+              <div className={styles.bookCardInner}>
+                <span className={styles.bookGlyph} aria-hidden>
+                  📖
                 </span>
               </div>
             </motion.div>
 
-            <h2 id="contribute-unlock-title" className={styles.title}>
-              Contribute to unlock the library
+            <h2 id="participation-nudge-title" className={styles.title}>
+              This space works when books keep moving.
             </h2>
             <p className={styles.subtitle}>
-              This catalog stays alive when readers share. You&apos;ve already claimed your welcome book — add a
-              small act of contribution to keep browsing.
+              You have already added one book from the pool. To keep things balanced, add another title to the flow
+              when you can — offer, match a &quot;looking for&quot;, or open your shelf.
             </p>
 
             <div className={styles.options}>
@@ -102,17 +88,17 @@ export default function ContributeToUnlockModal({ open, book, presenceLabel, onC
                   📤
                 </span>
                 <span className={styles.optionBody}>
-                  <span className={styles.optionTitle}>Upload a book</span>
-                  <span className={styles.optionDesc}>List something you&apos;re ready to pass on — it becomes part of the pool.</span>
+                  <span className={styles.optionTitle}>Offer a book</span>
+                  <span className={styles.optionDesc}>List something you are ready to pass on.</span>
                 </span>
               </button>
               <button type="button" className={styles.option} onClick={() => go('/books#community-gets')}>
                 <span className={styles.optionIcon} aria-hidden>
-                  🤝
+                  ◇
                 </span>
                 <span className={styles.optionBody}>
-                  <span className={styles.optionTitle}>Fulfill someone&apos;s request</span>
-                  <span className={styles.optionDesc}>See what others are looking for and offer a copy if you have it.</span>
+                  <span className={styles.optionTitle}>Match a &quot;looking for&quot;</span>
+                  <span className={styles.optionDesc}>See what people want and respond if you have it.</span>
                 </span>
               </button>
               <button type="button" className={styles.option} onClick={() => go('/inventory')}>
@@ -120,19 +106,19 @@ export default function ContributeToUnlockModal({ open, book, presenceLabel, onC
                   📚
                 </span>
                 <span className={styles.optionBody}>
-                  <span className={styles.optionTitle}>Offer a book you already listed</span>
-                  <span className={styles.optionDesc}>Open your shelf and make sure a title is available for others.</span>
+                  <span className={styles.optionTitle}>Open your shelf</span>
+                  <span className={styles.optionDesc}>Make sure a listed copy is available.</span>
                 </span>
               </button>
             </div>
 
             <div className={styles.footer}>
               <p className={styles.footerNote}>
-                One welcome pickup is on us. After that, we ask everyone to give back in some small way — so this
-                feels like a shared room, not a vending machine.
+                Nothing here is about being &quot;good&quot; or &quot;needy&quot; — it is the same system from both
+                sides. Come back when it fits; the nudge will wait.
               </p>
               <button type="button" className={styles.closeBtn} onClick={onClose}>
-                Not now
+                Close
               </button>
             </div>
           </motion.div>

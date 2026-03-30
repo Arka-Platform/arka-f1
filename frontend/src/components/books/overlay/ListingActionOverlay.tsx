@@ -93,7 +93,7 @@ export default function ListingActionOverlay({ activeListing, layoutId, onSelect
       author: activeListing.author,
       description: activeListing.description,
       genre: activeListing.genre ?? undefined,
-      price: activeListing.creditPrice,
+      price: activeListing.price,
       status: 'AVAILABLE',
       image: activeListing.coverUrl ?? undefined,
       thumbnail: activeListing.coverUrl ?? undefined,
@@ -215,8 +215,8 @@ export default function ListingActionOverlay({ activeListing, layoutId, onSelect
         <motion.button type="button" className={styles.pillButton} whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} onClick={handleCart}>
           <CartIcon />
           <div className={styles.pillText}>
-            <div className={styles.pillTitle}>Get Book</div>
-            <div className={styles.pillSubtitle}>{activeListing ? `Credits: ₹${activeListing.creditPrice}` : ''}</div>
+            <div className={styles.pillTitle}>Add to cart</div>
+            <div className={styles.pillSubtitle}>{activeListing ? `₹${activeListing.price}` : ''}</div>
           </div>
         </motion.button>
 

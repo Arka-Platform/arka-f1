@@ -1,66 +1,129 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { communityApi, CommunityCircleResponse } from '../../../utils/api'
+import { useAuth } from '../../../contexts/AuthContext'
 import { useToast } from '../../../contexts/ToastContext'
+import Button from '../../shared/Button/Button'
+import CreateCircleModal, { type CreateCircleFormPayload } from '../CreateCircleModal/CreateCircleModal'
 import styles from './CircleHub.module.css'
 
 const CircleHub: React.FC = () => {
   const router = useRouter()
-  const { error: showError } = useToast()
+  const { user, isAuthenticated } = useAuth()
+  const { error: showError, success } = useToast()
   const [circles, setCircles] = useState<CommunityCircleResponse[]>([])
   const [loading, setLoading] = useState(true)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+
+  const loadCircles = useCallback(async () => {
+    try {
+      setLoading(true)
+      const data = await communityApi.getCircles()
+      setCircles(data)
+    } catch (error: unknown) {
+      console.error('Error loading circles:', error)
+      showError('Failed to load community circles. Please try again later.')
+      setCircles([])
+    } finally {
+      setLoading(false)
+    }
+  }, [showError])
 
   useEffect(() => {
-    const loadCircles = async () => {
-      try {
-        setLoading(true)
-        const data = await communityApi.getCircles()
-        setCircles(data)
-      } catch (error: any) {
-        console.error('Error loading circles:', error)
-        showError('Failed to load community circles. Please try again later.')
-        setCircles([])
-      } finally {
-        setLoading(false)
-      }
+    void loadCircles()
+  }, [loadCircles])
+
+  const openCreate = () => {
+    if (!isAuthenticated || !user?.id) {
+      showError('Sign in to create a reading circle.')
+      router.push('/login')
+      return
     }
-    loadCircles()
-  }, [showError])
+    setFormError(null)
+    setCreateOpen(true)
+  }
+
+  const closeCreate = () => {
+    if (submitting) return
+    setCreateOpen(false)
+    setFormError(null)
+  }
+
+  const handleCreateSubmit = async (payload: CreateCircleFormPayload) => {
+    if (!user?.id) return
+    setFormError(null)
+    setSubmitting(true)
+    try {
+      const created = await communityApi.createCircle(user.id, {
+        name: payload.name,
+        description: payload.description || undefined,
+        hostDisplayName: payload.hostDisplayName || undefined,
+      })
+      success('Reading circle created.')
+      setCreateOpen(false)
+      await loadCircles()
+      router.push(`/circles/${created.id}`)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Could not create circle.'
+      setFormError(msg)
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   const handleCircleClick = (circleId: string) => {
     router.push(`/circles/${circleId}`)
   }
 
-  if (loading) {
-    return (
-      <section className={styles.circleSection}>
-        <div className={styles.sectionHeader}>
-          <span className={styles.sectionEyebrow}>Community</span>
-          <h2 className={styles.sectionTitle}>Reading Circles</h2>
-          <p className={styles.sectionSubtitle}>
-            Join dedicated reading circles that keep the exchange alive.
-          </p>
-        </div>
-        <div className={styles.emptyState}>Loading circles...</div>
-      </section>
-    )
-  }
-
-  return (
-    <section className={styles.circleSection}>
-      <div className={styles.sectionHeader}>
+  const headerBlock = (
+    <div className={styles.sectionHeader}>
+      <div className={styles.sectionHeaderText}>
         <span className={styles.sectionEyebrow}>Community</span>
         <h2 className={styles.sectionTitle}>Reading Circles</h2>
         <p className={styles.sectionSubtitle}>
-          Join dedicated reading circles that keep the exchange alive.
+          Start a circle or join one—keep books moving together.
         </p>
       </div>
+      <div className={styles.sectionHeaderActions}>
+        <Button type="button" variant="primary" onClick={openCreate}>
+          Create a circle
+        </Button>
+      </div>
+    </div>
+  )
 
-      {circles.length === 0 ? (
+  return (
+    <section className={styles.circleSection}>
+      {headerBlock}
+
+      {loading ? (
+        <div className={styles.emptyState}>Loading circles...</div>
+      ) : circles.length === 0 ? (
         <div className={styles.emptyState}>
-          No reading circles available at the moment. Check back soon!
+          <p>No reading circles yet.</p>
+          <p className={styles.emptyHint}>
+            {isAuthenticated ? (
+              <>
+                Be the first to{' '}
+                <button type="button" className={styles.inlineLink} onClick={openCreate}>
+                  create one
+                </button>
+                .
+              </>
+            ) : (
+              <>
+                <Link href="/login" className={styles.inlineLink}>
+                  Sign in
+                </Link>{' '}
+                to create a circle.
+              </>
+            )}
+          </p>
         </div>
       ) : (
         <div className={styles.circlesGrid}>
@@ -106,10 +169,9 @@ const CircleHub: React.FC = () => {
               )}
 
               <div className={styles.circleFooter}>
-                <span className={styles.streakPill}>
-                  🔥 Active for {circle.streakDays} days
-                </span>
+                <span className={styles.streakPill}>🔥 Active for {circle.streakDays} days</span>
                 <button
+                  type="button"
                   className={styles.ghostButton}
                   onClick={(e) => {
                     e.stopPropagation()
@@ -126,6 +188,14 @@ const CircleHub: React.FC = () => {
           ))}
         </div>
       )}
+
+      <CreateCircleModal
+        open={createOpen}
+        submitting={submitting}
+        formError={formError}
+        onClose={closeCreate}
+        onSubmit={handleCreateSubmit}
+      />
     </section>
   )
 }

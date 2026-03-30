@@ -152,7 +152,7 @@ const CircleDetail: React.FC = () => {
                   key={book.id}
                   book={book}
                   onButtonClick={handleBookClick}
-                  buttonText="Get This Book"
+                  buttonText="Add to cart"
                 />
               ))}
             </div>

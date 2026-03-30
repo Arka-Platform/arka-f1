@@ -8,6 +8,7 @@ import BookSearchInput from '../../components/shared/BookSearchInput/BookSearchI
 import TrustScoreBadge from '../../components/shared/TrustScoreBadge/TrustScoreBadge'
 import RecentlyServedCarousel from '../../components/shared/RecentlyServedCarousel/RecentlyServedCarousel'
 import { demandApi, BookRequestResponse, CreateBookRequestRequest, CreateRequestResponse, MatchResponse, AutoFillSuggestions, BookResponse, trustScoreApi, usersApi } from '../../utils/api'
+import { openContactRequesterEmail } from '../../utils/contactRequester'
 import styles from './BookRequests.module.css'
 
 
@@ -788,10 +789,18 @@ const BookRequests: React.FC = () => {
     success('Get saved. You can view matches later.')
   }
 
-  const handleFulfill = (_requestId: string) => {
-    // Navigate to fulfillment page or show modal
-    // For now, just show a message
-      showError('Fulfillment feature coming soon. You can contact the getter directly.')
+  const handleFulfill = (requestId: string) => {
+    const r = [...requests, ...myRequests].find((x) => x.id === requestId)
+    if (!r) {
+      showError('Request not found.')
+      return
+    }
+    const result = openContactRequesterEmail({ requesterEmail: r.requesterEmail, title: r.title })
+    if (!result.ok) {
+      showError('No email is available for this requester yet.')
+      return
+    }
+    success('Opening your email app to contact the requester.')
   }
 
   const handleCancel = async (requestId: string) => {
@@ -1069,7 +1078,7 @@ const BookRequests: React.FC = () => {
 
       <div className={styles.content}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Share If You Have</h2>
+          <h2 className={styles.sectionTitle}>People are looking for</h2>
           {user && (
             <Button
               variant="outline"

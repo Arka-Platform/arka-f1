@@ -10,58 +10,28 @@ import React, {
   type ReactNode,
 } from 'react'
 import type { Book } from '../components/shared/BookCard/BookCard'
-
-const STORAGE_KEY = 'arka_contribution_v1'
-
-export type ContributionKind = 'listed_book' | 'fulfilled_get' | 'community_offer'
-
-type ContributionState = {
-  /** After one free catalog pickup (first distinct book), further picks need presence. */
-  freeIntroClaimConsumed: boolean
-  /** Signals of giving back — not “points”, used only for access + soft copy. */
-  presenceCount: number
-}
+import { usersApi } from '../utils/api'
+import {
+  getParticipationBalance,
+  getParticipationState,
+  type ParticipationState,
+  type ParticipationUser,
+} from '../utils/participation'
+import { useAuth } from './AuthContext'
 
 type ContributionContextValue = {
-  hydrated: boolean
-  freeIntroClaimConsumed: boolean
-  presenceCount: number
-  /** Short label for UI: newcomer / contributor / steady presence */
-  presenceLabel: string
+  /** True after first fetch attempt for the current user (or immediately when logged out). */
+  countsLoaded: boolean
+  offerCount: number
+  takeCount: number
+  balance: number
+  participationState: ParticipationState
   pendingGateBook: Book | null
   gateOpen: boolean
-  mayClaimAdditionalBook: () => boolean
-  /** Call after a successful add of a new line item (CartContext). */
-  afterSuccessfulNewLineAdd: () => void
-  /** Real contribution events (listing, fulfilling a get, etc.) */
-  registerPresence: (kind: ContributionKind) => void
+  /** Refetch counts from server (after order, new listing, etc.). */
+  refreshParticipation: () => Promise<void>
   openContributionGate: (book: Book) => void
   closeContributionGate: () => void
-}
-
-const defaultState: ContributionState = {
-  freeIntroClaimConsumed: false,
-  presenceCount: 0,
-}
-
-function parseStored(raw: string | null): ContributionState {
-  if (!raw) return { ...defaultState }
-  try {
-    const p = JSON.parse(raw) as Partial<ContributionState>
-    return {
-      freeIntroClaimConsumed: !!p.freeIntroClaimConsumed,
-      presenceCount: typeof p.presenceCount === 'number' && p.presenceCount >= 0 ? p.presenceCount : 0,
-    }
-  } catch {
-    return { ...defaultState }
-  }
-}
-
-function presenceLabelFor(count: number): string {
-  if (count <= 0) return 'New to the circle'
-  if (count === 1) return 'Contributor'
-  if (count <= 3) return 'Active presence'
-  return 'Steady presence'
 }
 
 const ContributionContext = createContext<ContributionContextValue | undefined>(undefined)
@@ -73,40 +43,49 @@ export function useContribution() {
 }
 
 export function ContributionProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<ContributionState>(defaultState)
-  const [hydrated, setHydrated] = useState(false)
+  const { user } = useAuth()
+  const [countsLoaded, setCountsLoaded] = useState(false)
+  const [offerCount, setOfferCount] = useState(0)
+  const [takeCount, setTakeCount] = useState(0)
   const [pendingGateBook, setPendingGateBook] = useState<Book | null>(null)
   const [gateOpen, setGateOpen] = useState(false)
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    setState(parseStored(localStorage.getItem(STORAGE_KEY)))
-    setHydrated(true)
-  }, [])
+  const refreshParticipation = useCallback(async () => {
+    if (!user?.id) {
+      setOfferCount(0)
+      setTakeCount(0)
+      setCountsLoaded(true)
+      return
+    }
+    try {
+      const { offerCount: o, takeCount: t } = await usersApi.getParticipationCounts(user.id)
+      setOfferCount(o)
+      setTakeCount(t)
+    } catch {
+      setOfferCount(0)
+      setTakeCount(0)
+    } finally {
+      setCountsLoaded(true)
+    }
+  }, [user?.id])
 
   useEffect(() => {
-    if (!hydrated || typeof window === 'undefined') return
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-  }, [state, hydrated])
+    setCountsLoaded(false)
+    void refreshParticipation()
+  }, [refreshParticipation])
 
-  const mayClaimAdditionalBook = useCallback(() => {
-    if (!hydrated) return true
-    return !state.freeIntroClaimConsumed || state.presenceCount > 0
-  }, [hydrated, state.freeIntroClaimConsumed, state.presenceCount])
+  const participationUser: ParticipationUser = useMemo(
+    () => ({ offerCount, takeCount }),
+    [offerCount, takeCount]
+  )
 
-  const afterSuccessfulNewLineAdd = useCallback(() => {
-    setState((prev) => {
-      if (prev.freeIntroClaimConsumed) return prev
-      return { ...prev, freeIntroClaimConsumed: true }
-    })
-  }, [])
+  const participationState: ParticipationState = useMemo(() => {
+    if (!user?.id) return 'ALLOW'
+    if (!countsLoaded) return 'ALLOW'
+    return getParticipationState(participationUser)
+  }, [user?.id, countsLoaded, participationUser])
 
-  const registerPresence = useCallback((_kind: ContributionKind) => {
-    setState((prev) => ({
-      ...prev,
-      presenceCount: prev.presenceCount + 1,
-    }))
-  }, [])
+  const balance = useMemo(() => getParticipationBalance(participationUser), [participationUser])
 
   const openContributionGate = useCallback((book: Book) => {
     setPendingGateBook(book)
@@ -120,27 +99,26 @@ export function ContributionProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<ContributionContextValue>(
     () => ({
-      hydrated,
-      freeIntroClaimConsumed: state.freeIntroClaimConsumed,
-      presenceCount: state.presenceCount,
-      presenceLabel: presenceLabelFor(state.presenceCount),
+      countsLoaded,
+      offerCount,
+      takeCount,
+      balance,
+      participationState,
       pendingGateBook,
       gateOpen,
-      mayClaimAdditionalBook,
-      afterSuccessfulNewLineAdd,
-      registerPresence,
+      refreshParticipation,
       openContributionGate,
       closeContributionGate,
     }),
     [
-      hydrated,
-      state.freeIntroClaimConsumed,
-      state.presenceCount,
+      countsLoaded,
+      offerCount,
+      takeCount,
+      balance,
+      participationState,
       pendingGateBook,
       gateOpen,
-      mayClaimAdditionalBook,
-      afterSuccessfulNewLineAdd,
-      registerPresence,
+      refreshParticipation,
       openContributionGate,
       closeContributionGate,
     ]

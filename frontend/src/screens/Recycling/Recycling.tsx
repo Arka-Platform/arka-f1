@@ -37,8 +37,8 @@ const WastePaperCard: React.FC<WastePaperCardProps> = ({ item, onSchedulePickup 
           <span className={styles.detailValue}>{item.weightKg} kg</span>
         </div>
         <div className={styles.detailItem}>
-          <span className={styles.detailLabel}>Credit Value:</span>
-          <span className={styles.detailValue}>₹{item.creditValue.toFixed(2)}</span>
+          <span className={styles.detailLabel}>Estimated value:</span>
+          <span className={styles.detailValue}>₹{item.estimatedValue.toFixed(2)}</span>
         </div>
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>Status:</span>
@@ -108,7 +108,7 @@ const Recycling: React.FC = () => {
       <div className={styles.header}>
         <h1 className={styles.pageTitle}>Recycling & Waste Paper Pickup</h1>
         <p className={styles.subtitle}>
-          Browse available waste paper for recycling and schedule a pickup. Earn credits by contributing to our eco-friendly recycling program.
+          Browse available waste paper for recycling and schedule a pickup. Part of the same circulation idea — materials move instead of sitting.
         </p>
       </div>
 

@@ -43,7 +43,7 @@ const ActivityFeed: React.FC = () => {
         activityItems.push({
           id: `served-${request.id}`,
           type: request.status === 'COMPLETED' ? 'request_completed' : 'request_fulfilled',
-          message: `${request.requesterName} just got "${request.title}" by ${request.author}! ${request.fulfilledByName ? `Fulfilled by ${request.fulfilledByName}` : ''}`,
+          message: `${request.requesterName} connected on "${request.title}" by ${request.author}.${request.fulfilledByName ? ` With ${request.fulfilledByName}.` : ''}`,
           timestamp: request.fulfilledAt || request.createdAt,
           request
         })
@@ -66,7 +66,7 @@ const ActivityFeed: React.FC = () => {
         activityItems.push({
           id: 'most-requested',
           type: 'most_requested',
-          message: `🔥 "${mostRequested.title}" by ${mostRequested.author} is the most requested book (${mostRequested.requestCount} requests)!`,
+          message: `"${mostRequested.title}" by ${mostRequested.author} — ${mostRequested.requestCount} people looking right now.`,
           timestamp: new Date().toISOString(), // Use current time for sorting
           requestCount: mostRequested.requestCount
         })

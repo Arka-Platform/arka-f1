@@ -79,7 +79,7 @@ const BookDetails: React.FC = () => {
     try {
       setSubmitting(true)
       await exchangesApi.create({ bookId: book.id }, user!.id)
-      success('Swap request sent successfully')
+      success('Exchange recorded successfully')
       router.push('/exchanges/my')
     } catch (err: any) {
       showError(err.message || 'Failed to send swap request')
@@ -143,13 +143,17 @@ const BookDetails: React.FC = () => {
 
               <div className={styles.priceBlock}>
                 <div className={styles.price}>{formattedPrice}</div>
-                <div className={styles.ratingLine}>
-                  <span className={styles.star}>★</span>
-                  <span className={styles.ratingValue}>{(book.averageRating ?? 4.8).toFixed(1)}</span>
-                  <span className={styles.ratingCount}>
-                    ({(book.ratingsCount ?? 1240).toLocaleString('en-IN')})
-                  </span>
-                </div>
+                {book.averageRating != null && book.ratingsCount != null ? (
+                  <div className={styles.ratingLine}>
+                    <span className={styles.star}>★</span>
+                    <span className={styles.ratingValue}>{book.averageRating.toFixed(1)}</span>
+                    <span className={styles.ratingCount}>({book.ratingsCount.toLocaleString('en-IN')})</span>
+                  </div>
+                ) : (
+                  <div className={styles.ratingLine}>
+                    <span className={styles.ratingCount}>No ratings yet</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -162,7 +166,7 @@ const BookDetails: React.FC = () => {
 
             <div className={styles.primaryActions}>
               <Button variant="primary" onClick={handleSwapRequest} disabled={submitting}>
-                Get This Book
+                Start exchange
               </Button>
               <Button variant="secondary" onClick={handleAddWishlist} disabled={submitting}>
                 Add to Wishlist

@@ -25,68 +25,7 @@
   color: #f8fafc;
 }
 
-.presenceBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.65rem 0.85rem;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  margin-bottom: 1.25rem;
-}
-
-.presenceLabel {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: rgba(248, 250, 252, 0.88);
-  letter-spacing: 0.02em;
-}
-
-.presenceHint {
-  font-size: 0.72rem;
-  color: rgba(226, 232, 240, 0.55);
-  margin-top: 0.2rem;
-}
-
-.presenceWave {
-  display: flex;
-  gap: 3px;
-  align-items: flex-end;
-  height: 22px;
-}
-
-.presenceWave span {
-  width: 4px;
-  border-radius: 2px;
-  background: rgba(251, 191, 36, 0.35);
-  animation: wave 1.2s ease-in-out infinite;
-}
-
-.presenceWave span:nth-child(2) {
-  animation-delay: 0.15s;
-}
-.presenceWave span:nth-child(3) {
-  animation-delay: 0.3s;
-}
-.presenceWave span:nth-child(4) {
-  animation-delay: 0.45s;
-}
-
-@keyframes wave {
-  0%,
-  100% {
-    height: 6px;
-    opacity: 0.5;
-  }
-  50% {
-    height: 18px;
-    opacity: 1;
-  }
-}
-
-.lockedCard {
+.bookCard {
   position: relative;
   margin: 0 auto 1.35rem;
   width: 140px;
@@ -117,7 +56,7 @@
   }
 }
 
-.lockedCardInner {
+.bookCardInner {
   width: 100%;
   height: 100%;
   background: linear-gradient(145deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%);
@@ -126,21 +65,21 @@
   justify-content: center;
 }
 
-.lockedThumb {
+.bookThumb {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.35;
+  opacity: 0.4;
   filter: saturate(0.85);
 }
 
-.lockBadge {
+.bookGlyph {
   position: relative;
   z-index: 2;
   font-size: 2.25rem;
-  filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.6));
+  filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.45));
 }
 
 .title {

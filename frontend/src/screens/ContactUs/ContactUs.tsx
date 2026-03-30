@@ -1,11 +1,14 @@
 import React, { useState } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
+import { contactInquiriesApi } from '../../utils/api'
 import Input from '../../components/shared/Input/Input'
 import Textarea from '../../components/shared/Textarea/Textarea'
 import Button from '../../components/shared/Button/Button'
 import styles from './ContactUs.module.css'
 
 const ContactUs: React.FC = () => {
+  const { user } = useAuth()
   const { success, error: showError } = useToast()
   const [formData, setFormData] = useState({
     name: '',
@@ -23,10 +26,14 @@ const ContactUs: React.FC = () => {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate API call - in production, this would call a backend endpoint
     try {
-      // TODO: Replace with actual API call when backend endpoint is available
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await contactInquiriesApi.submit({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        subject: formData.subject.trim(),
+        message: formData.message.trim(),
+        userId: user?.id ?? null,
+      })
       success('Thank you for your message! We will get back to you soon.')
       setFormData({ name: '', email: '', subject: '', message: '' })
     } catch (err) {

@@ -1,8 +1,5 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-import Analytics from '../../screens/Analytics/Analytics'
-
-export default function AnalyticsPage() {
-  return <Analytics />
+export default function LegacyAnalyticsRedirect() {
+  redirect('/admin/analytics')
 }
-

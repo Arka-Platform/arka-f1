@@ -257,7 +257,7 @@ export default function BookActionOverlay({ activeBook, layoutId, onSelectDetail
                 book={activeBook}
                 layoutId={layoutId}
                 onClick={onSelectDetail ? () => onSelectDetail(activeBook.id) : undefined}
-                subtitle={activeBook.price != null ? `Credits: ${activeBook.price}` : 'Book'}
+                subtitle={activeBook.price != null ? `₹${activeBook.price}` : 'Book'}
               />
             </motion.div>
           ) : null}
@@ -282,8 +282,8 @@ export default function BookActionOverlay({ activeBook, layoutId, onSelectDetail
         >
           <CartIcon />
           <div className={styles.pillText}>
-            <div className={styles.pillTitle}>Get Book</div>
-            <div className={styles.pillSubtitle}>{activeBook?.price != null ? `Credits: ${activeBook.price}` : 'Add to cart'}</div>
+            <div className={styles.pillTitle}>Add to cart</div>
+            <div className={styles.pillSubtitle}>{activeBook?.price != null ? `₹${activeBook.price}` : 'Add to cart'}</div>
           </div>
         </motion.button>
 

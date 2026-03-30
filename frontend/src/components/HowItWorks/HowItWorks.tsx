@@ -18,7 +18,7 @@ const HowItWorks: React.FC = () => {
 
   const flows: LifecycleFlow[] = [
     {
-      title: 'Sell',
+      title: 'Offer',
       color: '#4A90E2',
       steps: [
         {
@@ -37,8 +37,8 @@ const HowItWorks: React.FC = () => {
           ),
         },
         {
-          title: 'Handover Upon Request',
-          description: 'When someone buys your book, hand it over as requested. We coordinate the pickup.',
+          title: 'Hand off',
+          description: 'When someone takes your copy, you pass it on. Pickup is coordinated the same way every time.',
           icon: (
             <svg viewBox="0 0 100 100" className={styles.stepIcon} aria-hidden="true">
               <rect x="30" y="40" width="40" height="30" fill="#4A90E2" rx="3" />
@@ -48,8 +48,8 @@ const HowItWorks: React.FC = () => {
           ),
         },
         {
-          title: 'Get Paid',
-          description: 'Receive secure payment directly to your account when your book sells.',
+          title: 'Settle up',
+          description: 'Payment lands in your account when the handoff is complete — same rules for everyone.',
           icon: (
             <svg viewBox="0 0 100 100" className={styles.stepIcon} aria-hidden="true">
               <circle cx="50" cy="50" r="35" fill="#50C878" />
@@ -62,7 +62,7 @@ const HowItWorks: React.FC = () => {
       ],
     },
     {
-      title: 'Buy',
+      title: 'Find',
       color: '#50C878',
       steps: [
         {
@@ -81,8 +81,8 @@ const HowItWorks: React.FC = () => {
           ),
         },
         {
-          title: 'Order',
-          description: 'Get this book and checkout securely with multiple payment options.',
+          title: 'Checkout',
+          description: 'Reserve the copy and pay the listed amount — no separate “help” flow.',
           icon: (
             <svg viewBox="0 0 100 100" className={styles.stepIcon} aria-hidden="true">
               <circle cx="50" cy="50" r="30" fill="#50C878" />
@@ -124,7 +124,7 @@ const HowItWorks: React.FC = () => {
         },
         {
           title: 'Exchange',
-          description: 'Request an exchange. Offer your book in return for the one you want.',
+          description: 'Propose a swap: your copy for theirs. Two offers, one thread.',
           icon: (
             <svg viewBox="0 0 100 100" className={styles.stepIcon} aria-hidden="true">
               {/* Two arrows pointing in opposite directions */}

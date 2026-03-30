@@ -11,7 +11,6 @@ interface User {
   phoneNumber?: string | null
   avatar?: string | null
   isAdmin?: boolean
-  creditBalance?: number
 }
 
 interface AuthContextType {
@@ -92,7 +91,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         phoneNumber: supabaseUser.phone ?? null,
         avatar: metadata?.avatar ?? null,
         isAdmin: metadata?.is_admin ?? false,
-        creditBalance: metadata?.credit_balance ?? 0,
       }
 
       setUser(normalizedUser)
@@ -130,12 +128,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 phoneNumber: publicUser.phone ?? prev.phoneNumber ?? null,
                 avatar: publicUser.avatar_url ?? prev.avatar ?? null,
                 isAdmin: publicUser.is_admin ?? prev.isAdmin ?? false,
-                creditBalance: (() => {
-                  const raw = publicUser.credit_balance
-                  if (raw === undefined || raw === null) return prev.creditBalance ?? 0
-                  const n = Number(raw)
-                  return Number.isFinite(n) ? n : prev.creditBalance ?? 0
-                })(),
               }
             })
           } catch (err) {

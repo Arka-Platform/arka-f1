@@ -18,8 +18,19 @@ type Deps = {
 export function createAnalyticsApi({ supabase, ApiError, asErrorMessage }: Deps) {
   return {
     getUserAnalytics: async (userId: string): Promise<UserAnalyticsResponse> => {
-      const { data, error } = await supabase.from('v_analytics_user_summary').select('*').eq('user_id', userId).single()
+      const { data, error } = await supabase.from('v_analytics_user_summary').select('*').eq('user_id', userId).maybeSingle()
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
+      const row = data as
+        | {
+            total_events?: number | string | null
+            completed_events?: number | string | null
+            cancelled_events?: number | string | null
+            last_active_day?: string | null
+          }
+        | null
+      const totalEv = Number(row?.total_events ?? 0)
+      const completedEv = Number(row?.completed_events ?? 0)
+      const cancelledEv = Number(row?.cancelled_events ?? 0)
       return {
         userId,
         userName: '',
@@ -34,7 +45,11 @@ export function createAnalyticsApi({ supabase, ApiError, asErrorMessage }: Deps)
         favoriteCategories: [],
         readingStreak: 0,
         averageRatingGiven: 0,
-        reviewsWritten: Number(data.total_events ?? 0),
+        reviewsWritten: totalEv,
+        activityTotalEvents: totalEv,
+        activityCompletedEvents: completedEv,
+        activityCancelledEvents: cancelledEv,
+        lastActiveDay: row?.last_active_day ?? null,
       }
     },
 
@@ -59,12 +74,48 @@ export function createAnalyticsApi({ supabase, ApiError, asErrorMessage }: Deps)
       }
     },
 
-    getPlatformInsights: async (): Promise<PlatformInsightsResponse> => ({
-      totalUsers: 0, activeUsers: 0, totalBooks: 0, availableBooks: 0, totalExchanges: 0, totalLendings: 0,
-      totalRevenue: 0, averageBookPrice: 0, booksByGenre: {}, booksByCategory: {}, trendingBooks: [], popularGenres: [],
-      monthlyStats: { newUsers: 0, newBooks: 0, exchanges: 0, lendings: 0, revenue: 0 },
-      weeklyStats: { newUsers: 0, newBooks: 0, exchanges: 0, lendings: 0, revenue: 0 },
-    }),
+    getPlatformInsights: async (): Promise<PlatformInsightsResponse> => {
+      const { data, error } = await supabase.rpc('get_platform_insights_snapshot')
+      if (error) throw new ApiError(asErrorMessage(error), 500, error)
+      const p = (data ?? {}) as Record<string, unknown>
+      const num = (v: unknown) => Number(v ?? 0)
+      const ms = (p.monthlyStats && typeof p.monthlyStats === 'object' ? p.monthlyStats : {}) as Record<string, unknown>
+      const ws = (p.weeklyStats && typeof p.weeklyStats === 'object' ? p.weeklyStats : {}) as Record<string, unknown>
+      const bbg = p.booksByGenre && typeof p.booksByGenre === 'object' ? (p.booksByGenre as Record<string, unknown>) : {}
+      const bbc = p.booksByCategory && typeof p.booksByCategory === 'object' ? (p.booksByCategory as Record<string, unknown>) : {}
+      const booksByGenre: Record<string, number> = {}
+      for (const [k, v] of Object.entries(bbg)) booksByGenre[k] = num(v)
+      const booksByCategory: Record<string, number> = {}
+      for (const [k, v] of Object.entries(bbc)) booksByCategory[k] = num(v)
+      return {
+        totalUsers: num(p.totalUsers),
+        activeUsers: num(p.activeUsers),
+        totalBooks: num(p.totalBooks),
+        availableBooks: num(p.availableBooks),
+        totalExchanges: num(p.totalExchanges),
+        totalLendings: num(p.totalLendings),
+        totalRevenue: num(p.totalRevenue),
+        averageBookPrice: num(p.averageBookPrice),
+        booksByGenre,
+        booksByCategory,
+        trendingBooks: [],
+        popularGenres: [],
+        monthlyStats: {
+          newUsers: num(ms.newUsers),
+          newBooks: num(ms.newBooks),
+          exchanges: num(ms.exchanges),
+          lendings: num(ms.lendings),
+          revenue: num(ms.revenue),
+        },
+        weeklyStats: {
+          newUsers: num(ws.newUsers),
+          newBooks: num(ws.newBooks),
+          exchanges: num(ws.exchanges),
+          lendings: num(ws.lendings),
+          revenue: num(ws.revenue),
+        },
+      }
+    },
   }
 }
 

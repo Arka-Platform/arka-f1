@@ -10,6 +10,18 @@
   color: #333;
 }
 
+.muted {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.sectionHeading {
+  font-size: 1.15rem;
+  margin: 1.25rem 0 0.75rem;
+  color: #444;
+}
+
 .tabs {
   display: flex;
   gap: 1rem;

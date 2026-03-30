@@ -35,24 +35,6 @@ const Account: React.FC = () => {
       loadUserData()
       loadTrustScore()
     }
-    // Load settings from localStorage if available
-    const savedSettings = localStorage.getItem('arka_user_settings')
-    if (savedSettings) {
-      try {
-        setSettings(JSON.parse(savedSettings))
-      } catch (e) {
-        // Ignore parse errors
-      }
-    }
-    // Load order preferences from localStorage if available
-    const savedPrefs = localStorage.getItem('arka_order_preferences')
-    if (savedPrefs) {
-      try {
-        setOrderPreferences(JSON.parse(savedPrefs))
-      } catch (e) {
-        // Ignore parse errors
-      }
-    }
   }, [user?.id])
 
   const loadUserData = async () => {
@@ -61,6 +43,25 @@ const Account: React.FC = () => {
     try {
       setLoading(true)
       const userData = await usersApi.getById(user.id)
+      const acc = userData.accountSettings
+      if (acc?.ui && typeof acc.ui === 'object' && !Array.isArray(acc.ui)) {
+        const o = acc.ui as Record<string, unknown>
+        setSettings({
+          emailNotifications: Boolean(o.emailNotifications ?? true),
+          smsNotifications: Boolean(o.smsNotifications ?? false),
+          newsletter: Boolean(o.newsletter ?? true),
+        })
+      }
+      if (acc?.orderPreferences && typeof acc.orderPreferences === 'object' && !Array.isArray(acc.orderPreferences)) {
+        const op = acc.orderPreferences as Record<string, unknown>
+        setOrderPreferences((prev) => ({
+          ...prev,
+          defaultPickupTime: typeof op.defaultPickupTime === 'string' ? op.defaultPickupTime : prev.defaultPickupTime,
+          defaultPaymentMethod: typeof op.defaultPaymentMethod === 'string' ? op.defaultPaymentMethod : prev.defaultPaymentMethod,
+          defaultAddress: typeof op.defaultAddress === 'string' ? op.defaultAddress : prev.defaultAddress,
+          savePaymentInfo: typeof op.savePaymentInfo === 'boolean' ? op.savePaymentInfo : prev.savePaymentInfo,
+        }))
+      }
       setProfileData({
         firstName: userData.firstName,
         lastName: userData.lastName,
@@ -118,7 +119,7 @@ const Account: React.FC = () => {
 
   const [orderPreferences, setOrderPreferences] = useState({
     defaultPickupTime: 'asap',
-    defaultPaymentMethod: 'credit',
+    defaultPaymentMethod: 'card',
     defaultAddress: '123 Green Street, Eco City, EC 12345',
     savePaymentInfo: false,
   })
@@ -151,11 +152,10 @@ const Account: React.FC = () => {
   }
 
   const handleSaveSettings = async () => {
+    if (!user?.id) return
     try {
       setSaving(true)
-      // TODO: Implement backend API for saving user settings
-      // For now, just save to localStorage
-      localStorage.setItem('arka_user_settings', JSON.stringify(settings))
+      await usersApi.update(user.id, { accountSettings: { ui: settings } })
       success('Settings saved successfully!')
     } catch (error: any) {
       showError(error.message || 'Failed to save settings')
@@ -234,12 +234,11 @@ const Account: React.FC = () => {
               >
                 Order Preferences
               </button>
-              <Link href="/subscriptions" className={styles.navLink}>
-                Subscriptions
-              </Link>
-              <Link href="/analytics" className={styles.navLink}>
-                Analytics
-              </Link>
+              {user?.isAdmin && (
+                <Link href="/admin/analytics" className={styles.navLink}>
+                  Analytics
+                </Link>
+              )}
             </nav>
           </aside>
 
@@ -384,7 +383,7 @@ const Account: React.FC = () => {
                   <Select
                     label="Default Payment Method"
                     options={[
-                      { value: 'credit', label: 'Credit Card' },
+                      { value: 'card', label: 'Credit Card' },
                       { value: 'debit', label: 'Debit Card' },
                       { value: 'paypal', label: 'PayPal' },
                       { value: 'cash', label: 'Cash on Delivery' },
@@ -413,11 +412,10 @@ const Account: React.FC = () => {
                     type="button" 
                     variant="primary" 
                     onClick={async () => {
+                      if (!user?.id) return
                       try {
                         setSaving(true)
-                        // TODO: Implement backend API for saving order preferences
-                        // For now, just save to localStorage
-                        localStorage.setItem('arka_order_preferences', JSON.stringify(orderPreferences))
+                        await usersApi.update(user.id, { accountSettings: { orderPreferences } })
                         success('Order preferences saved successfully!')
                       } catch (error: any) {
                         showError(error.message || 'Failed to save preferences')

@@ -33,6 +33,17 @@
   margin: 0;
 }
 
+.inlineLink {
+  font-weight: 600;
+  color: var(--color-primary, #2563eb);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.inlineLink:hover {
+  text-decoration-thickness: 2px;
+}
+
 /* Statistics */
 .statsGrid {
   display: grid;

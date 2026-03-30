@@ -13,15 +13,19 @@ const Analytics: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'user' | 'platform'>('user')
 
   useEffect(() => {
+    if (!user?.id) setActiveTab('platform')
+  }, [user?.id])
+
+  useEffect(() => {
     loadAnalytics()
-  }, [])
+  }, [user?.id])
 
   const loadAnalytics = async () => {
     try {
       setLoading(true)
       const [userData, platformData] = await Promise.all([
         user?.id ? analyticsApi.getUserAnalytics(user.id).catch(() => null) : Promise.resolve(null),
-        analyticsApi.getPlatformInsights()
+        analyticsApi.getPlatformInsights().catch(() => null),
       ])
       setUserAnalytics(userData)
       setPlatformInsights(platformData)
@@ -60,7 +64,33 @@ const Analytics: React.FC = () => {
       {activeTab === 'user' && userAnalytics && (
         <div className={styles.userAnalytics}>
           <h2>Your Reading Statistics</h2>
-          
+          <p className={styles.muted}>
+            Event totals come from your activity on Arka. Reading and financial figures below stay at zero until those pipelines are connected.
+          </p>
+
+          <h3 className={styles.sectionHeading}>Activity (events)</h3>
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>{userAnalytics.activityTotalEvents}</div>
+              <div className={styles.statLabel}>Total events</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>{userAnalytics.activityCompletedEvents}</div>
+              <div className={styles.statLabel}>Completed-type events</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>{userAnalytics.activityCancelledEvents}</div>
+              <div className={styles.statLabel}>Cancelled-type events</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>
+                {userAnalytics.lastActiveDay ? new Date(userAnalytics.lastActiveDay).toLocaleDateString() : '—'}
+              </div>
+              <div className={styles.statLabel}>Last active day</div>
+            </div>
+          </div>
+
+          <h3 className={styles.sectionHeading}>Reading (placeholders)</h3>
           <div className={styles.statsGrid}>
             <div className={styles.statCard}>
               <div className={styles.statValue}>{userAnalytics.totalBooksRead}</div>
@@ -124,6 +154,13 @@ const Analytics: React.FC = () => {
             </div>
           )}
         </div>
+      )}
+
+      {activeTab === 'platform' && !platformInsights && (
+        <p className={styles.muted}>
+          Platform metrics could not be loaded. Apply the latest Supabase migrations (including{' '}
+          <code>get_platform_insights_snapshot</code>) and refresh.
+        </p>
       )}
 
       {activeTab === 'platform' && platformInsights && (

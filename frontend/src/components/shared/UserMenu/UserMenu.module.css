@@ -188,41 +188,6 @@
   opacity: 1;
 }
 
-/* Subscription Item Highlight */
-.subscriptionItem {
-  background: var(--component-surface-strong);
-  border-left: 3px solid var(--color-primary);
-  position: relative;
-}
-
-.subscriptionItem:hover {
-  background: var(--component-surface);
-}
-
-.subscriptionItemContent {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex: 1;
-}
-
-.subscriptionItem svg {
-  color: var(--color-primary);
-  opacity: 1;
-}
-
-.subscriptionBadge {
-  background: var(--theme-accent-gradient);
-  color: var(--theme-text-inverse);
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  flex-shrink: 0;
-}
-
 @media (min-width: 769px) {
   .userName {
     display: block;

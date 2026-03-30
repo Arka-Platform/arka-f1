@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
 import { Book } from '../components/shared/BookCard/BookCard'
+import { useAuth } from './AuthContext'
 import { useContribution } from './ContributionContext'
+import { useToast } from './ToastContext'
 import { trackCartAdd, trackCartRemove } from '../utils/tracking'
 
 interface CartItem extends Book {
@@ -31,9 +33,19 @@ interface CartProviderProps {
   children: ReactNode
 }
 
+const PARTICIPATION_WARN_NUDGE =
+  'This space works when books keep moving. When it fits, add something to the pool.'
+
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
-  const { hydrated, mayClaimAdditionalBook, openContributionGate, afterSuccessfulNewLineAdd } = useContribution()
+  const { user } = useAuth()
+  const { countsLoaded, participationState, openContributionGate } = useContribution()
+  const { info } = useToast()
+  const warnNudgeShownRef = useRef(false)
   const [items, setItems] = useState<CartItem[]>([])
+
+  useEffect(() => {
+    warnNudgeShownRef.current = false
+  }, [user?.id])
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -57,7 +69,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   const addToCart = (book: Book) => {
     const isNewLine = !items.some((item) => item.id === book.id)
-    if (hydrated && isNewLine && !mayClaimAdditionalBook()) {
+    if (countsLoaded && isNewLine && participationState === 'RESTRICT') {
       openContributionGate(book)
       return
     }
@@ -74,8 +86,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       return [...prevItems, { ...book, quantity: 1 }]
     })
 
-    if (hydrated && isNewLine) {
-      afterSuccessfulNewLineAdd()
+    if (countsLoaded && isNewLine && participationState === 'WARN' && !warnNudgeShownRef.current) {
+      warnNudgeShownRef.current = true
+      info(PARTICIPATION_WARN_NUDGE, 6000)
     }
   }
 

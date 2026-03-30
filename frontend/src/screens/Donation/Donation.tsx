@@ -129,12 +129,12 @@ const Donation: React.FC = () => {
     e.preventDefault()
     
     if (!selectedNgoId) {
-      showError('Please select an NGO to donate to')
+      showError('Please choose an organization to offer books to')
       return
     }
 
     if (!donorName || !donorEmail || !donorPhone) {
-      showError('Please fill in all required donor information')
+      showError('Please fill in all required contact information')
       return
     }
 
@@ -171,7 +171,7 @@ const Donation: React.FC = () => {
       }
 
       await donationsApi.createDonation(donationRequest)
-      success('Donation request submitted successfully! The NGO will contact you soon.')
+      success('Offer submitted. The organization will reach out to coordinate pickup.')
       
       // Reset form
       setSelectedNgoId('')
@@ -188,7 +188,7 @@ const Donation: React.FC = () => {
       setPickupPincode('')
       setAdditionalNotes('')
     } catch (err: any) {
-      showError(err.message || 'Failed to submit donation request')
+      showError(err.message || 'Failed to submit offer')
     } finally {
       setSubmitting(false)
     }
@@ -202,9 +202,10 @@ const Donation: React.FC = () => {
   return (
     <div className={styles.donation}>
       <div className={styles.header}>
-        <h1 className={styles.pageTitle}>Donate Books to NGOs</h1>
+        <h1 className={styles.pageTitle}>Offer books to partner organizations</h1>
         <p className={styles.subtitle}>
-          Connect with verified NGOs and donate your books in bulk. Help spread knowledge and support education initiatives.
+          Same idea as listing for individuals — just at scale with a verified partner. Choose who you want to offer
+          to; they coordinate pickup.
         </p>
       </div>
 
@@ -245,13 +246,12 @@ const Donation: React.FC = () => {
             )}
           </section>
 
-          {/* Donation Form Section */}
+          {/* Offer form */}
           <section className={styles.formSection}>
-            <h2 className={styles.sectionTitle}>Donation Details</h2>
+            <h2 className={styles.sectionTitle}>Offer details</h2>
             <form onSubmit={handleSubmit} className={styles.donationForm}>
-              {/* Donor Information */}
               <div className={styles.formGroup}>
-                <h3 className={styles.formGroupTitle}>Donor Information</h3>
+                <h3 className={styles.formGroupTitle}>Your contact</h3>
                 <div className={styles.formRow}>
                   <Input
                     label="Full Name *"
@@ -280,7 +280,7 @@ const Donation: React.FC = () => {
                     fullWidth
                   />
                   <Select
-                    label="Donor Type *"
+                    label="Offering as *"
                     options={[
                       { value: 'INDIVIDUAL', label: 'Individual' },
                       { value: 'INSTITUTION', label: 'Institution' },
@@ -407,10 +407,10 @@ const Donation: React.FC = () => {
                   fullWidth
                   disabled={submitting || !selectedNgoId}
                 >
-                  {submitting ? 'Submitting...' : 'Submit Donation Request'}
+                  {submitting ? 'Submitting...' : 'Submit offer'}
                 </Button>
                 {!selectedNgoId && (
-                  <p className={styles.formHint}>Please select an NGO above to submit your donation request</p>
+                  <p className={styles.formHint}>Choose an organization above to send your offer</p>
                 )}
               </div>
             </form>

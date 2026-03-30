@@ -14,6 +14,7 @@ import { useCart } from '../../contexts/CartContext'
 import { booksApi, BookResponse, wishlistApi } from '../../utils/api'
 import { demandApi, BookRequestResponse, CreateBookRequestRequest, CreateRequestResponse, MatchResponse, trustScoreApi, usersApi } from '../../utils/api'
 import { trackBookView, trackCartAdd } from '../../utils/tracking'
+import { openContactRequesterEmail } from '../../utils/contactRequester'
 import styles from './BooksMarketplace.module.css'
 
 interface RequestCardProps {
@@ -260,7 +261,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ request, onFulfill, onCancel,
       <div className={styles.requestActions}>
         {isOwner && request.status === 'OPEN' && (
           <Button variant="secondary" onClick={() => onCancel?.(request.id)}>
-            Cancel Get
+            Cancel
           </Button>
         )}
         {!isOwner && request.status === 'OPEN' && (
@@ -490,7 +491,7 @@ const BooksMarketplace: React.FC = () => {
       }
       setRequests(data)
     } catch (err: any) {
-      showError(err.message || 'Failed to load gets')
+      showError(err.message || 'Failed to load listings')
     } finally {
       setRequestsLoading(false)
     }
@@ -502,7 +503,7 @@ const BooksMarketplace: React.FC = () => {
       const data = await demandApi.getMyRequests(user.id)
       setMyRequests(data)
     } catch (err: any) {
-      console.error('Failed to load my gets:', err)
+      console.error('Failed to load my listings:', err)
     }
   }
 
@@ -631,12 +632,12 @@ const BooksMarketplace: React.FC = () => {
         setSelectedRequestId(response.request.id)
         setShowMatchSelection(true)
     } else {
-        success('Get created! We\'ll notify you when a match is found.')
+        success('Posted. We will let you know when there is a match.')
         loadRequests()
         loadMyRequests()
       }
     } catch (err: any) {
-      showError(err.message || 'Failed to create get')
+      showError(err.message || 'Failed to post')
     } finally {
       setIsSubmitting(false)
     }
@@ -696,7 +697,7 @@ const BooksMarketplace: React.FC = () => {
         notes: `Selected from available matches`
       })
       
-      success(`Get fulfilled! You've selected "${match.bookTitle}" from ${match.sellerName}`)
+      success(`You chose "${match.bookTitle}" from ${match.sellerName}.`)
       
       setShowMatchSelection(false)
       setShowMissingInfoForm(false)
@@ -785,15 +786,25 @@ const BooksMarketplace: React.FC = () => {
     resetForm()
     loadRequests()
     loadMyRequests()
-    success('Get saved. You can view matches later.')
+    success('Saved. You can pick a match later.')
   }
 
-  const handleFulfill = (_requestId: string) => {
-    showError('Fulfillment feature coming soon. You can contact the getter directly.')
+  const handleFulfill = (requestId: string) => {
+    const r = [...requests, ...myRequests].find((x) => x.id === requestId)
+    if (!r) {
+      showError('Post not found.')
+      return
+    }
+    const result = openContactRequesterEmail({ requesterEmail: r.requesterEmail, title: r.title })
+    if (!result.ok) {
+      showError('No email is available for this poster yet.')
+      return
+    }
+    success('Opening your email app to contact them.')
   }
 
   const handleCancel = async (requestId: string) => {
-    if (!confirm('Are you sure you want to cancel this get?')) {
+    if (!confirm('Cancel this post?')) {
       return
     }
 
@@ -801,11 +812,11 @@ const BooksMarketplace: React.FC = () => {
 
     try {
       await demandApi.cancelRequest(requestId, user.id)
-      success('Get cancelled successfully')
+      success('Cancelled')
       loadRequests()
       loadMyRequests()
     } catch (err: any) {
-      showError(err.message || 'Failed to cancel get')
+      showError(err.message || 'Failed to cancel')
     }
   }
 
@@ -879,7 +890,7 @@ const BooksMarketplace: React.FC = () => {
               It's a Match!
             </h2>
             <p className={styles.matchSelectionSubtitle}>
-              We found {submittedMatches.length} perfect match{submittedMatches.length > 1 ? 'es' : ''} for your get! Select one to get started.
+              We found {submittedMatches.length} match{submittedMatches.length > 1 ? 'es' : ''} for what you are looking for. Pick one to continue.
             </p>
           </div>
           
@@ -942,7 +953,7 @@ const BooksMarketplace: React.FC = () => {
           
           <div className={styles.matchSelectionActions}>
             <Button variant="secondary" onClick={handleSkipMatchSelection}>
-              Skip - Save Get for Later
+              Skip — decide later
             </Button>
           </div>
         </div>
@@ -964,17 +975,17 @@ const BooksMarketplace: React.FC = () => {
         </>
       )}
 
-      {/* Share If You Have Section - After Recommendations */}
+      {/* Looking-for section */}
       {!showMatchSelection && (
         <div className={styles.content} id="community-gets">
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Share If You Have</h2>
+            <h2 className={styles.sectionTitle}>People are looking for</h2>
           </div>
 
           <div className={styles.searchBar}>
             <Input
               type="text"
-              placeholder="Search gets by title, author, genre, ISBN..."
+              placeholder="Search by title, author, genre, ISBN…"
               value={requestSearchQuery}
               onChange={(e) => setRequestSearchQuery(e.target.value)}
               fullWidth
@@ -982,10 +993,10 @@ const BooksMarketplace: React.FC = () => {
           </div>
 
           {requestsLoading ? (
-            <div className={styles.loading}>Loading gets...</div>
+            <div className={styles.loading}>Loading…</div>
           ) : requests.length === 0 ? (
             <div className={styles.empty}>
-              <p>No open gets found. Be the first to create one!</p>
+              <p>No open posts yet. You can add one from a book you want.</p>
             </div>
           ) : (
             <div className={styles.requestsGrid}>
@@ -1044,7 +1055,7 @@ const BooksMarketplace: React.FC = () => {
                     key={book.id}
                     book={book}
                     onButtonClick={handleBookClick}
-                      buttonText="Get This Book"
+                      buttonText="Add to cart"
                   />
                 ))}
               </div>
@@ -1116,8 +1127,8 @@ const BooksMarketplace: React.FC = () => {
                   >
                     <span className={styles.actionIcon}>🔍</span>
                     <div className={styles.actionContent}>
-                      <span className={styles.actionTitle}>Create Match Request</span>
-                      <span className={styles.actionDescription}>Find this book now</span>
+                      <span className={styles.actionTitle}>Post what you are looking for</span>
+                      <span className={styles.actionDescription}>Same as any listing — just the other direction</span>
                     </div>
                   </Button>
                 </div>

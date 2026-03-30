@@ -136,16 +136,21 @@ const ExchangeDetail: React.FC = () => {
     switch (status) {
       case 'PENDING':
         return '#FF9800'
-      case 'CONFIRMED':
-        return '#2196F3'
       case 'COMPLETED':
         return '#4CAF50'
+      case 'FAILED':
+        return '#9E9E9E'
       case 'CANCELLED':
         return '#F44336'
       default:
         return '#757575'
     }
   }
+
+  const isCompletedFlow = exchange?.status === 'COMPLETED'
+  const isCancelled = exchange?.status === 'CANCELLED'
+  const isFailed = exchange?.status === 'FAILED'
+  const isPending = exchange?.status === 'PENDING'
 
   if (loading) {
     return (
@@ -217,8 +222,8 @@ const ExchangeDetail: React.FC = () => {
                 </div>
               </div>
               <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Credit Amount:</span>
-                <span className={styles.infoValue}>₹{exchange.creditAmount.toFixed(2)}</span>
+                <span className={styles.infoLabel}>Amount:</span>
+                <span className={styles.infoValue}>₹{exchange.amount.toFixed(2)}</span>
               </div>
               <div className={styles.infoItem}>
                 <span className={styles.infoLabel}>Service Fee:</span>
@@ -227,7 +232,7 @@ const ExchangeDetail: React.FC = () => {
               <div className={styles.infoItem}>
                 <span className={styles.infoLabel}>Total Cost:</span>
                 <span className={styles.infoValue}>
-                  ₹{(exchange.creditAmount + exchange.serviceFee).toFixed(2)}
+                  ₹{(exchange.amount + exchange.serviceFee).toFixed(2)}
                 </span>
               </div>
               <div className={styles.infoItem}>
@@ -248,32 +253,36 @@ const ExchangeDetail: React.FC = () => {
           <div className={styles.statusSection}>
             <h3 className={styles.sectionTitle}>Status Timeline</h3>
             <div className={styles.timeline}>
-              <div className={`${styles.timelineItem} ${exchange.status !== 'CANCELLED' ? styles.completed : ''}`}>
+              <div className={`${styles.timelineItem} ${!isCancelled && !isFailed ? styles.completed : ''}`}>
                 <div className={styles.timelineDot}></div>
                 <div className={styles.timelineContent}>
-                  <h4>Exchange Requested</h4>
+                  <h4>Exchange started</h4>
                   <p>{new Date(exchange.createdAt).toLocaleString()}</p>
                 </div>
               </div>
-              <div className={`${styles.timelineItem} ${['CONFIRMED', 'COMPLETED'].includes(exchange.status) ? styles.completed : ''}`}>
+              <div className={`${styles.timelineItem} ${isPending ? '' : !isCancelled && !isFailed ? styles.completed : ''}`}>
                 <div className={styles.timelineDot}></div>
                 <div className={styles.timelineContent}>
-                  <h4>Confirmed by Seller</h4>
+                  <h4>Processing</h4>
                   <p>
-                    {exchange.status === 'PENDING' 
-                      ? 'Waiting for seller confirmation'
+                    {isPending
+                      ? 'Awaiting confirmation or completion steps (if applicable).'
                       : new Date(exchange.updatedAt).toLocaleString()}
                   </p>
                 </div>
               </div>
-              <div className={`${styles.timelineItem} ${exchange.status === 'COMPLETED' ? styles.completed : ''}`}>
+              <div className={`${styles.timelineItem} ${isCompletedFlow ? styles.completed : ''}`}>
                 <div className={styles.timelineDot}></div>
                 <div className={styles.timelineContent}>
-                  <h4>Completed by Buyer</h4>
+                  <h4>Completed</h4>
                   <p>
-                    {exchange.status === 'COMPLETED'
+                    {isCompletedFlow
                       ? new Date(exchange.updatedAt).toLocaleString()
-                      : 'Waiting for buyer to complete'}
+                      : isCancelled
+                        ? 'Cancelled'
+                        : isFailed
+                          ? 'Failed'
+                          : 'Not completed yet'}
                   </p>
                 </div>
               </div>
@@ -282,44 +291,49 @@ const ExchangeDetail: React.FC = () => {
         </div>
 
         <div className={styles.actions}>
-          {exchange.status === 'PENDING' && isSeller() && (
+          {isPending && isSeller() && (
             <Button
               variant="primary"
               onClick={handleConfirm}
               disabled={processing}
               className={styles.actionButton}
             >
-              {processing ? 'Processing...' : 'Confirm Exchange'}
+              {processing ? 'Processing...' : 'Mark complete'}
             </Button>
           )}
-          {exchange.status === 'CONFIRMED' && isBuyer() && (
+          {isPending && isBuyer() && (
             <Button
               variant="primary"
               onClick={handleComplete}
               disabled={processing}
               className={styles.actionButton}
             >
-              {processing ? 'Processing...' : 'Complete Exchange'}
+              {processing ? 'Processing...' : 'Mark complete'}
             </Button>
           )}
-          {exchange.status !== 'COMPLETED' && exchange.status !== 'CANCELLED' && (
+          {isPending && (
             <Button
               variant="danger"
               onClick={handleCancel}
               disabled={processing}
               className={styles.actionButton}
             >
-              {processing ? 'Processing...' : 'Cancel Exchange'}
+              {processing ? 'Processing...' : 'Cancel exchange'}
             </Button>
           )}
-          {exchange.status === 'COMPLETED' && (
+          {isCompletedFlow && (
             <div className={styles.completedMessage}>
-              <p>✅ This exchange has been completed successfully!</p>
+              <p>✅ This exchange is completed.</p>
             </div>
           )}
-          {exchange.status === 'CANCELLED' && (
+          {isCancelled && (
             <div className={styles.cancelledMessage}>
               <p>❌ This exchange has been cancelled.</p>
+            </div>
+          )}
+          {isFailed && (
+            <div className={styles.cancelledMessage}>
+              <p>This exchange failed.</p>
             </div>
           )}
         </div>

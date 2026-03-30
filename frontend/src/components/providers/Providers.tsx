@@ -12,14 +12,14 @@ export default function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <ContributionProvider>
-          <CartProvider>
-            <ToastProvider>
+        <ToastProvider>
+          <ContributionProvider>
+            <CartProvider>
               <ContributionGateHost />
               {children}
-            </ToastProvider>
-          </CartProvider>
-        </ContributionProvider>
+            </CartProvider>
+          </ContributionProvider>
+        </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
   )

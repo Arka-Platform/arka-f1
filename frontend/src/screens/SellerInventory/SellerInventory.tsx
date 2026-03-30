@@ -64,7 +64,7 @@ const SellerInventory: React.FC = () => {
   const { success, error: showError } = useToast()
   const { user } = useAuth()
   const searchParams = useSearchParams()
-  const { registerPresence } = useContribution()
+  const { refreshParticipation } = useContribution()
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingBook, setEditingBook] = useState<InventoryBook | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -371,7 +371,7 @@ const SellerInventory: React.FC = () => {
           // },
         })
         success('Book added to marketplace! It is now available for purchase.')
-        registerPresence('listed_book')
+        void refreshParticipation()
       }
 
       // Reload inventory
@@ -596,7 +596,12 @@ const SellerInventory: React.FC = () => {
         <div className={styles.header}>
           <div>
             <h1 className={styles.pageTitle}>My Bookshelf</h1>
-            <p className={styles.pageDescription}>Manage your book listings and track sales</p>
+            <p className={styles.pageDescription}>
+              Offer copies into the shared pool and track what is live.{' '}
+              <Link href="/donation" className={styles.inlineLink}>
+                Many books to a partner organization?
+              </Link>
+            </p>
           </div>
           <Button
             variant="primary"

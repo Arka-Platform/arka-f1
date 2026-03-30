@@ -41,8 +41,12 @@ const Tracking: React.FC = () => {
 
   const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!trackingNumber || !user?.id) return
-    
+    if (!trackingNumber) return
+    if (!user?.id) {
+      showError('Please log in to look up an order.')
+      return
+    }
+
     try {
       setLoading(true)
       // Try to find order by tracking number

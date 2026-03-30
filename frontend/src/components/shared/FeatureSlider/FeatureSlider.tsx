@@ -37,7 +37,7 @@ const features: Feature[] = [
   {
     id: '2',
     title: 'Book Exchange',
-    description: 'Trade books with other readers and earn credits',
+    description: 'Trade books directly with other readers — same flow, two directions',
     icon: (
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M7 16V4m0 0L3 8m4-4l4 4M7 16l4 4m-4-4v4m10-8V4m0 0l4 4m-4-4l-4 4m4 4l-4-4m4 4v4" />
@@ -52,7 +52,7 @@ const features: Feature[] = [
   {
     id: '4',
     title: 'Recycling Program',
-    description: 'Recycle paper waste and earn credits',
+    description: 'Keep paper moving through recycling — part of the same ecosystem',
     icon: (
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M3 6h18" />

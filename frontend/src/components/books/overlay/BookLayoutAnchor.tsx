@@ -33,7 +33,7 @@ export default function BookLayoutAnchor({ book, layoutId, onClick, rightSlot, s
       <div style={{ display: 'grid', gap: 2 }}>
         <div className={styles.anchorTitle}>{book.title}</div>
         <div className={styles.anchorPrice}>
-          {subtitle ?? (price ? `Credits: ${price}` : 'Book')}
+          {subtitle ?? (price != null ? `₹${price}` : 'Book')}
         </div>
       </div>
       {rightSlot}

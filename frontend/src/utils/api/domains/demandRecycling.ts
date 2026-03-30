@@ -43,7 +43,7 @@ export function createRecyclingApi({ supabase, ApiError, asErrorMessage }: Deps)
         description: row.description ?? '',
         category: row.category ?? null,
         weightKg: Number(row.weight_kg ?? row.weightKg ?? 0),
-        creditValue: Number(row.credit_value ?? row.creditValue ?? 0),
+        estimatedValue: Number(row.credit_value ?? row.creditValue ?? 0),
         status: row.status ?? 'AVAILABLE',
         createdAt: row.created_at ?? new Date().toISOString(),
       }))
