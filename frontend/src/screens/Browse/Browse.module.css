@@ -36,74 +36,13 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: 1.25rem;
+  gap: 1.75rem 1.25rem;
 }
 
-.card {
+.tileCell {
   grid-column: span 12;
-  display: grid;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: 20px;
-  border: 1px solid var(--app-border);
-  background: var(--app-surface);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-  text-decoration: none;
-  color: inherit;
-}
-
-.cover {
-  aspect-ratio: 3 / 4;
-  border-radius: 18px;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  background: linear-gradient(180deg, rgba(245, 247, 251, 1) 0%, rgba(255, 255, 255, 1) 100%);
-  overflow: hidden;
-  position: relative;
-}
-
-.cover::before {
-  content: '';
-  position: absolute;
-  inset: -30%;
-  z-index: 0;
-  background: radial-gradient(circle at 30% 10%, rgba(255, 171, 64, 0.22), transparent 55%);
-  transform: rotate(8deg);
-}
-
-.cover:has(.coverImage)::before {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.coverImage {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 1;
-}
-
-.coverInnerOnImage {
-  position: relative;
-  z-index: 2;
-  height: 100%;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 0.35rem;
-  padding: 1.1rem;
-  background: linear-gradient(to top, rgba(15, 23, 42, 0.82), transparent 58%);
-}
-
-.coverInnerOnImage .coverTitle {
-  color: rgba(255, 255, 255, 0.98);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-}
-
-.coverInnerOnImage .coverAuthor {
-  color: rgba(255, 255, 255, 0.88);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  justify-content: center;
 }
 
 .status {
@@ -118,140 +57,14 @@
   color: #b91c1c;
 }
 
-.coverInner {
-  position: relative;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 0.35rem;
-  padding: 1.1rem;
-}
-
-.coverTitle {
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: rgba(15, 23, 42, 0.92);
-  line-height: 1.2;
-}
-
-.coverAuthor {
-  font-size: 0.78rem;
-  color: rgba(15, 23, 42, 0.68);
-  font-weight: 600;
-}
-
-.cardBody {
-  display: grid;
-  gap: 0.6rem;
-  padding: 0 0.25rem 0.25rem;
-}
-
-.rowTop {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.metaBlock {
-  min-width: 0;
-}
-
-.bookTitle {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: rgba(15, 23, 42, 0.92);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.bookAuthor {
-  margin-top: 0.15rem;
-  font-size: 0.9rem;
-  color: rgba(15, 23, 42, 0.66);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.price {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: rgba(15, 23, 42, 0.92);
-}
-
-.rowMid {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  font-size: 0.8rem;
-  color: rgba(15, 23, 42, 0.62);
-}
-
-.genre {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.rating {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.25rem;
-  white-space: nowrap;
-}
-
-.star {
-  color: rgba(245, 158, 11, 0.95);
-}
-
-.ratingValue {
-  font-weight: 700;
-  color: rgba(15, 23, 42, 0.8);
-}
-
-.ratingCount {
-  color: rgba(15, 23, 42, 0.55);
-}
-
-.pills {
-  margin-top: 0.25rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  height: 28px;
-  padding: 0 0.65rem;
-  border-radius: 999px;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  background: rgba(245, 247, 251, 0.9);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: rgba(15, 23, 42, 0.68);
-}
-
-.pillValue {
-  font-size: 0.78rem;
-  color: rgba(15, 23, 42, 0.72);
-}
-
 @media (min-width: 640px) {
-  .card {
+  .tileCell {
     grid-column: span 6;
   }
 }
 
 @media (min-width: 1024px) {
-  .card {
+  .tileCell {
     grid-column: span 4;
   }
 }
