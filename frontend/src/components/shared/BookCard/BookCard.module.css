@@ -26,6 +26,179 @@
     box-shadow 0.35s ease;
 }
 
+.rowCard {
+  --row-card-bg: #ffffff;
+  --row-card-border: rgba(18, 24, 38, 0.08);
+  --row-card-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+
+  background: var(--row-card-bg);
+  border: 1px solid var(--row-card-border);
+  border-radius: 18px;
+  overflow: hidden;
+  flex-direction: row;
+  height: auto;
+  box-shadow: var(--row-card-shadow);
+  transform: none;
+}
+
+.rowCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.12);
+}
+
+.rowCard::before {
+  box-shadow: none;
+}
+
+.rowImageContainer {
+  width: 110px;
+  height: 110px;
+  flex: 0 0 110px;
+  background: linear-gradient(145deg, #f3f4f6 0%, #eef2ff 100%);
+  perspective: none;
+}
+
+.rowImageContainer::after {
+  display: none;
+}
+
+.rowImage {
+  object-fit: cover;
+  filter: none;
+  transition: transform 0.25s ease;
+}
+
+.rowCard:hover .rowImage {
+  transform: scale(1.03);
+}
+
+.rowPlaceholder {
+  background: linear-gradient(145deg, #f3f4f6 0%, #eef2ff 100%);
+}
+
+.rowContent {
+  padding: 1rem 1.1rem;
+}
+
+.rowMainOn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.rowText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.rowTitle {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: #111827;
+  font-size: 1.1rem;
+  text-shadow: none;
+  min-height: unset;
+}
+
+.rowAuthor {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-top: -0.15rem;
+}
+
+.rowPrimaryLine {
+  margin: 0.35rem 0 0;
+  color: #ef4444;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.rowSecondaryLine {
+  margin: 0.1rem 0 0;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.rowActions {
+  display: inline-flex;
+  gap: 0.6rem;
+  flex: 0 0 auto;
+}
+
+.rowActionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+.rowActionBtn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+.rowActionBtn:active {
+  transform: translateY(0px);
+  filter: brightness(0.98);
+}
+
+.rowPassBtn {
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  color: #ffffff;
+  border: none;
+}
+
+.rowPickBtn {
+  background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+  color: #ffffff;
+  border: none;
+}
+
+.rowActionSelected {
+  background: linear-gradient(135deg, #16a34a 0%, #059669 100%) !important;
+}
+
+@media (max-width: 768px) {
+  .rowCard {
+    padding-right: 0;
+  }
+
+  .rowImageContainer {
+    width: 88px;
+    height: 88px;
+    flex-basis: 88px;
+  }
+
+  .rowContent {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .rowTitle {
+    font-size: 1rem;
+  }
+
+  .rowActions {
+    gap: 0.5rem;
+  }
+
+  .rowActionBtn {
+    padding: 0.5rem 0.75rem;
+    border-radius: 11px;
+    font-size: 0.9rem;
+  }
+}
+
 .bookCard::before {
   content: '';
   position: absolute;

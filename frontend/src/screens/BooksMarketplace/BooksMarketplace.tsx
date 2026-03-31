@@ -1,5 +1,5 @@
 import React, { useId, useRef, useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import BookCard, { Book } from '../../components/shared/BookCard/BookCard'
@@ -280,6 +280,7 @@ const BooksMarketplace: React.FC = () => {
   const { success, error: showError } = useToast()
   const { addToCart } = useCart()
   const searchParams = useSearchParams()
+  const router = useRouter()
   
   // Book browsing state
   const searchQuery = searchParams.get('search') || searchParams.get('q') || ''
@@ -1049,13 +1050,16 @@ const BooksMarketplace: React.FC = () => {
               <div className={styles.resultsInfo}>
                 <p>Found {books.length} book{books.length !== 1 ? 's' : ''}</p>
               </div>
-              <div className={styles.booksGrid}>
+              <div className={styles.booksList}>
                 {books.slice(0, visibleBooksCount).map((book) => (
                   <BookCard
                     key={book.id}
                     book={book}
-                    onButtonClick={handleBookClick}
-                      buttonText="Add to cart"
+                    variant="row"
+                    showButton={false}
+                    onPick={handleBookClick}
+                    pickLabel="Pick"
+                    passLabel="Pass"
                   />
                 ))}
               </div>
@@ -1073,6 +1077,17 @@ const BooksMarketplace: React.FC = () => {
           )}
         </div>
       </section>
+      )}
+
+      {!showMatchSelection && (
+        <button
+          type="button"
+          className={styles.fab}
+          aria-label="Pass a book (add to shelf)"
+          onClick={() => router.push('/inventory?focus=add')}
+        >
+          <span aria-hidden>+</span>
+        </button>
       )}
 
       {/* Get Form Modal */}
