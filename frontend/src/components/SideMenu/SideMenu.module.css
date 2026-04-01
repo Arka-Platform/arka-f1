@@ -125,7 +125,8 @@
   display: grid;
   place-items: center;
   background: transparent;
-  color: #111827;
+  /* Keep brand-coloured icons even without icon tiles. */
+  color: #5b5ceb;
   position: relative;
 }
 
