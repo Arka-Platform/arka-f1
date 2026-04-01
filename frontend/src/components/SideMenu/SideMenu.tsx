@@ -1,4 +1,3 @@
-/* Screenshot-style menu (rail + panel) mapped to Arka pages. */
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
@@ -18,18 +17,6 @@ type MenuItem = {
   icon: React.ReactNode
 }
 
-const RailIcon = ({ children }: { children: React.ReactNode }) => (
-  <span className={styles.railIcon} aria-hidden>
-    {children}
-  </span>
-)
-
-const RailSvg = ({ children }: { children: React.ReactNode }) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-    {children}
-  </svg>
-)
-
 function initials(firstName?: string, lastName?: string, email?: string | null) {
   const a = (firstName ?? '').trim()
   const b = (lastName ?? '').trim()
@@ -44,7 +31,7 @@ export default function SideMenu() {
   const { user, isAuthenticated } = useAuth()
   const { getItemCount } = useCart()
   const { theme, toggleTheme } = useTheme()
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [expanded, setExpanded] = useState(true)
   const [wishlistCount, setWishlistCount] = useState(0)
 
   const profile = useMemo(() => {
@@ -79,77 +66,20 @@ export default function SideMenu() {
 
   const cartCount = getItemCount()
 
-  const rail = useMemo(
-    () => [
-      {
-        href: '/home',
-        label: 'Home',
-        icon: (
-          <RailIcon>
-            <RailSvg>
-              <path d="M3 10.5l9-7 9 7" />
-              <path d="M5 10v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10" />
-              <path d="M10 22V14h4v8" />
-            </RailSvg>
-          </RailIcon>
-        ),
-      },
-      {
-        href: '/books',
-        label: 'Browse',
-        icon: (
-          <RailIcon>
-            <RailSvg>
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            </RailSvg>
-          </RailIcon>
-        ),
-      },
-      {
-        href: '/inventory',
-        label: 'Pass',
-        icon: (
-          <RailIcon>
-            <RailSvg>
-              <path d="M12 5v14" />
-              <path d="M5 12h14" />
-            </RailSvg>
-          </RailIcon>
-        ),
-      },
-      {
-        href: '/requests',
-        label: 'Requests',
-        icon: (
-          <RailIcon>
-            <RailSvg>
-              <circle cx="11" cy="11" r="7" />
-              <path d="M21 21l-4.3-4.3" />
-            </RailSvg>
-          </RailIcon>
-        ),
-      },
-      {
-        href: '/community',
-        label: 'Community',
-        icon: (
-          <RailIcon>
-            <RailSvg>
-              <path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z" />
-              <path d="M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3z" />
-              <path d="M2 20v-1c0-2.2 3.2-4 6-4" />
-              <path d="M22 20v-1c0-2.2-3.2-4-6-4" />
-            </RailSvg>
-          </RailIcon>
-        ),
-      },
-    ],
-    []
-  )
-
   const items: MenuItem[] = useMemo(
     () => [
+      {
+        id: 'home',
+        label: 'Home',
+        href: '/home',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 10.5l9-7 9 7" />
+            <path d="M5 10v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10" />
+            <path d="M10 22V14h4v8" />
+          </svg>
+        ),
+      },
       {
         id: 'browse',
         label: 'Browse',
@@ -269,21 +199,28 @@ export default function SideMenu() {
     [cartCount, wishlistCount]
   )
 
-  const renderPanel = (mode: 'desktop' | 'mobile') => (
-    <aside className={mode === 'desktop' ? styles.panel : styles.panelMobile} aria-label="Menu">
-      <div className={styles.profile}>
-        <div className={styles.avatar} aria-hidden>
-          {profile.avatar}
+  return (
+    <aside className={`${styles.sidebar} ${expanded ? styles.sidebarExpanded : styles.sidebarCollapsed}`} aria-label="Menu">
+      <div className={styles.sidebarTop}>
+        <div className={styles.profile}>
+          <div className={styles.avatar} aria-hidden>
+            {profile.avatar}
+          </div>
+          <div className={styles.profileText}>
+            <div className={styles.profileName}>{profile.name}</div>
+            <div className={styles.profileEmail}>{profile.email}</div>
+          </div>
         </div>
-        <div className={styles.profileText}>
-          <div className={styles.profileName}>{profile.name}</div>
-          <div className={styles.profileEmail}>{profile.email}</div>
-        </div>
-        {mode === 'mobile' && (
-          <button type="button" className={styles.closeButton} aria-label="Close menu" onClick={() => setMobileOpen(false)}>
-            ×
-          </button>
-        )}
+
+        <button
+          type="button"
+          className={styles.expandToggle}
+          aria-label={expanded ? 'Collapse menu' : 'Expand menu'}
+          aria-expanded={expanded}
+          onClick={() => setExpanded((v) => !v)}
+        >
+          {expanded ? '«' : '»'}
+        </button>
       </div>
 
       <nav className={styles.menuList} aria-label="App menu">
@@ -291,26 +228,21 @@ export default function SideMenu() {
           const hrefPath = item.href.split('?')[0]
           const active = pathname === hrefPath || pathname.startsWith(hrefPath + '/')
           return (
-            <Link
-              key={item.id}
-              href={item.href}
-              className={`${styles.menuItem} ${active ? styles.menuItemActive : ''}`}
-              onClick={() => mode === 'mobile' && setMobileOpen(false)}
-            >
+            <Link key={item.id} href={item.href} className={`${styles.menuItem} ${active ? styles.menuItemActive : ''}`}>
               <span className={styles.menuIcon} aria-hidden>
                 {item.icon}
+                {typeof item.badge === 'number' && item.badge > 0 ? (
+                  <span
+                    className={`${styles.badgeInIcon} ${
+                      item.id === 'wishlist' ? styles.badgeDanger : styles.badgeSuccess
+                    }`}
+                    aria-label={`${item.badge} notifications`}
+                  >
+                    {item.badge > 99 ? '99+' : item.badge}
+                  </span>
+                ) : null}
               </span>
               <span className={styles.menuLabel}>{item.label}</span>
-              {typeof item.badge === 'number' && item.badge > 0 ? (
-                <span
-                  className={`${styles.badge} ${
-                    item.id === 'wishlist' ? styles.badgeDanger : styles.badgeSuccess
-                  }`}
-                  aria-label={`${item.badge} notifications`}
-                >
-                  {item.badge > 99 ? '99+' : item.badge}
-                </span>
-              ) : null}
             </Link>
           )
         })}
@@ -327,7 +259,7 @@ export default function SideMenu() {
             <span className={styles.themeIcon} aria-hidden>
               ☀︎
             </span>
-            Light
+            <span className={styles.themeLabel}>Light</span>
           </button>
           <button
             type="button"
@@ -337,78 +269,11 @@ export default function SideMenu() {
             <span className={styles.themeIcon} aria-hidden>
               ☾
             </span>
-            Dark
+            <span className={styles.themeLabel}>Dark</span>
           </button>
         </div>
       </div>
     </aside>
-  )
-
-  return (
-    <>
-      <div className={styles.desktopWrap}>
-        <nav className={styles.rail} aria-label="Primary">
-          <div className={styles.railTop} aria-label="Profile">
-            <div className={styles.railAvatar} aria-hidden>
-              {profile.avatar}
-            </div>
-          </div>
-          <div className={styles.railLinks}>
-            {rail.map((r) => {
-              const active = pathname === r.href || pathname.startsWith(r.href + '/')
-              return (
-                <Link
-                  key={r.href}
-                  href={r.href}
-                  className={`${styles.railLink} ${active ? styles.railLinkActive : ''}`}
-                  aria-label={r.label}
-                >
-                  {r.icon}
-                </Link>
-              )
-            })}
-          </div>
-          <div className={styles.railBottom}>
-            <button type="button" className={styles.railLink} aria-label="Toggle theme" onClick={toggleTheme}>
-              <RailIcon>
-                {theme === 'home' ? (
-                  <RailSvg>
-                    <path d="M21 12.8A8.5 8.5 0 0 1 11.2 3a7 7 0 1 0 9.8 9.8Z" />
-                  </RailSvg>
-                ) : (
-                  <RailSvg>
-                    <circle cx="12" cy="12" r="4" />
-                    <path d="M12 2v2" />
-                    <path d="M12 20v2" />
-                    <path d="M4.93 4.93l1.41 1.41" />
-                    <path d="M17.66 17.66l1.41 1.41" />
-                    <path d="M2 12h2" />
-                    <path d="M20 12h2" />
-                    <path d="M4.93 19.07l1.41-1.41" />
-                    <path d="M17.66 6.34l1.41-1.41" />
-                  </RailSvg>
-                )}
-              </RailIcon>
-            </button>
-          </div>
-        </nav>
-
-        {renderPanel('desktop')}
-      </div>
-
-      <button
-        type="button"
-        className={styles.mobileOpen}
-        aria-label="Open menu"
-        aria-expanded={mobileOpen}
-        onClick={() => setMobileOpen(true)}
-      >
-        <span aria-hidden>☰</span>
-      </button>
-
-      {mobileOpen && <div className={styles.backdrop} role="presentation" onClick={() => setMobileOpen(false)} />}
-      <div className={`${styles.mobileDrawer} ${mobileOpen ? styles.mobileDrawerOpen : ''}`}>{renderPanel('mobile')}</div>
-    </>
   )
 }
 
