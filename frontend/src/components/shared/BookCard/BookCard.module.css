@@ -41,9 +41,12 @@
   transform: none;
 }
 
-.rowCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.12);
+/* Avoid hover-lift on touch UIs. */
+@media (hover: hover) {
+  .rowCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 38px rgba(15, 23, 42, 0.12);
+  }
 }
 
 .rowCard::before {
@@ -51,9 +54,9 @@
 }
 
 .rowImageContainer {
-  width: 104px;
+  width: 78px;
   height: 104px;
-  flex: 0 0 104px;
+  flex: 0 0 78px;
   background: linear-gradient(145deg, #f3f4f6 0%, #eef2ff 100%);
   perspective: none;
   margin: 14px 0 14px 14px;
@@ -72,8 +75,10 @@
   transition: transform 0.25s ease;
 }
 
-.rowCard:hover .rowImage {
-  transform: scale(1.03);
+@media (hover: hover) {
+  .rowCard:hover .rowImage {
+    transform: scale(1.03);
+  }
 }
 
 .rowPlaceholder {
@@ -102,7 +107,7 @@
 .rowTitle {
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: #111827;
-  font-size: 1.06rem;
+  font-size: 1.02rem;
   text-shadow: none;
   min-height: unset;
 }
@@ -115,7 +120,7 @@
 
 .rowPrimaryLine {
   margin: 0.35rem 0 0;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 600;
 }
 
@@ -138,7 +143,7 @@
 .rowSecondaryLine {
   margin: 0.1rem 0 0;
   color: #9ca3af;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 500;
 }
 
@@ -202,9 +207,9 @@
   }
 
   .rowImageContainer {
-    width: 92px;
-    height: 92px;
-    flex-basis: 92px;
+    width: 72px;
+    height: 96px;
+    flex-basis: 72px;
     margin: 12px 0 12px 12px;
   }
 
@@ -228,9 +233,9 @@
 
 @media (max-width: 480px) {
   .rowImageContainer {
-    width: 84px;
-    height: 84px;
-    flex-basis: 84px;
+    width: 68px;
+    height: 92px;
+    flex-basis: 68px;
     margin: 10px 0 10px 10px;
     border-radius: 10px;
   }
