@@ -226,6 +226,49 @@
   }
 }
 
+@media (max-width: 480px) {
+  .rowImageContainer {
+    width: 84px;
+    height: 84px;
+    flex-basis: 84px;
+    margin: 10px 0 10px 10px;
+    border-radius: 10px;
+  }
+
+  .rowMainOn {
+    gap: 10px;
+  }
+
+  .rowTitle {
+    font-size: 0.98rem;
+    line-height: 1.25;
+  }
+
+  .rowAuthor {
+    font-size: 0.86rem;
+  }
+
+  .rowPrimaryLine {
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+  }
+
+  .rowSecondaryLine {
+    font-size: 0.82rem;
+  }
+
+  .rowActionBtn {
+    padding: 0.52rem 0.72rem;
+    font-size: 0.88rem;
+    gap: 0.45rem;
+  }
+
+  .rowActionBtn svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+
 .bookCard::before {
   content: '';
   position: absolute;
