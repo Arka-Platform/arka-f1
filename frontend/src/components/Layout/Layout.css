@@ -10,7 +10,8 @@
   width: 100%;
   gap: 14px;
   padding: 14px 14px 18px;
-  background: #f2f3f8;
+  /* Theme-aligned surface behind menu + pages (varies by data-theme). */
+  background: var(--theme-surface-soft);
   align-items: flex-start;
 }
 
