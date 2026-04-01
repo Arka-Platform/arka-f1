@@ -1,5 +1,13 @@
 /* Full-height left sidebar (collapsed ↔ expanded). */
 .sidebar {
+  --sidebar-expanded: clamp(260px, 22vw, 360px);
+  --sidebar-collapsed: clamp(56px, 6vw, 72px);
+  --menu-pad: clamp(6px, 1vw, 10px);
+  --menu-gap: clamp(2px, 0.6vw, 6px);
+  --menu-item-pad-y: clamp(7px, 1.1vw, 10px);
+  --menu-item-pad-x: clamp(6px, 1vw, 10px);
+  --icon-box: clamp(30px, 3.2vw, 36px);
+
   background: #ffffff;
   border-radius: 18px;
   box-shadow: 0 18px 44px rgba(15, 23, 42, 0.10);
@@ -14,11 +22,11 @@
 }
 
 .sidebarExpanded {
-  width: 340px;
+  width: var(--sidebar-expanded);
 }
 
 .sidebarCollapsed {
-  width: 76px;
+  width: var(--sidebar-collapsed);
 }
 
 .sidebarTop {
@@ -82,17 +90,17 @@
 }
 
 .menuList {
-  padding: 10px 10px 6px;
+  padding: var(--menu-pad);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--menu-gap);
 }
 
 .menuItem {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 10px;
+  padding: var(--menu-item-pad-y) var(--menu-item-pad-x);
   border-radius: 14px;
   color: #111827;
   text-decoration: none;
@@ -111,18 +119,18 @@
 }
 
 .menuIcon {
-  width: 28px;
-  height: 28px;
+  width: var(--icon-box);
+  height: var(--icon-box);
   border-radius: 10px;
   display: grid;
   place-items: center;
-  background: rgba(91, 92, 235, 0.10);
-  color: #5b5ceb;
+  background: transparent;
+  color: #111827;
   position: relative;
 }
 
 .menuItemActive .menuIcon {
-  background: rgba(255, 255, 255, 0.18);
+  background: transparent;
   color: #ffffff;
 }
 
@@ -245,7 +253,7 @@
 
 .sidebarCollapsed .menuItem {
   justify-content: center;
-  padding: 10px 8px;
+  padding: var(--menu-item-pad-y) var(--menu-item-pad-x);
 }
 
 .sidebarCollapsed .menuLabel {
