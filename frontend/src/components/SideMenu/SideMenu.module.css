@@ -104,6 +104,10 @@
   gap: var(--menu-gap);
 }
 
+.bottomStack {
+  margin-top: auto;
+}
+
 .menuItem {
   display: flex;
   align-items: center;
@@ -196,7 +200,6 @@
 }
 
 .themeBlock {
-  margin-top: auto;
   padding: 12px 14px 14px;
   border-top: 1px solid var(--app-border);
 }

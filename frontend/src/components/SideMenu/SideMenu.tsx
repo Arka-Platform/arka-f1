@@ -73,39 +73,6 @@ export default function SideMenu() {
         ),
       },
       {
-        id: 'pick',
-        label: 'Pick',
-        href: '/cart',
-        badge: cartCount > 0 ? cartCount : undefined,
-        icon: (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 2L7 6m6-4l2 4M3 6h18l-2 13H5L3 6z" />
-          </svg>
-        ),
-      },
-      {
-        id: 'shelf',
-        label: 'My Shelf',
-        href: '/bookshelf',
-        icon: (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-          </svg>
-        ),
-      },
-      {
-        id: 'wishlist',
-        label: 'Wishlist',
-        href: '/wishlist',
-        badge: wishlistCount > 0 ? wishlistCount : undefined,
-        icon: (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
-          </svg>
-        ),
-      },
-      {
         id: 'community',
         label: 'Community',
         href: '/community',
@@ -131,14 +98,56 @@ export default function SideMenu() {
           </svg>
         ),
       },
+    ],
+    []
+  )
+
+  const bottomItems: MenuItem[] = useMemo(
+    () => [
+      {
+        id: 'shelf',
+        label: 'My Shelf',
+        href: '/bookshelf',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+          </svg>
+        ),
+      },
+      {
+        id: 'wishlist',
+        label: 'Wishlist',
+        href: '/wishlist',
+        badge: wishlistCount > 0 ? wishlistCount : undefined,
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
+          </svg>
+        ),
+      },
+      {
+        id: 'pick',
+        label: 'Cart',
+        href: '/cart',
+        badge: cartCount > 0 ? cartCount : undefined,
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 2L7 6m6-4l2 4M3 6h18l-2 13H5L3 6z" />
+          </svg>
+        ),
+      },
       {
         id: 'clubProfile',
-        label: 'Club Profile',
+        label: 'Profile',
         href: '/account',
         icon: (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M20 21a8 8 0 1 0-16 0" />
-            <circle cx="12" cy="8" r="4" />
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <circle cx="9" cy="10" r="2" />
+            <path d="M13 9h5" />
+            <path d="M13 13h5" />
+            <path d="M7 16h5" />
           </svg>
         ),
       },
@@ -187,17 +196,44 @@ export default function SideMenu() {
         })}
       </nav>
 
-      <div className={styles.themeBlock}>
-        <button
-          type="button"
-          className={styles.themeIconToggle}
-          aria-label={theme === 'home' ? 'Switch to light theme' : 'Switch to dark theme'}
-          onClick={toggleTheme}
-        >
-          <span className={styles.themeIcon} aria-hidden>
-            {theme === 'home' ? '☀︎' : '☾'}
-          </span>
-        </button>
+      <div className={styles.bottomStack}>
+        <div className={styles.themeBlock}>
+          <button
+            type="button"
+            className={styles.themeIconToggle}
+            aria-label={theme === 'home' ? 'Switch to light theme' : 'Switch to dark theme'}
+            onClick={toggleTheme}
+          >
+            <span className={styles.themeIcon} aria-hidden>
+              {theme === 'home' ? '☀︎' : '☾'}
+            </span>
+          </button>
+        </div>
+
+        <nav className={styles.menuList} aria-label="Account shortcuts">
+          {bottomItems.map((item) => {
+            const hrefPath = item.href.split('?')[0]
+            const active = pathname === hrefPath || pathname.startsWith(hrefPath + '/')
+            return (
+              <Link key={item.id} href={item.href} className={`${styles.menuItem} ${active ? styles.menuItemActive : ''}`}>
+                <span className={styles.menuIcon} aria-hidden>
+                  {item.icon}
+                  {typeof item.badge === 'number' && item.badge > 0 ? (
+                    <span
+                      className={`${styles.badgeInIcon} ${
+                        item.id === 'wishlist' ? styles.badgeDanger : styles.badgeSuccess
+                      }`}
+                      aria-label={`${item.badge} notifications`}
+                    >
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  ) : null}
+                </span>
+                <span className={styles.menuLabel}>{item.label}</span>
+              </Link>
+            )
+          })}
+        </nav>
       </div>
     </aside>
   )
