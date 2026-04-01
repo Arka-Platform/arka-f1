@@ -35,6 +35,7 @@ export default function SideMenu() {
   const { user, isAuthenticated } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [panelOpen, setPanelOpen] = useState(true)
 
   const profile = useMemo(() => {
     const name =
@@ -149,8 +150,17 @@ export default function SideMenu() {
     []
   )
 
-  const renderPanel = (mode: 'desktop' | 'mobile') => (
-    <aside className={mode === 'desktop' ? styles.panel : styles.panelMobile} aria-label="Menu">
+  const renderPanel = (mode: 'desktop' | 'desktopOverlay' | 'mobile') => (
+    <aside
+      className={
+        mode === 'desktop'
+          ? styles.panel
+          : mode === 'desktopOverlay'
+            ? styles.panelOverlay
+            : styles.panelMobile
+      }
+      aria-label="Menu"
+    >
       <div className={styles.profile}>
         <div className={styles.avatar} aria-hidden>
           {profile.avatar}
@@ -159,12 +169,12 @@ export default function SideMenu() {
           <div className={styles.profileName}>{profile.name}</div>
           <div className={styles.profileEmail}>{profile.email}</div>
         </div>
-        {mode === 'mobile' && (
+        {(mode === 'mobile' || mode === 'desktopOverlay') && (
           <button
             type="button"
             className={styles.closeButton}
             aria-label="Close menu"
-            onClick={() => setMobileOpen(false)}
+            onClick={() => (mode === 'mobile' ? setMobileOpen(false) : setPanelOpen(false))}
           >
             ×
           </button>
@@ -179,14 +189,22 @@ export default function SideMenu() {
               key={item.id}
               href={item.href}
               className={`${styles.menuItem} ${active ? styles.menuItemActive : ''}`}
-              onClick={() => mode === 'mobile' && setMobileOpen(false)}
+              onClick={() => {
+                if (mode === 'mobile') setMobileOpen(false)
+                if (mode === 'desktopOverlay') setPanelOpen(false)
+              }}
             >
               <span className={styles.menuIcon} aria-hidden>
                 {item.icon}
               </span>
               <span className={styles.menuLabel}>{item.label}</span>
               {typeof item.badge === 'number' && item.badge > 0 ? (
-                <span className={styles.badge} aria-label={`${item.badge} notifications`}>
+                <span
+                  className={`${styles.badge} ${
+                    item.id === 'calendar' || item.id === 'rewards' ? styles.badgeDanger : styles.badgeSuccess
+                  }`}
+                  aria-label={`${item.badge} notifications`}
+                >
                   {item.badge}
                 </span>
               ) : null}
@@ -203,6 +221,9 @@ export default function SideMenu() {
             className={`${styles.themePill} ${theme !== 'home' ? styles.themePillActive : ''}`}
             onClick={() => theme === 'home' && toggleTheme()}
           >
+            <span className={styles.themeIcon} aria-hidden>
+              ☀︎
+            </span>
             Light
           </button>
           <button
@@ -210,6 +231,9 @@ export default function SideMenu() {
             className={`${styles.themePill} ${theme === 'home' ? styles.themePillActive : ''}`}
             onClick={() => theme !== 'home' && toggleTheme()}
           >
+            <span className={styles.themeIcon} aria-hidden>
+              ☾
+            </span>
             Dark
           </button>
         </div>
@@ -243,7 +267,21 @@ export default function SideMenu() {
           </div>
         </nav>
 
-        {renderPanel('desktop')}
+        {/* Wide desktop: panel can be collapsed */}
+        <div className={styles.panelSlot}>
+          {panelOpen ? renderPanel('desktop') : null}
+          <button
+            type="button"
+            className={styles.panelToggle}
+            aria-label={panelOpen ? 'Collapse menu' : 'Open menu'}
+            aria-expanded={panelOpen}
+            onClick={() => setPanelOpen((v) => !v)}
+          >
+            <span className={styles.panelToggleIcon} aria-hidden>
+              {panelOpen ? '‹' : '›'}
+            </span>
+          </button>
+        </div>
       </div>
 
       <button
@@ -258,6 +296,12 @@ export default function SideMenu() {
 
       {mobileOpen && <div className={styles.backdrop} role="presentation" onClick={() => setMobileOpen(false)} />}
       <div className={`${styles.mobileDrawer} ${mobileOpen ? styles.mobileDrawerOpen : ''}`}>{renderPanel('mobile')}</div>
+
+      {/* Medium desktop/tablet: overlay panel from rail */}
+      {panelOpen && <div className={styles.desktopOverlayBackdrop} role="presentation" onClick={() => setPanelOpen(false)} />}
+      <div className={`${styles.desktopOverlayDrawer} ${panelOpen ? styles.desktopOverlayDrawerOpen : ''}`}>
+        {renderPanel('desktopOverlay')}
+      </div>
     </>
   )
 }
