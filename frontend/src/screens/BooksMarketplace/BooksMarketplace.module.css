@@ -1,6 +1,6 @@
 .marketplace {
   width: 100%;
-  background: #f2f3f8;
+  background: var(--theme-surface-soft);
 }
 
 .marketplace > *:not(.searchSection) {
