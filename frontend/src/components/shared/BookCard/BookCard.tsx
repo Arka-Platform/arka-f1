@@ -22,6 +22,8 @@ export interface Book {
   publicationYear?: number
   averageRating?: number
   ratingsCount?: number
+  /** Optional: how many people are looking for this title (UI-only, when available). */
+  requestCount?: number
 }
 
 interface BookCardProps {
@@ -196,12 +198,24 @@ const BookCard: React.FC<BookCardProps> = ({
   }
 
   const catalogActive = (book.status ?? '').toUpperCase() === 'AVAILABLE' || !(book.status && book.status.length > 0)
-  const primaryLine = isInBookshelf
-    ? 'In your library'
-    : isInWishlist
-      ? 'You requested this'
-      : 'No requests yet'
+  const requestCount = typeof book.requestCount === 'number' ? Math.max(0, Math.floor(book.requestCount)) : null
+  const requestLine =
+    requestCount != null && requestCount > 0
+      ? `${requestCount} people looking for this`
+      : isInBookshelf
+        ? 'In your library'
+        : isInWishlist
+          ? 'You requested this'
+          : 'No requests yet'
 
+  const requestLineClass =
+    requestCount != null && requestCount > 0
+      ? styles.rowPrimaryHot
+      : isInBookshelf
+        ? styles.rowPrimaryGood
+        : isInWishlist
+          ? styles.rowPrimaryInfo
+          : styles.rowPrimaryNeutral
   return (
     <div
       className={`${styles.bookCard} ${variant === 'row' ? styles.rowCard : ''}`}
@@ -280,7 +294,7 @@ const BookCard: React.FC<BookCardProps> = ({
 
             {variant === 'row' ? (
               <>
-                <p className={styles.rowPrimaryLine}>{primaryLine}</p>
+                <p className={`${styles.rowPrimaryLine} ${requestLineClass}`}>{requestLine}</p>
                 <p className={styles.rowSecondaryLine}>{catalogActive ? 'Active in catalog' : 'Inactive in catalog'}</p>
               </>
             ) : (
@@ -328,10 +342,10 @@ const BookCard: React.FC<BookCardProps> = ({
           </div>
 
           {variant === 'row' && (
-            <div className={styles.rowActions}>
+            <div className={styles.rowActions} role="group" aria-label="Pass or pick actions">
               <button
                 type="button"
-                className={`${styles.rowActionBtn} ${styles.rowPassBtn} ${isInBookshelf ? styles.rowActionSelected : ''}`}
+                className={`${styles.rowActionBtn} ${styles.rowPassBtn} ${isInBookshelf ? styles.rowPassSelected : ''}`}
                 onClick={handlePass}
                 aria-label={isInBookshelf ? 'Passed (in your library)' : 'Pass this book'}
               >
@@ -349,14 +363,20 @@ const BookCard: React.FC<BookCardProps> = ({
               </button>
               <button
                 type="button"
-                className={`${styles.rowActionBtn} ${styles.rowPickBtn}`}
+                className={`${styles.rowActionBtn} ${styles.rowPickBtn} ${isInWishlist ? styles.rowPickSelected : ''}`}
                 onClick={handlePick}
                 aria-label="Pick this book"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                  <path d="M12 20l9-5-9-5-9 5 9 5z" />
-                  <path d="M12 12l9-5-9-5-9 5 9 5z" opacity="0.35" />
-                </svg>
+                {isInWishlist ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden>
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                    <path d="M12 20l9-5-9-5-9 5 9 5z" />
+                    <path d="M12 12l9-5-9-5-9 5 9 5z" opacity="0.35" />
+                  </svg>
+                )}
                 <span>{pickLabel}</span>
               </button>
             </div>
