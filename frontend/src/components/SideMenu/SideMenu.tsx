@@ -249,29 +249,16 @@ export default function SideMenu() {
       </nav>
 
       <div className={styles.themeBlock}>
-        <div className={styles.themeTitle}>Colour Scheme</div>
-        <div className={styles.themeRow} role="group" aria-label="Theme">
-          <button
-            type="button"
-            className={`${styles.themePill} ${theme !== 'home' ? styles.themePillActive : ''}`}
-            onClick={() => theme === 'home' && toggleTheme()}
-          >
-            <span className={styles.themeIcon} aria-hidden>
-              ☀︎
-            </span>
-            <span className={styles.themeLabel}>Light</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.themePill} ${theme === 'home' ? styles.themePillActive : ''}`}
-            onClick={() => theme !== 'home' && toggleTheme()}
-          >
-            <span className={styles.themeIcon} aria-hidden>
-              ☾
-            </span>
-            <span className={styles.themeLabel}>Dark</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          className={styles.themeIconToggle}
+          aria-label={theme === 'home' ? 'Switch to light theme' : 'Switch to dark theme'}
+          onClick={toggleTheme}
+        >
+          <span className={styles.themeIcon} aria-hidden>
+            {theme === 'home' ? '☀︎' : '☾'}
+          </span>
+        </button>
       </div>
     </aside>
   )
