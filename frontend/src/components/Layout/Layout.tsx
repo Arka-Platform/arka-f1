@@ -2,7 +2,7 @@
 "use client"
 
 import React from 'react'
-import Header from '../Header/Header'
+import SideMenu from '../SideMenu/SideMenu'
 import './Layout.css'
 
 interface LayoutProps {
@@ -15,10 +15,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
-      <Header />
-      <main className="layout-main" id="main-content">
-        {children}
-      </main>
+      <div className="layout-body">
+        <SideMenu />
+        <main className="layout-main" id="main-content">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }
