@@ -16,7 +16,7 @@
 
 @media (max-width: 767px) {
   .layout-body {
-    padding: 12px 12px 104px; /* leave room for bottom rail */
+    padding: 12px 12px 18px;
   }
 }
 
