@@ -5,6 +5,7 @@ import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useContribution } from '../../contexts/ContributionContext'
 import { booksApi, BookResponse, uploadApi } from '../../utils/api'
+import { compressImageFile } from '../../utils/imageCompression'
 import Input from '../../components/shared/Input/Input'
 import Textarea from '../../components/shared/Textarea/Textarea'
 import Select from '../../components/shared/Select/Select'
@@ -236,7 +237,8 @@ const SellerInventory: React.FC = () => {
     reader.readAsDataURL(file)
 
     // Upload file
-    await handleConditionPhotoUpload(file, photoType)
+    const compressed = await compressImageFile(file, { maxDimension: 1600, quality: 0.82, preferWebp: true })
+    await handleConditionPhotoUpload(compressed, photoType)
   }
 
   const handleConditionPhotoUpload = async (file: File, photoType: 'frontCover' | 'backCover' | 'spine' | 'samplePage') => {
@@ -845,6 +847,7 @@ const SellerInventory: React.FC = () => {
                           ref={fileInputRefs.frontCover}
                           type="file"
                           accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/*"
+                          capture="environment"
                           onChange={(e) => handleConditionPhotoSelect(e, 'frontCover')}
                           className={styles.fileInput}
                           id="front-cover-photo"
@@ -895,6 +898,7 @@ const SellerInventory: React.FC = () => {
                           ref={fileInputRefs.backCover}
                           type="file"
                           accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/*"
+                          capture="environment"
                           onChange={(e) => handleConditionPhotoSelect(e, 'backCover')}
                           className={styles.fileInput}
                           id="back-cover-photo"
@@ -942,6 +946,7 @@ const SellerInventory: React.FC = () => {
                           ref={fileInputRefs.spine}
                           type="file"
                           accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/*"
+                          capture="environment"
                           onChange={(e) => handleConditionPhotoSelect(e, 'spine')}
                           className={styles.fileInput}
                           id="spine-photo"
@@ -989,6 +994,7 @@ const SellerInventory: React.FC = () => {
                           ref={fileInputRefs.samplePage}
                           type="file"
                           accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/*"
+                          capture="environment"
                           onChange={(e) => handleConditionPhotoSelect(e, 'samplePage')}
                           className={styles.fileInput}
                           id="sample-page-photo"

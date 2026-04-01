@@ -9,6 +9,7 @@ import { useTheme } from '../../contexts/ThemeContext'
 import { booksApi, wishlistApi } from '../../utils/api'
 import Logo from '../shared/Logo/Logo'
 import UserMenu from '../shared/UserMenu/UserMenu'
+import InstallAppButton from '../shared/InstallAppButton/InstallAppButton'
 import styles from './Header.module.css'
 
 const Header: React.FC = () => {
@@ -317,6 +318,7 @@ const Header: React.FC = () => {
 
           {/* Desktop Right Section */}
           <div className={styles.rightSection}>
+            <InstallAppButton />
             <button
               type="button"
               className={styles.themeToggle}
@@ -543,6 +545,13 @@ const Header: React.FC = () => {
           >
             Switch to {theme === 'home' ? 'Default Theme' : 'Home Theme'}
           </button>
+
+          <InstallAppButton
+            variant="mobile"
+            onInstalled={() => {
+              closeMobileMenu()
+            }}
+          />
 
           {isAuthenticated && (
             <>

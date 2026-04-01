@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Arka">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#60a5fa"/>
+      <stop offset="0.55" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#g)"/>
+  <path d="M164 154c0-18 14-32 32-32h140c18 0 32 14 32 32v214c0 18-14 32-32 32H196c-18 0-32-14-32-32V154Z" fill="#fff" opacity="0.92"/>
+  <path d="M196 152h70c10 0 18 8 18 18v188c0 10-8 18-18 18h-70c-10 0-18-8-18-18V170c0-10 8-18 18-18Z" fill="#0b1a3a" opacity="0.10"/>
+  <path d="M214 190h156" stroke="#0b1a3a" stroke-opacity="0.18" stroke-width="18" stroke-linecap="round"/>
+  <path d="M214 240h156" stroke="#0b1a3a" stroke-opacity="0.18" stroke-width="18" stroke-linecap="round"/>
+  <path d="M214 290h128" stroke="#0b1a3a" stroke-opacity="0.18" stroke-width="18" stroke-linecap="round"/>
+</svg>
+

@@ -7,6 +7,20 @@ import AppShell from '../components/app/AppShell'
 export const metadata = {
   title: 'Arka',
   description: 'Arka web app',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Arka',
+  },
+  icons: {
+    icon: [{ url: '/icon.svg' }],
+    apple: [{ url: '/icon.svg' }],
+  },
+}
+
+export const viewport = {
+  themeColor: '#2563eb',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {

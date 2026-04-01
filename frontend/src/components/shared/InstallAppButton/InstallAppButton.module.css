@@ -1,0 +1,124 @@
+.desktopButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--app-border);
+  background: color-mix(in srgb, var(--app-surface) 92%, transparent);
+  color: var(--app-text);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+.desktopButton:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.desktopButton:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
+}
+
+.mobileButton {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.875rem 1rem;
+  border-radius: 10px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  background: transparent;
+  color: var(--app-text);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.iosBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  z-index: 1200;
+  padding: 1rem;
+}
+
+.iosModal {
+  width: min(520px, 100%);
+  border-radius: 16px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.iosHeader {
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.iosTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.iosClose {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--app-border);
+  background: transparent;
+  color: var(--app-text);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.iosSteps {
+  margin: 0;
+  padding: 1rem 1.25rem 0.75rem 2.25rem;
+  color: color-mix(in srgb, var(--app-text) 92%, transparent);
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.iosSteps li {
+  margin-bottom: 0.6rem;
+}
+
+.iosIcon {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 0.35rem;
+  opacity: 0.8;
+}
+
+.iosFooter {
+  padding: 0.85rem 1.1rem 1.1rem;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--app-border);
+}
+
+.iosOk {
+  padding: 0.7rem 1.1rem;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
