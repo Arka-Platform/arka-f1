@@ -17,32 +17,13 @@ type MenuItem = {
   icon: React.ReactNode
 }
 
-function initials(firstName?: string, lastName?: string, email?: string | null) {
-  const a = (firstName ?? '').trim()
-  const b = (lastName ?? '').trim()
-  if (a || b) return `${a.slice(0, 1)}${b.slice(0, 1)}`.toUpperCase()
-  const e = (email ?? '').trim()
-  if (e) return e.slice(0, 1).toUpperCase()
-  return 'A'
-}
-
 export default function SideMenu() {
   const pathname = usePathname()
-  const { user, isAuthenticated } = useAuth()
+  const { user } = useAuth()
   const { getItemCount } = useCart()
   const { theme, toggleTheme } = useTheme()
   const [expanded, setExpanded] = useState(true)
   const [wishlistCount, setWishlistCount] = useState(0)
-
-  const profile = useMemo(() => {
-    const name =
-      isAuthenticated && user
-        ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || (user.email ?? 'Account')
-        : 'Guest'
-    const email = isAuthenticated && user ? user.email ?? '' : 'Sign in to sync'
-    const avatar = initials(user?.firstName, user?.lastName, user?.email ?? null)
-    return { name, email, avatar }
-  }, [isAuthenticated, user])
 
   useEffect(() => {
     const loadWishlistCount = async () => {
@@ -82,23 +63,12 @@ export default function SideMenu() {
       },
       {
         id: 'browse',
-        label: 'Browse',
+        label: 'Books',
         href: '/books',
         icon: (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-          </svg>
-        ),
-      },
-      {
-        id: 'pass',
-        label: 'Pass',
-        href: '/inventory?focus=add',
-        icon: (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 5v14" />
-            <path d="M5 12h14" />
           </svg>
         ),
       },
@@ -136,17 +106,6 @@ export default function SideMenu() {
         ),
       },
       {
-        id: 'requests',
-        label: 'Requests',
-        href: '/requests',
-        icon: (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="7" />
-            <path d="M21 21l-4.3-4.3" />
-          </svg>
-        ),
-      },
-      {
         id: 'community',
         label: 'Community',
         href: '/community',
@@ -173,25 +132,13 @@ export default function SideMenu() {
         ),
       },
       {
-        id: 'account',
-        label: 'Account',
+        id: 'clubProfile',
+        label: 'Club Profile',
         href: '/account',
         icon: (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M20 21a8 8 0 1 0-16 0" />
             <circle cx="12" cy="8" r="4" />
-          </svg>
-        ),
-      },
-      {
-        id: 'support',
-        label: 'Support',
-        href: '/contact',
-        icon: (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M4 4h16v12H5.5L4 17.5V4z" />
-            <path d="M8 9h8" />
-            <path d="M8 12h6" />
           </svg>
         ),
       },
@@ -202,16 +149,6 @@ export default function SideMenu() {
   return (
     <aside className={`${styles.sidebar} ${expanded ? styles.sidebarExpanded : styles.sidebarCollapsed}`} aria-label="Menu">
       <div className={styles.sidebarTop}>
-        <div className={styles.profile}>
-          <div className={styles.avatar} aria-hidden>
-            {profile.avatar}
-          </div>
-          <div className={styles.profileText}>
-            <div className={styles.profileName}>{profile.name}</div>
-            <div className={styles.profileEmail}>{profile.email}</div>
-          </div>
-        </div>
-
         <button
           type="button"
           className={styles.expandToggle}
@@ -219,7 +156,9 @@ export default function SideMenu() {
           aria-expanded={expanded}
           onClick={() => setExpanded((v) => !v)}
         >
-          {expanded ? '«' : '»'}
+          <span aria-hidden className={styles.expandToggleIcon}>
+            {expanded ? '«' : '»'}
+          </span>
         </button>
       </div>
 

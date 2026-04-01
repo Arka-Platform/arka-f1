@@ -33,21 +33,28 @@
 .sidebarTop {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 10px;
   padding: 12px 12px 10px;
   border-bottom: 1px solid var(--app-border);
 }
 
 .expandToggle {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   border: 1px solid var(--app-border);
   background: transparent;
   cursor: pointer;
   font-weight: 900;
   color: var(--app-text);
+  display: grid;
+  place-items: center;
+}
+
+.expandToggleIcon {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .profile {
@@ -224,11 +231,6 @@
     top: 12px;
     height: calc(100vh - 24px);
   }
-}
-
-/* Collapsed mode: show symbols only; keep everything left-aligned. */
-.sidebarCollapsed .profileText {
-  display: none;
 }
 
 .sidebarCollapsed .themeTitle,
