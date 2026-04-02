@@ -1,8 +1,8 @@
 'use client'
 
-import Browse from '../../screens/Browse/Browse'
+import BooksSwipe from '../../screens/BooksSwipe/BooksSwipe'
 
 export default function BooksPage() {
-  return <Browse />
+  return <BooksSwipe />
 }
 
