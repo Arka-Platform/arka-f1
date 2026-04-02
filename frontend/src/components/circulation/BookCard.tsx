@@ -25,6 +25,7 @@ export interface BookCardProps {
   onToggleWishlist?: () => void
   onPick?: () => void
   onPass?: () => void
+  variant?: 'center' | 'peek'
 }
 
 function BadgeIcon({ type }: { type: CirculationBadge['type'] }) {
@@ -53,7 +54,7 @@ function BadgeIcon({ type }: { type: CirculationBadge['type'] }) {
   )
 }
 
-export default function BookCard({ model, onToggleWishlist, onPick, onPass }: BookCardProps) {
+export default function BookCard({ model, onToggleWishlist, onPick, onPass, variant = 'center' }: BookCardProps) {
   const x = useMotionValue(0)
   const rotate = useTransform(x, [-140, 0, 140], [-5.5, 0, 5.5])
   const scale = useTransform(x, [-140, 0, 140], [0.99, 1, 0.99])
@@ -61,15 +62,16 @@ export default function BookCard({ model, onToggleWishlist, onPick, onPass }: Bo
   return (
     <motion.article
       className={[
-        'relative w-full overflow-hidden rounded-[26px] bg-[#fbfaf7]',
-        'shadow-[0_20px_55px_rgba(35,25,12,0.12)]',
-        'ring-1 ring-black/[0.04]',
+        'relative w-full overflow-hidden rounded-[28px] bg-[#fbfaf7]',
+        'shadow-[0_24px_60px_rgba(35,25,12,0.14)]',
+        'ring-1 ring-black/[0.035]',
+        variant === 'peek' ? 'pointer-events-none' : '',
       ].join(' ')}
       initial={{ opacity: 0, y: 14, scale: 0.985 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: 'spring', stiffness: 420, damping: 34 }}
       style={{ x, rotate, scale }}
-      drag="x"
+      drag={variant === 'center' ? 'x' : false}
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.08}
       onDragEnd={(_, info) => {
@@ -80,34 +82,36 @@ export default function BookCard({ model, onToggleWishlist, onPick, onPass }: Bo
     >
       <div className="relative">
         {/* Badge + wishlist */}
-        <div className="absolute left-4 top-4 z-20 inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1.5 text-[12px] font-semibold text-[#2b2216] shadow-[0_10px_22px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.05] backdrop-blur">
-          <span className="text-[#c68a2e]">
+        <div className="absolute left-4 top-4 z-20 inline-flex items-center gap-2 rounded-full bg-white/78 px-3 py-1.5 text-[12px] font-semibold text-[#2b2216] shadow-[0_12px_24px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.05] backdrop-blur">
+          <span className="text-[#d2a23e]">
             <BadgeIcon type={model.badge.type} />
           </span>
           <span>{model.badge.text}</span>
         </div>
 
-        <button
-          type="button"
-          aria-label={model.wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-          aria-pressed={Boolean(model.wishlisted)}
-          onClick={onToggleWishlist}
-          className="absolute right-4 top-4 z-20 grid h-9 w-9 place-items-center rounded-full bg-white/85 shadow-[0_10px_22px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.05] backdrop-blur transition active:scale-[0.98]"
-        >
-          <svg
-            className="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill={model.wishlisted ? '#e25b5b' : 'none'}
-            stroke={model.wishlisted ? '#e25b5b' : '#2b2216'}
-            strokeWidth="2"
-            aria-hidden
+        {variant === 'center' ? (
+          <button
+            type="button"
+            aria-label={model.wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+            aria-pressed={Boolean(model.wishlisted)}
+            onClick={onToggleWishlist}
+            className="absolute right-4 top-4 z-20 grid h-9 w-9 place-items-center rounded-full bg-white/85 shadow-[0_12px_24px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.05] backdrop-blur transition active:scale-[0.98]"
           >
-            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
-          </svg>
-        </button>
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill={model.wishlisted ? '#e25b5b' : 'none'}
+              stroke={model.wishlisted ? '#e25b5b' : '#2b2216'}
+              strokeWidth="2"
+              aria-hidden
+            >
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
+            </svg>
+          </button>
+        ) : null}
 
         {/* Cover */}
-        <div className="relative overflow-hidden rounded-[26px] bg-[#efe8dd]">
+        <div className="relative overflow-hidden rounded-[28px] bg-[#efe8dd]">
           <div className="aspect-[4/3] w-full">
             {model.coverUrl ? (
               <img
