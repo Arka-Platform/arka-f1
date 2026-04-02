@@ -1,29 +1,35 @@
 .cardOuter {
   position: relative;
-  border-radius: 28px;
-  padding: 8px;
-  background: linear-gradient(180deg, #b7872f 0%, #9a6624 35%, #7a4e1b 100%);
-  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.35);
+  border-radius: 34px;
+  padding: 10px;
+  background:
+    radial-gradient(140% 120% at 50% 0%, rgba(255, 236, 170, 0.55) 0%, rgba(255, 236, 170, 0) 52%),
+    linear-gradient(180deg, #caa24b 0%, #b4812f 34%, #8a571f 100%);
+  box-shadow:
+    0 26px 70px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
   overflow: hidden;
 }
 
 .cardInner {
-  border-radius: 22px;
-  background: #f6f6f6;
-  border: 1px solid rgba(40, 27, 14, 0.14);
+  border-radius: 26px;
+  background: linear-gradient(180deg, #fbfaf7 0%, #f3f1ec 100%);
+  border: 1px solid rgba(60, 40, 18, 0.18);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 10px 28px rgba(0, 0, 0, 0.12);
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.04),
+    0 14px 34px rgba(0, 0, 0, 0.12);
   overflow: hidden;
 }
 
 .topBar {
-  background: linear-gradient(90deg, #b4872e 0%, #c8953c 45%, #a5752a 100%);
-  padding: 14px 16px 13px;
+  background: linear-gradient(90deg, #b8882f 0%, #d2a445 50%, #b07a2a 100%);
+  padding: 16px 18px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  border-bottom: 1px solid rgba(60, 40, 18, 0.14);
 }
 
 .topTitle {
@@ -34,7 +40,8 @@
   color: #fff3d8;
   font-weight: 900;
   text-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
-  font-size: clamp(1.15rem, 5.1vw, 1.7rem);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: clamp(1.18rem, 5.2vw, 1.75rem);
   letter-spacing: 0.01em;
 }
 
@@ -46,22 +53,22 @@
 .iconGroup {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex: 0 0 auto;
 }
 
 .iconBtn {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 9999px;
   display: grid;
   place-items: center;
   background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   color: #8b5a1f;
   box-shadow:
-    0 12px 22px rgba(0, 0, 0, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    0 14px 24px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
   cursor: pointer;
   transition: transform 0.15s ease, filter 0.15s ease;
 }
@@ -76,7 +83,7 @@
 }
 
 .contentPad {
-  padding: 18px 18px 16px;
+  padding: 18px 18px 18px;
 }
 
 .mainRow {
@@ -86,14 +93,16 @@
 }
 
 .coverWrap {
-  width: 170px;
+  width: 176px;
   flex: 0 0 auto;
-  background: linear-gradient(180deg, #efe2c7 0%, #f6f0df 100%);
-  border-radius: 16px;
-  border: 1px solid rgba(40, 27, 14, 0.08);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(180deg, #ffffff 0%, #f5f3ee 100%);
+  border-radius: 18px;
+  border: 1px solid rgba(60, 40, 18, 0.12);
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
   overflow: hidden;
-  padding: 12px 10px;
+  padding: 12px 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,23 +131,26 @@
 .detailsPanel {
   flex: 1;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(40, 27, 14, 0.08);
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(60, 40, 18, 0.12);
   padding: 16px 16px 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .genrePill {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background: rgba(232, 148, 58, 0.18);
+  background: rgba(232, 148, 58, 0.16);
   color: #7b4a0f;
-  border: 1px solid rgba(232, 148, 58, 0.3);
+  border: 1px solid rgba(232, 148, 58, 0.28);
   border-radius: 9999px;
   padding: 9px 12px;
   font-weight: 900;
   font-size: 0.95rem;
-  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.07);
+  box-shadow:
+    0 14px 22px rgba(0, 0, 0, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
   max-width: 100%;
 }
 
@@ -151,7 +163,7 @@
   align-items: center;
   gap: 12px;
   padding: 12px 0;
-  border-top: 1px solid rgba(80, 50, 18, 0.12);
+  border-top: 1px solid rgba(60, 40, 18, 0.12);
 }
 
 .detailRow:first-child {
@@ -165,10 +177,10 @@
   border-radius: 9999px;
   display: grid;
   place-items: center;
-  background: rgba(232, 148, 58, 0.2);
+  background: rgba(232, 148, 58, 0.18);
   color: #7b4a0f;
   flex: 0 0 auto;
-  border: 1px solid rgba(232, 148, 58, 0.35);
+  border: 1px solid rgba(232, 148, 58, 0.32);
 }
 
 .detailText {
@@ -205,10 +217,11 @@
 
 .aboutCard {
   margin-top: 8px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(40, 27, 14, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(60, 40, 18, 0.12);
   padding: 14px 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .aboutText {
@@ -227,10 +240,11 @@
 
 .statsCard {
   margin-top: 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(40, 27, 14, 0.07);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.56);
+  border: 1px solid rgba(60, 40, 18, 0.11);
   padding: 10px 12px 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .statRow {
@@ -291,9 +305,12 @@
 }
 
 .ctaBtnPick {
-  background: linear-gradient(180deg, #e0a34a 0%, #d2872d 55%, #bf6a18 100%);
+  background: linear-gradient(180deg, #e7b05c 0%, #d99232 52%, #c56b18 100%);
   color: rgba(40, 27, 14, 0.98);
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 18px 34px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
 }
 
 .ctaBtnPick:hover:not(:disabled) {
@@ -302,10 +319,13 @@
 }
 
 .ctaBtnPass {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.86) 0%, rgba(235, 235, 235, 0.86) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(238, 238, 238, 0.9) 100%);
   color: rgba(35, 35, 35, 0.92);
-  border: 1px solid rgba(40, 27, 14, 0.12);
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(60, 40, 18, 0.14);
+  box-shadow:
+    0 18px 34px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
 }
 
 .ctaBtnPass:hover:not(:disabled) {
@@ -318,7 +338,7 @@
     padding: 16px 14px 14px;
   }
   .coverWrap {
-    width: 150px;
+    width: 162px;
   }
   .mainRow {
     gap: 14px;
