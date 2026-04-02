@@ -12,24 +12,15 @@ export default function HeaderBar({ title, onHeart, onInfo }: HeaderBarProps) {
   return (
     <div
       className={[
-        'h-[76px] w-full',
-        'rounded-t-[28px]',
-        'bg-[linear-gradient(90deg,#b8882f_0%,#d2a445_50%,#b07a2a_100%)]',
-        'px-[18px]',
+        'h-[68px] sm:h-[72px] w-full',
+        'bg-[var(--theme-accent-gradient)]',
+        'px-4 sm:px-6',
         'flex items-center justify-between gap-4',
-        'shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]',
+        'shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]',
       ].join(' ')}
     >
       <div className="min-w-0 flex items-center gap-3">
-        <div
-          className={[
-            'grid h-10 w-10 place-items-center rounded-2xl',
-            'bg-white/15',
-            'ring-1 ring-white/15',
-            'shadow-[0_12px_22px_rgba(0,0,0,0.14)]',
-          ].join(' ')}
-          aria-hidden
-        >
+        <div className="grid h-10 w-10 place-items-center text-[#fff3d8]" aria-hidden>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff3d8" strokeWidth="2.2" aria-hidden>
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
@@ -37,8 +28,8 @@ export default function HeaderBar({ title, onHeart, onInfo }: HeaderBarProps) {
         </div>
         <div className="min-w-0">
           <div
-            className="truncate font-black tracking-[-0.01em] text-[#fff3d8] [text-shadow:0_10px_18px_rgba(0,0,0,0.35)]"
-            style={{ fontSize: 28, lineHeight: '30px' }}
+            className="truncate font-medium tracking-[-0.01em] text-[var(--theme-text-inverse)] [text-shadow:0_10px_18px_rgba(0,0,0,0.28)]"
+            style={{ fontSize: 24, lineHeight: '28px' }}
             title={title}
           >
             {title}

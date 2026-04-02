@@ -11,10 +11,8 @@ export interface StatsSectionProps {
 function StatRow({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-4 px-4 py-4">
-      <div className="grid h-9 w-9 place-items-center rounded-full bg-[#f1e2c8] text-[#8b5a1f] ring-1 ring-[#e2c28b]/35 shadow-[0_10px_18px_rgba(0,0,0,0.06)]">
-        {icon}
-      </div>
-      <div className="text-[14px] font-semibold leading-tight text-[#3b2a16]">{children}</div>
+      <div className="grid h-9 w-9 place-items-center text-[#b07a2a]">{icon}</div>
+      <div className="text-[14px] font-medium leading-[18px] text-[#3b2a16]/90">{children}</div>
     </div>
   )
 }
@@ -34,9 +32,9 @@ export default function StatsSection({ copiesSold, readTime, keyConcepts }: Stat
               </svg>
             }
           >
-            <span className="font-extrabold">Over </span>
-            <span className="font-extrabold">{copiesSold}</span>
-            <span className="font-extrabold"> Copies Sold</span>
+            <span className="tracking-[-0.01em]">Over </span>
+            <span className="font-medium text-[#3b2a16]">{copiesSold}</span>
+            <span className="tracking-[-0.01em]"> Copies Sold</span>
           </StatRow>
 
           <StatRow
@@ -47,7 +45,8 @@ export default function StatsSection({ copiesSold, readTime, keyConcepts }: Stat
               </svg>
             }
           >
-            <span className="font-extrabold">Average Read Time:</span> <span className="font-extrabold">{readTime}</span>
+            <span className="tracking-[-0.01em]">Average Read Time:</span>{' '}
+            <span className="font-medium text-[#3b2a16]">{readTime}</span>
           </StatRow>
 
           <StatRow
@@ -59,7 +58,8 @@ export default function StatsSection({ copiesSold, readTime, keyConcepts }: Stat
               </svg>
             }
           >
-            <span className="font-extrabold">Key Concepts:</span> <span className="font-extrabold">{keyConcepts}</span>
+            <span className="tracking-[-0.01em]">Key Concepts:</span>{' '}
+            <span className="font-medium text-[#3b2a16]">{keyConcepts}</span>
           </StatRow>
         </div>
       </div>

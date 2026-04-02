@@ -3,9 +3,10 @@
 import React from 'react'
 
 export interface BookMetaProps {
+  name: string
+  author: string
   genre: string
-  published: string
-  pages: string
+  condition: string
   rating: number
 }
 
@@ -17,32 +18,47 @@ function Row({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex items-center gap-3 py-2.5">
-      <div className="grid h-6 w-6 place-items-center rounded-full bg-[#f1e2c8] text-[#8b5a1f] ring-1 ring-[#e2c28b]/40 shadow-[0_10px_18px_rgba(0,0,0,0.06)]">
+    <div className="flex items-center gap-3 py-[11px]">
+      <div className="grid h-6 w-6 place-items-center text-[#b07a2a]">
         {icon}
       </div>
-      <div className="text-[14px] font-semibold text-[#3b2a16]">{children}</div>
+      <div className="text-[14px] font-medium leading-[18px] text-[#3b2a16]/90">{children}</div>
     </div>
   )
 }
 
-export default function BookMeta({ genre, published, pages, rating }: BookMetaProps) {
+export default function BookMeta({ name, author, genre, condition, rating }: BookMetaProps) {
   const full = Math.floor(rating)
   const rem = rating - full
 
   return (
     <div className="flex flex-col">
-      <div className="inline-flex max-w-full items-center gap-3 rounded-full bg-[#f1e2c8] px-4 py-2 text-[14px] font-extrabold text-[#7b4a0f] ring-1 ring-[#e2c28b]/35 shadow-[0_12px_22px_rgba(0,0,0,0.06)]">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-          <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
-          <path d="M8 7h8" />
-          <path d="M8 11h6" />
-          <path d="M8 15h5" />
-        </svg>
-        <span className="truncate">{genre}</span>
+      <div className="flex items-center gap-3 py-[11px]">
+        <div className="grid h-6 w-6 place-items-center text-[#b07a2a]">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+            <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+            <path d="M8 7h8" />
+            <path d="M8 11h6" />
+            <path d="M8 15h5" />
+          </svg>
+        </div>
+        <div className="text-[14px] font-medium leading-[18px] text-[#3b2a16]/90">
+          <span className="truncate">{name}</span>
+        </div>
       </div>
 
-      <div className="mt-3 divide-y divide-[#3b2a16]/10">
+      <div className="divide-y divide-[#3b2a16]/10">
+        <Row
+          icon={
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <path d="M12 2a5 5 0 0 1 5 5c0 3-2 5-5 5s-5-2-5-5a5 5 0 0 1 5-5Z" />
+              <path d="M20 22a8 8 0 0 0-16 0" />
+            </svg>
+          }
+        >
+          Author: <span className="font-medium text-[#5a3812]">{author}</span>
+        </Row>
+
         <Row
           icon={
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -53,18 +69,19 @@ export default function BookMeta({ genre, published, pages, rating }: BookMetaPr
             </svg>
           }
         >
-          Published: <span className="font-extrabold text-[#5a3812]">{published}</span>
+          Genre: <span className="font-medium text-[#5a3812]">{genre}</span>
         </Row>
 
         <Row
           icon={
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6" />
+              <path d="M12 3v10" />
+              <path d="M8 7l4-4 4 4" />
             </svg>
           }
         >
-          Pages: <span className="font-extrabold text-[#5a3812]">{pages}</span>
+          Condition: <span className="font-medium text-[#5a3812]">{condition}</span>
         </Row>
 
         <Row
@@ -76,7 +93,7 @@ export default function BookMeta({ genre, published, pages, rating }: BookMetaPr
         >
           Rating:{' '}
           <span className="inline-flex items-center gap-2">
-            <span className="font-extrabold text-[#5a3812]">{rating.toFixed(1)}</span>
+            <span className="font-medium text-[#5a3812]">{rating.toFixed(1)}</span>
             <span className="inline-flex items-center gap-1">
               {Array.from({ length: 5 }).map((_, i) => {
                 const filled = i < full

@@ -12,7 +12,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const pathname = usePathname()
-  const FULL_BLEED_PREFIXES: string[] = ['/circulation']
+  const FULL_BLEED_PREFIXES: string[] = []
   const isFullBleed = FULL_BLEED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))
 
   if (isFullBleed) {
