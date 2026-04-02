@@ -5,10 +5,6 @@ import { useRouter } from 'next/navigation'
 import styles from './Browse.module.css'
 import { booksApi, wishlistApi, type BookResponse } from '../../utils/api'
 import { useAuth } from '../../contexts/AuthContext'
-import { BookTile, BookExpandedView, useBookInteractions } from '../../components/shared/BookScene'
-
-const formatInr = (amount: number) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount)
 
 function statusLine(b: BookResponse): string {
   const rating =
@@ -21,12 +17,10 @@ function statusLine(b: BookResponse): string {
 const Browse: React.FC = () => {
   const router = useRouter()
   const { user } = useAuth()
-  const { iconAction } = useBookInteractions()
 
   const [books, setBooks] = useState<BookResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [expandedBookId, setExpandedBookId] = useState<string | null>(null)
   const [wishlistIds, setWishlistIds] = useState<Set<string>>(() => new Set())
 
   useEffect(() => {
@@ -88,17 +82,13 @@ const Browse: React.FC = () => {
     [user?.id, wishlistIds]
   )
 
-  const expandedBook = expandedBookId ? books.find((b) => b.id === expandedBookId) : null
-
   return (
     <div className={styles.page}>
       <div className={styles.container}>
         <header className={styles.header}>
           <div>
             <h1 className={styles.title}>Browse books</h1>
-            <p className={styles.subtitle}>
-              Tap a cover to open the full view — quick actions stay on the cover.
-            </p>
+            <p className={styles.subtitle}>Simple list view (cards removed).</p>
           </div>
         </header>
 
@@ -115,59 +105,37 @@ const Browse: React.FC = () => {
 
         <section className={styles.grid}>
           {books.map((b) => {
-            const cover = b.imageUrl || b.thumbnailUrl
             const inWishlist = wishlistIds.has(b.id)
-
             return (
               <div key={b.id} className={styles.tileCell}>
-                <BookTile
-                  title={b.title}
-                  status={statusLine(b)}
-                  image={cover}
-                  imageAlt=""
-                  onExpand={() => setExpandedBookId(b.id)}
-                  onWishlist={user?.id ? () => void toggleWishlist(b.id) : undefined}
-                  onLibrary={() => router.push(`/books/${b.id}`)}
-                  onSwap={() => router.push('/exchange')}
-                  wishlistActive={inWishlist}
-                  iconAction={iconAction}
-                  wishlistAriaLabel={user?.id ? 'Wishlist' : 'Sign in to use wishlist'}
-                  libraryAriaLabel="Open book"
-                  swapAriaLabel="Exchanges"
-                />
+                <div
+                  className={styles.simpleRow}
+                  role="group"
+                  aria-label={`Book ${b.title}`}
+                >
+                  <div className={styles.simpleMain} onClick={() => router.push(`/books/${b.id}`)} role="button" tabIndex={0}>
+                    <div className={styles.simpleTitle}>{b.title}</div>
+                    <div className={styles.simpleMeta}>
+                      <span>{b.author}</span>
+                      <span>•</span>
+                      <span>{statusLine(b)}</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.simpleWish}
+                    aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+                    onClick={() => void toggleWishlist(b.id)}
+                    disabled={!user?.id}
+                  >
+                    {inWishlist ? '♥' : '♡'}
+                  </button>
+                </div>
               </div>
             )
           })}
         </section>
       </div>
-
-      {expandedBook ? (
-        <BookExpandedView
-          open
-          onClose={() => setExpandedBookId(null)}
-          title={expandedBook.title}
-          author={expandedBook.author}
-          image={expandedBook.imageUrl || expandedBook.thumbnailUrl}
-          imageAlt={expandedBook.title}
-          genre={expandedBook.genre ?? undefined}
-          condition={expandedBook.status}
-          price={formatInr(typeof expandedBook.price === 'number' ? expandedBook.price : 0)}
-          availability={
-            expandedBook.averageRating != null
-              ? `${expandedBook.averageRating.toFixed(1)}★${expandedBook.ratingsCount != null ? ` (${expandedBook.ratingsCount.toLocaleString('en-IN')})` : ''}`
-              : undefined
-          }
-          ctaLabel="View this book"
-          onCta={() => {
-            const id = expandedBook.id
-            setExpandedBookId(null)
-            router.push(`/books/${id}`)
-          }}
-          showWishlist={!!user?.id}
-          wishlistActive={wishlistIds.has(expandedBook.id)}
-          onWishlistToggle={() => void toggleWishlist(expandedBook.id)}
-        />
-      ) : null}
     </div>
   )
 }
