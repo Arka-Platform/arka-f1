@@ -21,7 +21,7 @@ function StatRow({ icon, children }: { icon: React.ReactNode; children: React.Re
 
 export default function StatsSection({ copiesSold, readTime, keyConcepts }: StatsSectionProps) {
   return (
-    <section className="mt-5">
+    <section>
       <div className="rounded-[18px] bg-white/55 shadow-[0_18px_44px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.05] overflow-hidden">
         <div className="divide-y divide-[#3b2a16]/10">
           <StatRow

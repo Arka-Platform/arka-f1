@@ -184,8 +184,8 @@ const Exchange: React.FC = () => {
       ) : books.length === 0 ? (
         <div className={styles.emptyState}>
           <p>No books available for exchange at the moment.</p>
-          <Button variant="primary" onClick={() => router.push('/books')}>
-            Browse All Books
+          <Button variant="primary" onClick={() => router.push('/circulation')}>
+            Circulation
           </Button>
         </div>
       ) : (

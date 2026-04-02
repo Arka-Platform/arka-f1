@@ -137,7 +137,7 @@ const RecommendationSection: React.FC<RecommendationSectionProps> = ({
       <div className={styles.header}>
         <h2 className={styles.title}>{title}</h2>
         {showViewAll && (
-          <Link className={styles.viewAll} href="/books">
+          <Link className={styles.viewAll} href="/circulation">
             View all
           </Link>
         )}

@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useCallback, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import styles from './Browse.module.css'
 import { booksApi, wishlistApi, type BookResponse } from '../../utils/api'
 import { useAuth } from '../../contexts/AuthContext'
@@ -15,7 +14,6 @@ function statusLine(b: BookResponse): string {
 }
 
 const Browse: React.FC = () => {
-  const router = useRouter()
   const { user } = useAuth()
 
   const [books, setBooks] = useState<BookResponse[]>([])
@@ -113,7 +111,7 @@ const Browse: React.FC = () => {
                   role="group"
                   aria-label={`Book ${b.title}`}
                 >
-                  <div className={styles.simpleMain} onClick={() => router.push(`/books/${b.id}`)} role="button" tabIndex={0}>
+                  <div className={styles.simpleMain} role="presentation">
                     <div className={styles.simpleTitle}>{b.title}</div>
                     <div className={styles.simpleMeta}>
                       <span>{b.author}</span>

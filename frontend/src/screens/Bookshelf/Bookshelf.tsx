@@ -76,21 +76,21 @@ const Bookshelf: React.FC = () => {
             </svg>
           </div>
           <p>Your bookshelf is empty. Start adding books you own!</p>
-          <Link href="/books" className={styles.browseButton}>Browse Books</Link>
+          <Link href="/circulation" className={styles.browseButton}>Circulation</Link>
         </div>
       ) : (
         <div className={styles.bookshelfGrid}>
           {bookshelf.map((item) => (
             <div key={item.id} className={styles.bookshelfItem}>
-              <Link href={`/books/${item.bookId}`} className={styles.bookImageWrapper}>
+              <div className={styles.bookImageWrapper} role="presentation">
                 <img 
                   src={item.bookImageUrl || '/images/default-book.png'} 
                   alt={item.bookTitle} 
                   className={styles.bookImage} 
                 />
-              </Link>
+              </div>
               <div className={styles.bookDetails}>
-                <Link href={`/books/${item.bookId}`} className={styles.bookTitle}>{item.bookTitle}</Link>
+                <div className={styles.bookTitle}>{item.bookTitle}</div>
                 <p className={styles.bookAuthor}>{item.bookAuthor}</p>
                 {item.notes && (
                   <p className={styles.bookNotes}>{item.notes}</p>

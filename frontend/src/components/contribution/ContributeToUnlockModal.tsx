@@ -92,7 +92,7 @@ export default function ContributeToUnlockModal({ open, book, onClose }: Props) 
                   <span className={styles.optionDesc}>List something you are ready to pass on.</span>
                 </span>
               </button>
-              <button type="button" className={styles.option} onClick={() => go('/books#community-gets')}>
+              <button type="button" className={styles.option} onClick={() => go('/requests')}>
                 <span className={styles.optionIcon} aria-hidden>
                   ◇
                 </span>

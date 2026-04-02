@@ -1,49 +1,25 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
 import { useTheme } from '../../contexts/ThemeContext'
-import { booksApi, wishlistApi } from '../../utils/api'
+import { wishlistApi } from '../../utils/api'
 import Logo from '../shared/Logo/Logo'
 import UserMenu from '../shared/UserMenu/UserMenu'
 import InstallAppButton from '../shared/InstallAppButton/InstallAppButton'
 import styles from './Header.module.css'
 
 const Header: React.FC = () => {
-  const genresMenuId = 'genres-menu'
   const pathname = usePathname()
-  const router = useRouter()
   const { isAuthenticated, user } = useAuth()
   const { getItemCount } = useCart()
   const { theme, toggleTheme } = useTheme()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [activeGenreDropdown, setActiveGenreDropdown] = useState(false)
-  const [hoveredGenre, setHoveredGenre] = useState<string | null>(null)
-  const [genresWithSubcategories, setGenresWithSubcategories] = useState<Array<{ genre: string; subcategories: string[] }>>([])
-  const [loadingGenres, setLoadingGenres] = useState(true)
   const [wishlistCount, setWishlistCount] = useState(0)
   const cartItemCount = getItemCount()
-  const genreDropdownRef = useRef<HTMLDivElement | null>(null)
-
-  // Fetch genres with subcategories from API
-  useEffect(() => {
-    const loadGenres = async () => {
-      try {
-        setLoadingGenres(true)
-        const data = await booksApi.getGenresWithSubcategories()
-        setGenresWithSubcategories(data)
-      } catch (error) {
-        console.error('Error loading genres:', error)
-        setGenresWithSubcategories([]) // Set empty array on error
-      } finally {
-        setLoadingGenres(false)
-      }
-    }
-    loadGenres()
-  }, [])
 
   // Load wishlist count
   useEffect(() => {
@@ -76,44 +52,7 @@ const Header: React.FC = () => {
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false)
-    setActiveGenreDropdown(false)
   }, [pathname])
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
-      
-      if (genreDropdownRef.current && !genreDropdownRef.current.contains(target)) {
-        setActiveGenreDropdown(false)
-      }
-    }
-
-    if (activeGenreDropdown) {
-      const timer = setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside)
-      }, 50)
-      
-      return () => {
-        clearTimeout(timer)
-        document.removeEventListener('mousedown', handleClickOutside)
-      }
-    }
-  }, [activeGenreDropdown])
-
-  // Close dropdowns with Escape
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setActiveGenreDropdown(false)
-      }
-    }
-
-    if (activeGenreDropdown) {
-      document.addEventListener('keydown', handleKeyDown)
-      return () => document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [activeGenreDropdown])
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -149,24 +88,6 @@ const Header: React.FC = () => {
     setIsMobileMenuOpen(false)
   }
 
-  const toggleGenreDropdown = () => {
-    setActiveGenreDropdown(!activeGenreDropdown)
-  }
-
-  const handleGenreClick = (genre: string) => {
-    router.push(`/books?genre=${encodeURIComponent(genre)}`)
-    setActiveGenreDropdown(false)
-    setHoveredGenre(null)
-    closeMobileMenu()
-  }
-
-  const handleSubcategoryClick = (genre: string, subcategory: string) => {
-    router.push(`/books?genre=${encodeURIComponent(genre)}&subcategory=${encodeURIComponent(subcategory)}`)
-    setActiveGenreDropdown(false)
-    setHoveredGenre(null)
-    closeMobileMenu()
-  }
-
   const isActiveLink = (path: string) => {
     return pathname === path || pathname.startsWith(path + '/')
   }
@@ -192,95 +113,12 @@ const Header: React.FC = () => {
               </svg>
             </Link>
 
-            {/* Browse with Genres Dropdown */}
-            <div
-              className={styles.dropdownWrapper}
-              ref={genreDropdownRef}
+            <Link
+              href="/circulation"
+              className={`${styles.navLink} ${isActiveLink('/circulation') ? styles.active : ''}`}
             >
-              <div className={styles.navButtonWrapper}>
-                <Link
-                  href="/books"
-                  className={`${styles.navButtonLink} ${isActiveLink('/books') ? styles.active : ''}`}
-                >
-                  Browse
-                </Link>
-                <button
-                  className={`${styles.dropdownToggle} ${activeGenreDropdown ? styles.open : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    e.preventDefault()
-                    toggleGenreDropdown()
-                  }}
-                  aria-expanded={activeGenreDropdown}
-                  aria-haspopup="true"
-                  aria-controls={genresMenuId}
-                  aria-label="Genres menu"
-                >
-                  <svg
-                    className={`${styles.chevron} ${activeGenreDropdown ? styles.chevronOpen : ''}`}
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </button>
-              </div>
-              {activeGenreDropdown && (
-                <div
-                  id={genresMenuId}
-                  className={`${styles.dropdown} ${styles.genreDropdown}`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {loadingGenres ? (
-                    <div className={styles.loadingGenres}>Loading genres...</div>
-                  ) : genresWithSubcategories.length === 0 ? (
-                    <div className={styles.noGenres}>No genres available</div>
-                  ) : (
-                    <div className={styles.genreSubcategoryContainer}>
-                      <div className={styles.genreList}>
-                        {genresWithSubcategories.map((item) => (
-                          <button
-                            key={item.genre}
-                            type="button"
-                            className={`${styles.genreItem} ${hoveredGenre === item.genre ? styles.genreItemActive : ''}`}
-                            onMouseEnter={() => setHoveredGenre(item.genre)}
-                            onFocus={() => setHoveredGenre(item.genre)}
-                            onClick={() => handleGenreClick(item.genre)}
-                          >
-                            {item.genre}
-                            {item.subcategories.length > 0 && (
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M9 18l6-6-6-6" />
-                              </svg>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                      {hoveredGenre && (
-                        <div className={styles.subcategoryList}>
-                          {genresWithSubcategories
-                            .find(item => item.genre === hoveredGenre)
-                            ?.subcategories.map((subcategory) => (
-                              <button
-                                key={subcategory}
-                                type="button"
-                                className={styles.subcategoryItem}
-                                onClick={() => handleSubcategoryClick(hoveredGenre, subcategory)}
-                              >
-                                {subcategory}
-                              </button>
-                            ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+              Circulation
+            </Link>
 
             {/* Sell */}
             <Link
@@ -456,52 +294,12 @@ const Header: React.FC = () => {
           </Link>
 
           <Link
-            href="/books"
-            className={`${styles.mobileNavLink} ${isActiveLink('/books') ? styles.mobileNavLinkActive : ''}`}
+            href="/circulation"
+            className={`${styles.mobileNavLink} ${isActiveLink('/circulation') ? styles.mobileNavLinkActive : ''}`}
             onClick={closeMobileMenu}
           >
-            Browse
+            Circulation
           </Link>
-
-          {/* Mobile Genre Section */}
-          <div className={styles.mobileMenuSection}>
-            <div className={styles.mobileMenuSectionTitle}>Genres & Subgenres</div>
-            {loadingGenres ? (
-              <div className={styles.loadingGenres}>Loading genres...</div>
-            ) : genresWithSubcategories.length === 0 ? (
-              <div className={styles.noGenres}>No genres available</div>
-            ) : (
-              genresWithSubcategories.map((item) => (
-                <div key={item.genre} className={styles.mobileGenreCategory}>
-                  <button
-                    className={styles.mobileGenreItem}
-                    onClick={() => {
-                      handleGenreClick(item.genre)
-                      closeMobileMenu()
-                    }}
-                  >
-                    {item.genre}
-                  </button>
-                  {item.subcategories.length > 0 && (
-                    <div className={styles.mobileSubcategoryList}>
-                      {item.subcategories.map((subcategory) => (
-                        <button
-                          key={subcategory}
-                          className={styles.mobileSubcategoryItem}
-                          onClick={() => {
-                            handleSubcategoryClick(item.genre, subcategory)
-                            closeMobileMenu()
-                          }}
-                        >
-                          {subcategory}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
 
           <Link
             href="/inventory"

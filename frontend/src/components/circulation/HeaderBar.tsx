@@ -12,8 +12,8 @@ export default function HeaderBar({ title, onHeart, onInfo }: HeaderBarProps) {
   return (
     <div
       className={[
-        'h-[72px] w-full',
-        'rounded-t-[32px]',
+        'h-[76px] w-full',
+        'rounded-t-[28px]',
         'bg-[linear-gradient(90deg,#b8882f_0%,#d2a445_50%,#b07a2a_100%)]',
         'px-[18px]',
         'flex items-center justify-between gap-4',

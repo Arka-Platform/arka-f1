@@ -225,7 +225,7 @@ export default function BookActionOverlay({ activeBook, layoutId, onSelectDetail
 
   const handleShare = useCallback(async () => {
     if (!activeBook) return
-    const url = `${window.location.origin}/books/${activeBook.id}`
+    const url = `${window.location.origin}/home`
     try {
       if (navigator.share) {
         await navigator.share({ url, title: activeBook.title })

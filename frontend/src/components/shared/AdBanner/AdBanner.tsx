@@ -8,8 +8,7 @@ const AdBanner: React.FC = () => {
   const router = useRouter()
 
   const handleBannerClick = () => {
-    // Navigate to browse page
-    router.push('/books')
+    router.push('/circulation')
   }
 
   return (

@@ -67,13 +67,13 @@ export default function ThreeBrowsePage() {
         books={books}
         activeBookId={activeId}
         onHoverChange={setActiveId}
-        onSelectBook={(bookId) => router.push(`/books/${bookId}`)}
+        onSelectBook={() => router.push('/home')}
       />
 
       <BookActionOverlay
         activeBook={activeBook}
         layoutId={layoutId}
-        onSelectDetail={(bookId) => router.push(`/books/${bookId}`)}
+        onSelectDetail={() => router.push('/home')}
       />
     </div>
   )

@@ -23,8 +23,8 @@ const Cart: React.FC = () => {
           <h1 className={styles.title}>Your Cart</h1>
           <div className={styles.empty}>
             <p className={styles.emptyText}>Your cart is empty</p>
-            <Link href="/books">
-              <Button variant="primary">Browse Books</Button>
+            <Link href="/circulation">
+              <Button variant="primary">Circulation</Button>
             </Link>
           </div>
         </div>
@@ -120,8 +120,8 @@ const Cart: React.FC = () => {
                   Proceed to Checkout
                 </Button>
               </Link>
-              <Link href="/books" className={styles.continueShopping}>
-                Continue Shopping
+              <Link href="/circulation" className={styles.continueShopping}>
+                Back to Circulation
               </Link>
             </div>
           </div>

@@ -17,8 +17,8 @@ function Row({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex items-center gap-3 py-3">
-      <div className="grid h-7 w-7 place-items-center rounded-full bg-[#f1e2c8] text-[#8b5a1f] ring-1 ring-[#e2c28b]/40 shadow-[0_10px_18px_rgba(0,0,0,0.06)]">
+    <div className="flex items-center gap-3 py-2.5">
+      <div className="grid h-6 w-6 place-items-center rounded-full bg-[#f1e2c8] text-[#8b5a1f] ring-1 ring-[#e2c28b]/40 shadow-[0_10px_18px_rgba(0,0,0,0.06)]">
         {icon}
       </div>
       <div className="text-[14px] font-semibold text-[#3b2a16]">{children}</div>
@@ -42,7 +42,7 @@ export default function BookMeta({ genre, published, pages, rating }: BookMetaPr
         <span className="truncate">{genre}</span>
       </div>
 
-      <div className="mt-4 divide-y divide-[#3b2a16]/10">
+      <div className="mt-3 divide-y divide-[#3b2a16]/10">
         <Row
           icon={
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -83,7 +83,7 @@ export default function BookMeta({ genre, published, pages, rating }: BookMetaPr
                 const partial = i === full && rem > 0
                 const opacity = filled ? 1 : partial ? rem : 0.22
                 return (
-                  <svg key={i} width="16" height="16" viewBox="0 0 24 24" fill="#e2a13a" style={{ opacity }} aria-hidden>
+                  <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill="#e2a13a" style={{ opacity }} aria-hidden>
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z" />
                   </svg>
                 )

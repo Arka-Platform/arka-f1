@@ -100,7 +100,7 @@ const BookDetails: React.FC = () => {
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.breadcrumbs}>
-          <Link href="/browse" className={styles.crumb}>Browse</Link>
+          <Link href="/home" className={styles.crumb}>Home</Link>
           <span className={styles.divider}>/</span>
           <span className={styles.current}>{book.title}</span>
         </div>

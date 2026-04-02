@@ -9,7 +9,7 @@ export interface ActionButtonsProps {
 
 export default function ActionButtons({ onPreview, onAddToLibrary }: ActionButtonsProps) {
   return (
-    <div className="mt-6 flex gap-3">
+    <div className="flex gap-3">
       <button
         type="button"
         onClick={onPreview}
