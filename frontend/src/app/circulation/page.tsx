@@ -80,10 +80,14 @@ export default function CirculationPage() {
     []
   )
 
-  const current = cards[Math.min(idx, cards.length - 1)]
+  const safeIdx = ((idx % cards.length) + cards.length) % cards.length
+  const current = cards[safeIdx]
+  const prev = cards[(safeIdx - 1 + cards.length) % cards.length]
+  const next = cards[(safeIdx + 1) % cards.length]
   const wishlisted = Boolean(wish[current.id])
 
-  const nextCard = () => setIdx((i) => (i + 1 < cards.length ? i + 1 : 0))
+  const nextCard = () => setIdx((i) => i + 1)
+  const prevCard = () => setIdx((i) => i - 1)
 
   return (
     <div className="min-h-[100dvh] bg-[#f7f5f2]">
@@ -94,18 +98,33 @@ export default function CirculationPage() {
         <Header />
 
         <main className="mx-auto w-full max-w-[420px] px-4 pb-[140px] pt-8">
-          <BookCard
-            model={{ ...current, wishlisted }}
-            onToggleWishlist={() => setWish((prev) => ({ ...prev, [current.id]: !prev[current.id] }))}
-            onPick={nextCard}
-            onPass={nextCard}
-          />
+          <div className="relative">
+            {/* side cards (peek) */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between">
+              <div className="-ml-7 w-[78%] opacity-35 blur-[0.2px]">
+                <BookCard model={{ ...prev, wishlisted: Boolean(wish[prev.id]) }} />
+              </div>
+              <div className="-mr-7 w-[78%] opacity-35 blur-[0.2px]">
+                <BookCard model={{ ...next, wishlisted: Boolean(wish[next.id]) }} />
+              </div>
+            </div>
+
+            {/* center dominant card */}
+            <div className="relative z-10">
+              <BookCard
+                model={{ ...current, wishlisted }}
+                onToggleWishlist={() => setWish((prev) => ({ ...prev, [current.id]: !prev[current.id] }))}
+                onPick={nextCard}
+                onPass={prevCard}
+              />
+            </div>
+          </div>
         </main>
 
         <BottomActionBar
           active="pick"
           onPick={nextCard}
-          onPass={nextCard}
+          onPass={prevCard}
           onWishlist={() => router.push('/wishlist')}
           onBookshelf={() => router.push('/bookshelf')}
         />

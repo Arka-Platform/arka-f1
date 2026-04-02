@@ -59,8 +59,8 @@ export default function BottomActionBar({ active = 'pick', onPick, onPass, onWis
               onClick={onPick}
               icon={
                 <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="#2b2216" strokeWidth="2" aria-hidden>
-                  <path d="M12 5v14" />
-                  <path d="M19 12H5" />
+                  <path d="M12 4v14" />
+                  <path d="M7 13l5 5 5-5" />
                 </svg>
               }
             />
@@ -71,7 +71,8 @@ export default function BottomActionBar({ active = 'pick', onPick, onPass, onWis
               onClick={onPass}
               icon={
                 <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="#2b2216" strokeWidth="2" aria-hidden>
-                  <path d="M12 19V5" />
+                  <path d="M12 20V6" />
+                  <path d="M7 11l5-5 5 5" />
                 </svg>
               }
             />
