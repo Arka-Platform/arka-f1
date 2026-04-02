@@ -52,20 +52,6 @@ export interface CirculateBookCardProps {
   onOpenMyLibrary: () => void
 }
 
-function initials(name: string): string {
-  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return '?'
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-}
-
-function trustPillClasses(score: number | null): string {
-  if (score == null) return 'bg-slate-100 text-slate-700 ring-slate-200'
-  if (score >= 85) return 'bg-emerald-50 text-emerald-800 ring-emerald-200'
-  if (score >= 70) return 'bg-amber-50 text-amber-900 ring-amber-200'
-  return 'bg-slate-100 text-slate-700 ring-slate-200'
-}
-
 function conditionLabel(condition: string): string {
   const c = (condition ?? '').toLowerCase()
   if (!c) return 'Listed'
