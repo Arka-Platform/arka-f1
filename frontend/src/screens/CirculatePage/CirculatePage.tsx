@@ -36,6 +36,65 @@ export default function CirculatePage() {
 
         const baseListings = (nearbyListings?.length ? nearbyListings : await listingsApi.listActive({ limit: 30 })) as any[]
 
+        // Fallback: if there are no active `book_listings`, show the catalog books
+        // so users don't see an empty `/books` page.
+        if (!baseListings.length) {
+          const fallbackBooks = await booksApi.list({ page: 0, size: 30 })
+
+          const ownerIds = Array.from(new Set(fallbackBooks.map((b) => b.ownerId).filter(Boolean))) as string[]
+          let wishlistSet = new Set<string>()
+          if (user?.id) {
+            const wishlist = await wishlistApi.getWishlist(user.id)
+            wishlistSet = new Set(wishlist.map((i) => i.bookId))
+          }
+
+          const ownerCache = new Map<string, { providerName: string; providerTrustScore: number | null }>()
+          await Promise.all(
+            ownerIds.map(async (oid) => {
+              try {
+                const [profile, trust] = await Promise.all([usersApi.getById(oid), trustScoreApi.getTrustScore(oid).catch(() => null)])
+                const providerName =
+                  `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim() || profile.email?.split('@')[0] || 'Reader'
+                ownerCache.set(oid, { providerName, providerTrustScore: trust?.trustScore ?? null })
+              } catch {
+                ownerCache.set(oid, { providerName: 'Reader', providerTrustScore: null })
+              }
+            })
+          )
+
+          const nextCards: CirculateBookCardModel[] = fallbackBooks.map((b) => {
+            const owner = b.ownerId ? ownerCache.get(b.ownerId) : undefined
+            return {
+              listingId: b.id,
+              bookId: b.id,
+              ownerId: b.ownerId ?? '',
+              title: b.title,
+              author: b.author,
+              genre: b.genre,
+              description: b.description ?? '',
+              condition: 'good',
+              tags: [],
+              coverUrl: b.imageUrl ?? b.thumbnailUrl ?? null,
+              distanceMeters: null,
+              distanceKm: null,
+              nearTag: null,
+              requestCount: 0,
+              circulationCount: 0,
+              providerName: owner?.providerName ?? 'Reader',
+              providerTrustScore: owner?.providerTrustScore ?? null,
+              wishlistActive: wishlistSet.has(b.id),
+              passActive: false,
+              ownedInventoryBookId: null,
+              pickActiveStatus: null,
+              actionsEnabled: false,
+            }
+          })
+
+          if (!mounted) return
+          setCards(nextCards)
+          return
+        }
+
         const listingIds = baseListings.map((l) => l.listingId)
         const ownerIds = Array.from(new Set(baseListings.map((l) => l.ownerId).filter(Boolean)))
         const bookIds = Array.from(new Set(baseListings.map((l) => l.bookId).filter(Boolean)))

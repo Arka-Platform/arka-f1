@@ -31,6 +31,12 @@ export interface CirculateBookCardModel {
   ownedInventoryBookId: string | null
   passActive: boolean
   pickActiveStatus: SwapRequestStatus | null
+
+  /**
+   * If false, the backend listing/workflow isn't available for this card.
+   * We still allow details + wishlist, but we disable Pick/Pass to avoid failed actions.
+   */
+  actionsEnabled?: boolean
 }
 
 export interface CirculateBookCardProps {
@@ -84,10 +90,13 @@ export default function CirculateBookCard({
   const requestChip = model.requestCount > 0 ? `${model.requestCount} requests` : 'Be first'
   const nearChip = model.nearTag ? model.nearTag : model.distanceKm != null ? `${model.distanceKm.toFixed(1)} km` : null
 
-  const pickDisabled = model.pickActiveStatus != null || loadingPick
-  const passDisabled = model.passActive || loadingPass
+  const actionsEnabled = model.actionsEnabled ?? true
+  const pickDisabled = !actionsEnabled || model.pickActiveStatus != null || loadingPick
+  const passDisabled = !actionsEnabled || model.passActive || loadingPass
 
-  const pickLabel = model.pickActiveStatus
+  const pickLabel = !actionsEnabled
+    ? 'Pick (unavailable)'
+    : model.pickActiveStatus
     ? model.pickActiveStatus === 'accepted'
       ? 'Accepted'
       : 'Requested'
@@ -95,7 +104,9 @@ export default function CirculateBookCard({
       ? 'Picking…'
       : 'Pick'
 
-  const passLabel = passDisabled
+  const passLabel = !actionsEnabled
+    ? 'Pass (unavailable)'
+    : passDisabled
     ? model.passActive
       ? 'In circulation'
       : 'Giving…'
