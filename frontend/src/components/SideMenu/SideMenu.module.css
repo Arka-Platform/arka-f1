@@ -108,6 +108,26 @@
   margin-top: auto;
 }
 
+.menuButton {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--menu-item-pad-y) var(--menu-item-pad-x);
+  border-radius: 14px;
+  color: var(--app-text);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  margin: 0 var(--menu-pad);
+}
+
+.menuButton:hover {
+  background: color-mix(in srgb, var(--app-text) 7%, transparent);
+}
+
 .menuItem {
   display: flex;
   align-items: center;
@@ -201,32 +221,25 @@
 
 .themeBlock {
   padding: 12px 14px 14px;
-  border-top: 1px solid var(--app-border);
-}
-
-.themeIconToggle {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  border: 1px solid var(--app-border);
-  background: color-mix(in srgb, var(--app-surface) 92%, transparent);
-  color: var(--app-text);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-}
-
-.themeIconToggle:hover {
-  background: color-mix(in srgb, var(--app-text) 7%, transparent);
-}
-
-.themeIconToggle:active {
-  transform: translateY(1px);
+  border-top: none;
 }
 
 .themeIcon {
-  font-size: 14px;
+  font-size: 16px;
   opacity: 0.9;
+}
+
+.profileCircle {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-weight: 900;
+  font-size: 0.85rem;
+  line-height: 1;
 }
 
 @media (max-width: 767px) {

@@ -2,7 +2,8 @@ import React, { useId, useRef, useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import BookCard, { Book } from '../../components/shared/BookCard/BookCard'
+import type { Book } from '../../components/shared/BookCard/BookCard'
+import CirculateBookCard, { type CirculateBookCardData } from '../../components/circulate/CirculateBookCard'
 import Input from '../../components/shared/Input/Input'
 import Select from '../../components/shared/Select/Select'
 import Button from '../../components/shared/Button/Button'
@@ -16,6 +17,16 @@ import { demandApi, BookRequestResponse, CreateBookRequestRequest, CreateRequest
 import { trackBookView, trackCartAdd } from '../../utils/tracking'
 import { openContactRequesterEmail } from '../../utils/contactRequester'
 import styles from './BooksMarketplace.module.css'
+
+function buildCirculateTags(book: BookResponse, trust: number | null): string[] {
+  const tags: string[] = []
+  const created = new Date(book.createdAt).getTime()
+  const days = (Date.now() - created) / 86400000
+  if (days < 7) tags.push('Fresh listing')
+  if (book.ratingsCount != null && book.ratingsCount >= 5) tags.push('Readers loved')
+  if (trust != null && trust >= 85) tags.push('Top trusted')
+  return tags
+}
 
 interface RequestCardProps {
   request: BookRequestResponse
@@ -284,7 +295,7 @@ const BooksMarketplace: React.FC = () => {
   
   // Book browsing state
   const searchQuery = searchParams.get('search') || searchParams.get('q') || ''
-  const [books, setBooks] = useState<Book[]>([])
+  const [books, setBooks] = useState<CirculateBookCardData[]>([])
   const [visibleBooksCount, setVisibleBooksCount] = useState(20)
   const [booksLoading, setBooksLoading] = useState(true)
   const [booksError, setBooksError] = useState<string | null>(null)
@@ -451,7 +462,49 @@ const BooksMarketplace: React.FC = () => {
         }
         
         const data = await booksApi.list(params)
-        const mappedBooks = data.map(bookToCard)
+        const ownerIds = [...new Set(data.map((r) => r.ownerId).filter(Boolean))] as string[]
+        const ownerCache = new Map<string, { name: string; trust: number | null; circ: number }>()
+        await Promise.all(
+          ownerIds.map(async (oid) => {
+            try {
+              const [profile, trustRes, participation] = await Promise.all([
+                usersApi.getById(oid),
+                trustScoreApi.getTrustScore(oid).catch(() => null),
+                usersApi.getParticipationCounts(oid),
+              ])
+              const name =
+                `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim() ||
+                (profile.email ? profile.email.split('@')[0] : '') ||
+                'Reader'
+              ownerCache.set(oid, {
+                name,
+                trust: trustRes?.trustScore ?? null,
+                circ: participation.offerCount + participation.takeCount,
+              })
+            } catch {
+              ownerCache.set(oid, { name: 'Community member', trust: null, circ: 0 })
+            }
+          }),
+        )
+
+        const mappedBooks: CirculateBookCardData[] = data.map((book) => {
+          const base = bookToCard(book)
+          const en = book.ownerId ? ownerCache.get(book.ownerId) : undefined
+          const trust = en?.trust ?? null
+          return {
+            ...base,
+            ownerId: book.ownerId,
+            providerName: en?.name ?? null,
+            providerTrustScore: trust,
+            circulationCount: en?.circ ?? null,
+            conditionLabel:
+              book.status === 'AVAILABLE'
+                ? 'Ready to share'
+                : book.status.replace(/_/g, ' ').toLowerCase(),
+            tags: buildCirculateTags(book, trust),
+            counterpartyLabel: 'Offering',
+          }
+        })
         setBooks(mappedBooks)
         setVisibleBooksCount(Math.min(20, mappedBooks.length))
       } catch (err) {
@@ -1047,16 +1100,20 @@ const BooksMarketplace: React.FC = () => {
           
             {!booksLoading && !booksError && books.length > 0 && (
             <>
+              <div className="mx-auto mb-5 max-w-[min(100%,42rem)] px-0">
+                <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">Circulate</h2>
+                <p className="mt-1 text-sm leading-relaxed text-slate-500">
+                  A calm feed of real people and real copies. Pick to take, pass to save to your shelf.
+                </p>
+              </div>
               <div className={styles.resultsInfo}>
                 <p>Found {books.length} book{books.length !== 1 ? 's' : ''}</p>
               </div>
               <div className={styles.booksList}>
                 {books.slice(0, visibleBooksCount).map((book) => (
-                  <BookCard
+                  <CirculateBookCard
                     key={book.id}
                     book={book}
-                    variant="row"
-                    showButton={false}
                     onPick={handleBookClick}
                     pickLabel="Pick"
                     passLabel="Pass"

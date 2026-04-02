@@ -17,6 +17,15 @@ type MenuItem = {
   icon: React.ReactNode
 }
 
+function initials(firstName?: string, lastName?: string, email?: string | null) {
+  const a = (firstName ?? '').trim()
+  const b = (lastName ?? '').trim()
+  if (a || b) return `${a.slice(0, 1)}${b.slice(0, 1)}`.toUpperCase()
+  const e = (email ?? '').trim()
+  if (e) return e.slice(0, 1).toUpperCase()
+  return 'A'
+}
+
 export default function SideMenu() {
   const pathname = usePathname()
   const { user } = useAuth()
@@ -46,6 +55,8 @@ export default function SideMenu() {
   }, [user?.id])
 
   const cartCount = getItemCount()
+
+  const profileAvatar = useMemo(() => initials(user?.firstName, user?.lastName, user?.email ?? null), [user])
 
   const items: MenuItem[] = useMemo(
     () => [
@@ -141,18 +152,10 @@ export default function SideMenu() {
         id: 'clubProfile',
         label: 'Profile',
         href: '/account',
-        icon: (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="4" width="18" height="16" rx="2" />
-            <circle cx="9" cy="10" r="2" />
-            <path d="M13 9h5" />
-            <path d="M13 13h5" />
-            <path d="M7 16h5" />
-          </svg>
-        ),
+        icon: <span className={styles.profileCircle}>{profileAvatar}</span>,
       },
     ],
-    [cartCount, wishlistCount]
+    [cartCount, profileAvatar, wishlistCount]
   )
 
   return (
@@ -166,7 +169,9 @@ export default function SideMenu() {
           onClick={() => setExpanded((v) => !v)}
         >
           <span aria-hidden className={styles.expandToggleIcon}>
-            {expanded ? '«' : '»'}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {expanded ? <path d="M15 18l-6-6 6-6" /> : <path d="M9 18l6-6-6-6" />}
+            </svg>
           </span>
         </button>
       </div>
@@ -197,18 +202,17 @@ export default function SideMenu() {
       </nav>
 
       <div className={styles.bottomStack}>
-        <div className={styles.themeBlock}>
-          <button
-            type="button"
-            className={styles.themeIconToggle}
-            aria-label={theme === 'home' ? 'Switch to light theme' : 'Switch to dark theme'}
-            onClick={toggleTheme}
-          >
-            <span className={styles.themeIcon} aria-hidden>
-              {theme === 'home' ? '☀︎' : '☾'}
-            </span>
-          </button>
-        </div>
+        <button
+          type="button"
+          className={styles.menuButton}
+          aria-label={theme === 'home' ? 'Switch to light theme' : 'Switch to dark theme'}
+          onClick={toggleTheme}
+        >
+          <span className={styles.menuIcon} aria-hidden>
+            <span className={styles.themeIcon}>{theme === 'home' ? '☀︎' : '☾'}</span>
+          </span>
+          <span className={styles.menuLabel}>Theme</span>
+        </button>
 
         <nav className={styles.menuList} aria-label="Account shortcuts">
           {bottomItems.map((item) => {

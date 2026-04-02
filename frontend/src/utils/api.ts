@@ -37,6 +37,8 @@ export interface BookResponse {
   thumbnailUrl: string | null
   averageRating: number | null
   ratingsCount: number | null
+  /** Listing owner when present (Supabase `books.owner_id`). */
+  ownerId: string | null
 }
 
 // Recycling API types
@@ -122,7 +124,7 @@ type SupabaseBookRow = {
   category: string | null
   subcategory: string | null
   credit_price: number | string
-  owner_id: string | null
+  owner_id?: string | null
   status: string
   image_url?: string | null
   thumbnail_url?: string | null
@@ -147,6 +149,7 @@ function mapSupabaseBook(row: SupabaseBookRow): BookResponse {
     thumbnailUrl: row.thumbnail_url ?? null,
     averageRating: null,
     ratingsCount: null,
+    ownerId: row.owner_id ?? null,
   }
 }
 
