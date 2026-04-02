@@ -1,8 +1,8 @@
 'use client'
 
-import BooksMarketplace from '../../screens/BooksMarketplace/BooksMarketplace'
+import CirculatePage from '../../screens/CirculatePage/CirculatePage'
 
 export default function BooksPage() {
-  return <BooksMarketplace />
+  return <CirculatePage />
 }
 

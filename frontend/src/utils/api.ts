@@ -336,6 +336,18 @@ export const booksApi = {
   },
   
   search: async (query: string) => booksApi.list({ search: query }),
+
+  getManyByIds: async (ids: string[]) => {
+    const clean = Array.from(new Set((ids ?? []).filter(Boolean)))
+    if (clean.length === 0) return []
+    const select =
+      'id,created_at,updated_at,title,author,description,genre,category,subcategory,credit_price,owner_id,status,image_url,thumbnail_url'
+
+    const { data, error } = await supabase.from('books').select(select).in('id', clean)
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+
+    return (data ?? []).map((row) => mapSupabaseBook(row as SupabaseBookRow))
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -478,6 +490,70 @@ export const listingsApi = {
     })
   },
 
+  searchNearby: async (params?: {
+    radiusKm?: number
+    limit?: number
+    offset?: number
+    query?: string | null
+    condition?: string | null
+  }) => {
+    const p_radius_km = params?.radiusKm ?? 10
+    const p_limit = params?.limit ?? 30
+    const p_offset = params?.offset ?? 0
+    const p_query = params?.query ?? null
+    const p_condition = params?.condition ?? null
+
+    const { data, error } = await supabase.rpc('search_nearby_listings', {
+      p_radius_km,
+      p_limit,
+      p_offset,
+      p_query,
+      p_condition,
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+
+    type NearbyRow = {
+      listing_id: string
+      owner_id: string
+      inventory_book_id: string
+      book_id: string
+      title: string
+      author: string
+      condition: ListingCondition
+      tags: string[] | null
+      image_cover_url: string | null
+      distance_meters: number | null
+      created_at: string
+    }
+
+    const rows = (data ?? []) as NearbyRow[]
+    return rows.map((r) => ({
+      listingId: r.listing_id,
+      ownerId: r.owner_id,
+      inventoryBookId: r.inventory_book_id,
+      bookId: r.book_id,
+      title: r.title,
+      author: r.author,
+      description: '',
+      genre: null,
+      category: null,
+      subcategory: null,
+      price: 0,
+      condition: r.condition,
+      askingNotes: null,
+      tags: Array.isArray(r.tags) ? r.tags : [],
+      coverUrl: r.image_cover_url ?? null,
+      conditionImageUrls: [],
+      createdAt: r.created_at,
+      // Extra UI fields (not part of ListingResponse)
+      distanceMeters: typeof r.distance_meters === 'number' ? r.distance_meters : null,
+    })) as Array<
+      ListingResponse & {
+        distanceMeters: number | null
+      }
+    >
+  },
+
   getById: async (listingId: string) => {
     const { data: listing, error: listingError } = await supabase
       .from('book_listings')
@@ -529,6 +605,143 @@ export const listingsApi = {
       conditionImageUrls: conditionImages,
       createdAt: l.created_at,
     } satisfies ListingResponse
+  },
+}
+
+// ---------------------------------------------------------------------------
+// Marketplace actions (swap_requests / swap_listings)
+// ---------------------------------------------------------------------------
+export type SwapRequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'completed'
+
+export interface SwapRequestCounts {
+  requestCount: number
+  circulationCount: number
+}
+
+export interface MyLibraryItemResponse {
+  inventoryId: string
+  bookId: string
+  condition: ListingCondition
+  libraryStatus: string
+  listingId: string | null
+  listingStatus: string | null
+  createdAt: string
+}
+
+export const marketplaceApi = {
+  getMyLibrary: async (params?: { category?: string | null; limit?: number; offset?: number }): Promise<MyLibraryItemResponse[]> => {
+    const p_category = params?.category ?? null
+    const p_limit = params?.limit ?? 50
+    const p_offset = params?.offset ?? 0
+    const { data, error } = await supabase.rpc('get_my_library', {
+      p_category,
+      p_limit,
+      p_offset,
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+
+    const rows = (data ?? []) as Array<{
+      inventory_id: string
+      book_id: string
+      condition: ListingCondition
+      library_status: string
+      listing_id: string | null
+      listing_status: string | null
+      created_at: string
+    }>
+
+    return rows.map((r) => ({
+      inventoryId: r.inventory_id,
+      bookId: r.book_id,
+      condition: r.condition,
+      libraryStatus: r.library_status,
+      listingId: r.listing_id,
+      listingStatus: r.listing_status,
+      createdAt: r.created_at,
+    }))
+  },
+
+  getMyUserLocation: async (): Promise<{ latitude: number; longitude: number } | null> => {
+    const { data, error } = await supabase
+      .from('user_locations')
+      .select('latitude,longitude')
+      .maybeSingle()
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    if (!data) return null
+    return { latitude: Number(data.latitude), longitude: Number(data.longitude) }
+  },
+
+  createSwapRequest: async (params: { listingId: string; message?: string | null }): Promise<any> => {
+    const { data, error } = await supabase.rpc('create_swap_request', {
+      p_listing_id: params.listingId,
+      p_message: params.message ?? null,
+      p_idempotency_key: crypto.randomUUID(),
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return data
+  },
+
+  createSwapListing: async (params: {
+    inventoryBookId: string
+    condition: ListingCondition
+    tags?: string[]
+    imageCoverUrl?: string | null
+    askingNotes?: string | null
+    latitude?: number | null
+    longitude?: number | null
+  }): Promise<any> => {
+    const { data, error } = await supabase.rpc('create_swap_listing', {
+      p_inventory_book_id: params.inventoryBookId,
+      p_condition: params.condition,
+      p_tags: params.tags ?? [],
+      p_image_cover_url: params.imageCoverUrl ?? null,
+      p_asking_notes: params.askingNotes ?? null,
+      p_latitude: params.latitude ?? null,
+      p_longitude: params.longitude ?? null,
+    })
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+    return data
+  },
+}
+
+export const swapRequestsApi = {
+  getCountsByListingIds: async (params: { listingIds: string[] }): Promise<Record<string, SwapRequestCounts>> => {
+    const clean = Array.from(new Set((params.listingIds ?? []).filter(Boolean)))
+    if (clean.length === 0) return {}
+
+    const { data, error } = await supabase
+      .from('swap_requests')
+      .select('listing_id,status')
+      .in('listing_id', clean)
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+
+    const out: Record<string, SwapRequestCounts> = {}
+    for (const row of (data ?? []) as Array<{ listing_id: string; status: SwapRequestStatus }>) {
+      const key = row.listing_id
+      if (!out[key]) out[key] = { requestCount: 0, circulationCount: 0 }
+      if (row.status === 'pending' || row.status === 'accepted') out[key].requestCount += 1
+      if (row.status === 'completed') out[key].circulationCount += 1
+    }
+    return out
+  },
+
+  getUserActiveStatusesByListingIds: async (params: { userId: string; listingIds: string[] }): Promise<Record<string, SwapRequestStatus>> => {
+    const clean = Array.from(new Set((params.listingIds ?? []).filter(Boolean)))
+    if (clean.length === 0) return {}
+
+    const { data, error } = await supabase
+      .from('swap_requests')
+      .select('listing_id,status')
+      .eq('requester_id', params.userId)
+      .in('listing_id', clean)
+      .in('status', ['pending', 'accepted'])
+    if (error) throw new ApiError(asErrorMessage(error), 500, error)
+
+    const out: Record<string, SwapRequestStatus> = {}
+    for (const row of (data ?? []) as Array<{ listing_id: string; status: SwapRequestStatus }>) {
+      out[row.listing_id] = row.status
+    }
+    return out
   },
 }
 

@@ -3,7 +3,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import type { Book } from '../../components/shared/BookCard/BookCard'
-import CirculateBookCard, { type CirculateBookCardData } from '../../components/circulate/CirculateBookCard'
+import CirculateBookCard from '../../components/circulate/CirculateBookCard'
 import Input from '../../components/shared/Input/Input'
 import Select from '../../components/shared/Select/Select'
 import Button from '../../components/shared/Button/Button'
@@ -11,10 +11,8 @@ import BookSearchInput from '../../components/shared/BookSearchInput/BookSearchI
 import TrustScoreBadge from '../../components/shared/TrustScoreBadge/TrustScoreBadge'
 import RecommendationSection from '../../components/shared/RecommendationSection/RecommendationSection'
 import RecentlyServedCarousel from '../../components/shared/RecentlyServedCarousel/RecentlyServedCarousel'
-import { useCart } from '../../contexts/CartContext'
 import { booksApi, BookResponse, wishlistApi } from '../../utils/api'
 import { demandApi, BookRequestResponse, CreateBookRequestRequest, CreateRequestResponse, MatchResponse, trustScoreApi, usersApi } from '../../utils/api'
-import { trackBookView, trackCartAdd } from '../../utils/tracking'
 import { openContactRequesterEmail } from '../../utils/contactRequester'
 import styles from './BooksMarketplace.module.css'
 
@@ -289,13 +287,12 @@ const BooksMarketplace: React.FC = () => {
   const reactId = useId()
   const { user, register } = useAuth()
   const { success, error: showError } = useToast()
-  const { addToCart } = useCart()
   const searchParams = useSearchParams()
   const router = useRouter()
   
   // Book browsing state
   const searchQuery = searchParams.get('search') || searchParams.get('q') || ''
-  const [books, setBooks] = useState<CirculateBookCardData[]>([])
+  const [books, setBooks] = useState<any[]>([])
   const [visibleBooksCount, setVisibleBooksCount] = useState(20)
   const [booksLoading, setBooksLoading] = useState(true)
   const [booksError, setBooksError] = useState<string | null>(null)
@@ -487,7 +484,7 @@ const BooksMarketplace: React.FC = () => {
           }),
         )
 
-        const mappedBooks: CirculateBookCardData[] = data.map((book) => {
+        const mappedBooks: any[] = data.map((book) => {
           const base = bookToCard(book)
           const en = book.ownerId ? ownerCache.get(book.ownerId) : undefined
           const trust = en?.trust ?? null
@@ -874,12 +871,6 @@ const BooksMarketplace: React.FC = () => {
     }
   }
 
-  const handleBookClick = (book: Book) => {
-    trackBookView(book.id, 0)
-    trackCartAdd(book.id)
-    addToCart(book)
-  }
-
   return (
     <div className={styles.marketplace}>
       {/* Pick Your Next Read - Search Bar Feature */}
@@ -1113,10 +1104,11 @@ const BooksMarketplace: React.FC = () => {
                 {books.slice(0, visibleBooksCount).map((book) => (
                   <CirculateBookCard
                     key={book.id}
-                    book={book}
-                    onPick={handleBookClick}
-                    pickLabel="Pick"
-                    passLabel="Pass"
+                    model={book as any}
+                    onPick={() => {}}
+                    onPass={() => {}}
+                    onToggleWishlist={() => {}}
+                    onOpenMyLibrary={() => router.push('/inventory')}
                   />
                 ))}
               </div>
