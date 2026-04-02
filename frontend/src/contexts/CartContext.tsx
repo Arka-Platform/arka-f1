@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
-import { Book } from '../components/shared/BookCard/BookCard'
+import type { Book } from '../types/book'
 import { useAuth } from './AuthContext'
 import { useContribution } from './ContributionContext'
 import { useToast } from './ToastContext'

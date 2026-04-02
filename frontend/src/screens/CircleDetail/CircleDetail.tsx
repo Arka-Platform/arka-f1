@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useToast } from '../../contexts/ToastContext'
 import { communityApi, CommunityCircleResponse, BookResponse } from '../../utils/api'
-import BookCard, { Book } from '../../components/shared/BookCard/BookCard'
+import type { Book } from '../../types/book'
 import { useCart } from '../../contexts/CartContext'
 import Button from '../../components/shared/Button/Button'
 import styles from './CircleDetail.module.css'
@@ -148,12 +148,15 @@ const CircleDetail: React.FC = () => {
           ) : (
             <div className={styles.booksGrid}>
               {books.map((book) => (
-                <BookCard
-                  key={book.id}
-                  book={book}
-                  onButtonClick={handleBookClick}
-                  buttonText="Add to cart"
-                />
+                <div key={book.id} className={styles.bookCard}>
+                  <div className={styles.bookTitle}>{book.title}</div>
+                  <div className={styles.bookAuthor}>{book.author}</div>
+                  <div className={styles.bookActions}>
+                    <Button variant="primary" onClick={() => handleBookClick(book)}>
+                      Add to cart
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
           )}

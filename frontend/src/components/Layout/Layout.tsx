@@ -12,9 +12,10 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const pathname = usePathname()
-  const isCirculation = pathname === '/circulation' || pathname.startsWith('/circulation/')
+  const FULL_BLEED_PREFIXES: string[] = []
+  const isFullBleed = FULL_BLEED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))
 
-  if (isCirculation) {
+  if (isFullBleed) {
     return (
       <div className="layout">
         <a className="skip-link" href="#main-content">

@@ -7,7 +7,7 @@ import { useAuth } from '../../../contexts/AuthContext'
 import { useToast } from '../../../contexts/ToastContext'
 import { useCart } from '../../../contexts/CartContext'
 import { bookshelfApi, wishlistApi, type ListingResponse } from '../../../utils/api'
-import type { Book } from '../../shared/BookCard/BookCard'
+import type { Book } from '../../../types/book'
 import styles from './BooksOverlay.module.css'
 
 import ListingLayoutAnchor from './ListingLayoutAnchor'

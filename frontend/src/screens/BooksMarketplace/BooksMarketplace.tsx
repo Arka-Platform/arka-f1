@@ -2,8 +2,7 @@ import React, { useId, useRef, useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import type { Book } from '../../components/shared/BookCard/BookCard'
-import CirculateBookCard from '../../components/circulate/CirculateBookCard'
+import type { Book } from '../../types/book'
 import Input from '../../components/shared/Input/Input'
 import Select from '../../components/shared/Select/Select'
 import Button from '../../components/shared/Button/Button'
@@ -1102,14 +1101,23 @@ const BooksMarketplace: React.FC = () => {
               </div>
               <div className={styles.booksList}>
                 {books.slice(0, visibleBooksCount).map((book) => (
-                  <CirculateBookCard
+                  <div
                     key={book.id}
-                    model={book as any}
-                    onPick={() => {}}
-                    onPass={() => {}}
-                    onToggleWishlist={() => {}}
-                    onOpenMyLibrary={() => router.push('/inventory')}
-                  />
+                    className="rounded-2xl bg-white/70 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.08)] ring-1 ring-slate-900/[0.06]"
+                  >
+                    <div className="text-base font-extrabold tracking-tight text-slate-900">{book.title}</div>
+                    <div className="mt-1 text-sm font-semibold text-slate-500">{book.author}</div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {book.genre ? (
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                          {book.genre}
+                        </span>
+                      ) : null}
+                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">
+                        Circulate
+                      </span>
+                    </div>
+                  </div>
                 ))}
               </div>
               {visibleBooksCount < books.length && (

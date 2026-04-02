@@ -9,7 +9,7 @@ import React, {
   useState,
   type ReactNode,
 } from 'react'
-import type { Book } from '../components/shared/BookCard/BookCard'
+import type { Book } from '../types/book'
 import { usersApi } from '../utils/api'
 import {
   getParticipationBalance,

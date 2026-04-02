@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import BookCard, { Book } from '../BookCard/BookCard'
+import type { Book } from '../../../types/book'
 import { recommendationsApi, BookResponse } from '../../../utils/api'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useCart } from '../../../contexts/CartContext'
@@ -161,12 +161,15 @@ const RecommendationSection: React.FC<RecommendationSectionProps> = ({
         >
           {books.map((book) => (
             <div key={book.id} className={styles.bookCardWrapper}>
-              <BookCard
-                book={book}
-                onButtonClick={handleBookClick}
-                buttonText="Add to cart"
-                enableUserCollections={false}
-              />
+              <button
+                type="button"
+                className={styles.recommendationItem}
+                onClick={() => handleBookClick(book)}
+                aria-label={`Add ${book.title} to cart`}
+              >
+                <div className={styles.recommendationTitle}>{book.title}</div>
+                <div className={styles.recommendationMeta}>{book.author}</div>
+              </button>
             </div>
           ))}
         </div>

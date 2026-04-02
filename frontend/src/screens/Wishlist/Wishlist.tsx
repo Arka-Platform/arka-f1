@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { wishlistApi, WishlistItemResponse } from '../../utils/api'
-import BookCard from '../../components/shared/BookCard/BookCard'
 import Button from '../../components/shared/Button/Button'
 import styles from './Wishlist.module.css'
 
@@ -87,19 +86,13 @@ const Wishlist: React.FC = () => {
         <div className={styles.wishlistGrid}>
           {wishlist.map((item) => (
             <div key={item.wishlistId} className={styles.wishlistItem}>
-              <BookCard
-                book={{
-                  id: item.bookId,
-                  title: item.bookTitle,
-                  description: '',
-                  author: item.bookAuthor,
-                  genre: item.bookGenre || undefined,
-                  price: item.bookPrice,
-                  image: item.bookImageUrl || undefined,
-                  status: item.bookStatus,
-                }}
-                showButton={false}
-              />
+              <div className={styles.itemCard}>
+                <div className={styles.itemTitle}>{item.bookTitle}</div>
+                <div className={styles.itemMeta}>
+                  <span>{item.bookAuthor}</span>
+                  {item.bookGenre ? <span>• {item.bookGenre}</span> : null}
+                </div>
+              </div>
               <div className={styles.itemActions}>
                 {item.notes && (
                   <div className={styles.notes}>

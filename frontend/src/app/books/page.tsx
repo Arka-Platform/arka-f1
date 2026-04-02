@@ -1,8 +1,8 @@
 'use client'
 
-import CirculatePage from '../../screens/CirculatePage/CirculatePage'
+import Browse from '../../screens/Browse/Browse'
 
 export default function BooksPage() {
-  return <CirculatePage />
+  return <Browse />
 }
 

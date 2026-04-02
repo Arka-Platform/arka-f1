@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { booksApi, exchangesApi, BookResponse } from '../../utils/api'
-import BookCard, { Book } from '../../components/shared/BookCard/BookCard'
+import type { Book } from '../../types/book'
 import Input from '../../components/shared/Input/Input'
 import Select from '../../components/shared/Select/Select'
 import Button from '../../components/shared/Button/Button'
@@ -192,12 +192,14 @@ const Exchange: React.FC = () => {
         <div className={styles.booksGrid}>
           {books.map((book) => (
             <div key={book.id} className={styles.bookWrapper}>
-              <BookCard
-                book={book}
-                showButton
-                buttonText="Calculate Fee"
-                onButtonClick={() => handleBookClick(book.id)}
-              />
+              <div className={styles.bookCard}>
+                <div className={styles.bookTitle}>{book.title}</div>
+                <div className={styles.bookAuthor}>{book.author}</div>
+                {book.genre ? <div className={styles.bookGenre}>{book.genre}</div> : null}
+                <Button variant="secondary" onClick={() => handleBookClick(book.id)}>
+                  Calculate Fee
+                </Button>
+              </div>
               <div className={styles.exchangeActions}>
                 {book.price && (
                   <Button

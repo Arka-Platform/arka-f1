@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import type { Book } from '../shared/BookCard/BookCard'
+import type { Book } from '../../types/book'
 import styles from './ContributeToUnlockModal.module.css'
 
 type Props = {
