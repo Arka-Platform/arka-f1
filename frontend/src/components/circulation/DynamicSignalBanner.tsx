@@ -15,17 +15,14 @@ interface Props {
 
 export default function DynamicSignalBanner({ signals }: Props) {
 
-  // PRIORITY MAP
   const priorityMap: Record<SignalType, number> = {
     demand: 3,
     proximity: 2,
     speed: 1,
   }
 
-  // GET PRIMARY SIGNAL (without mutating original array)
   const primary = useMemo(() => {
     if (!signals.length) return null
-
     return [...signals].sort(
       (a, b) => priorityMap[b.type] - priorityMap[a.type]
     )[0]
@@ -33,50 +30,37 @@ export default function DynamicSignalBanner({ signals }: Props) {
 
   if (!primary) return null
 
-  // CONTENT MAPPING
-  const getContent = () => {
+  // ✨ REFINED CONTENT (no emojis, editorial tone)
+  const getText = () => {
     switch (primary.type) {
       case 'demand':
-        return {
-          text: `🔥 ${primary.value} people waiting`,
-          style: 'high' as const,
-        }
+        return `${primary.value} requests`
       case 'proximity':
-        return {
-          text: `📍 ${primary.value} copies nearby`,
-          style: 'medium' as const,
-        }
+        return `${primary.value} nearby`
       case 'speed':
-        return {
-          text: `⚡ ready in ${primary.value}`,
-          style: 'low' as const,
-        }
+        return `ready in ${primary.value}`
       default:
-        return null
+        return ''
     }
   }
 
-  const content = getContent()
-  if (!content) return null
+  const text = getText()
 
-  // BASE + VARIANT STYLES
+  // ✨ MINIMAL STYLE SYSTEM (no loud colors)
   const base =
-    'inline-flex items-center px-3.5 py-1.5 rounded-full text-[12px] font-medium tracking-[-0.01em] backdrop-blur-md transition-all duration-300 animate-[fadeInUp_0.4s_ease]'
+    'inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium tracking-[-0.01em] transition-all duration-200'
 
   const variants = {
-    high: 'bg-[#ffedd5] text-[#9a3412] border border-[#fdba74]/50',
-    medium: 'bg-black/[0.05] text-[#1c1917]/80 border border-black/[0.06]',
-    low: 'bg-black/[0.03] text-[#1c1917]/60 border border-black/[0.05]',
+    demand: 'bg-black/[0.06] text-[#1c1917]/80',
+    proximity: 'bg-black/[0.04] text-[#1c1917]/70',
+    speed: 'bg-black/[0.03] text-[#1c1917]/60',
   }
 
   return (
     <div
-      className={`${base} ${variants[content.style]}`}
-      style={{
-        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-      }}
+      className={`${base} ${variants[primary.type]}`}
     >
-      {content.text}
+      {text}
     </div>
   )
 }

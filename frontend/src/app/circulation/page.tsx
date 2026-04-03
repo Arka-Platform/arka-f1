@@ -3,7 +3,6 @@
 import React from 'react'
 import BookMeta from '../../components/circulation/BookMeta'
 import UserTrustSection from '../../components/circulation/UserTrustSection'
-import DynamicSignalBanner from '../../components/circulation/DynamicSignalBanner'
 
 export default function CirculationPage() {
   return (
@@ -21,7 +20,7 @@ export default function CirculationPage() {
           hover:shadow-[0_60px_140px_rgba(0,0,0,0.14)]
         ">
 
-          {/* LIGHT LAYER */}
+          {/* LIGHT */}
           <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.6),transparent_60%)]" />
 
           <div className="relative px-6 py-7">
@@ -56,29 +55,21 @@ export default function CirculationPage() {
               {/* RIGHT CONTENT */}
               <div className="flex-1 flex flex-col justify-between">
 
-                {/* TITLE + BANNER */}
+                {/* TITLE BLOCK */}
                 <div>
-                  <div className="flex items-start justify-between gap-3">
+                  <h1 className="
+                    text-[26px]
+                    leading-[1.1]
+                    font-semibold
+                    tracking-[-0.03em]
+                    text-[#1c1917]
+                  ">
+                    Atomic Habits
+                  </h1>
 
-                    <h1 className="
-                      text-[26px]
-                      leading-[1.1]
-                      font-semibold
-                      tracking-[-0.03em]
-                      text-[#1c1917]
-                    ">
-                      Atomic Habits
-                    </h1>
-
-                    {/* 🔥 Dynamic Signal Banner */}
-                    <DynamicSignalBanner
-                      signals={[
-                        { type: 'demand', value: 12 },
-                        { type: 'proximity', value: 2 },
-                        { type: 'speed', value: '2 hrs' },
-                      ]}
-                    />
-
+                  {/* SUBTLE SIGNALS (INLINE, EDITORIAL) */}
+                  <div className="mt-1 text-[13px] text-[#1c1917]/55 tracking-[-0.01em]">
+                    12 requests · 2 nearby · fast pickup
                   </div>
 
                   {/* META */}
