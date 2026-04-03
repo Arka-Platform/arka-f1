@@ -3,7 +3,7 @@
 import React from 'react'
 import BookMeta from '../../components/circulation/BookMeta'
 import UserTrustSection from '../../components/circulation/UserTrustSection'
-import TagsSection from '../../components/circulation/TagsSection'
+import DynamicSignalBanner from '../../components/circulation/DynamicSignalBanner'
 
 export default function CirculationPage() {
   return (
@@ -21,15 +21,14 @@ export default function CirculationPage() {
           hover:shadow-[0_60px_140px_rgba(0,0,0,0.14)]
         ">
 
-          {/* SUBTLE LIGHT LAYER */}
+          {/* LIGHT LAYER */}
           <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.6),transparent_60%)]" />
 
           <div className="relative px-6 py-7">
 
-            {/* TOP SECTION */}
             <div className="flex gap-6">
 
-              {/* IMAGE — DOMINANT */}
+              {/* IMAGE */}
               <div className="w-[44%] flex-shrink-0">
                 <div className="
                   relative rounded-[20px]
@@ -57,17 +56,30 @@ export default function CirculationPage() {
               {/* RIGHT CONTENT */}
               <div className="flex-1 flex flex-col justify-between">
 
-                {/* TITLE BLOCK */}
+                {/* TITLE + BANNER */}
                 <div>
-                  <h1 className="
-                    text-[26px]
-                    leading-[1.1]
-                    font-semibold
-                    tracking-[-0.03em]
-                    text-[#1c1917]
-                  ">
-                    Atomic Habits
-                  </h1>
+                  <div className="flex items-start justify-between gap-3">
+
+                    <h1 className="
+                      text-[26px]
+                      leading-[1.1]
+                      font-semibold
+                      tracking-[-0.03em]
+                      text-[#1c1917]
+                    ">
+                      Atomic Habits
+                    </h1>
+
+                    {/* 🔥 Dynamic Signal Banner */}
+                    <DynamicSignalBanner
+                      signals={[
+                        { type: 'demand', value: 12 },
+                        { type: 'proximity', value: 2 },
+                        { type: 'speed', value: '2 hrs' },
+                      ]}
+                    />
+
+                  </div>
 
                   {/* META */}
                   <div className="mt-3 opacity-80">
@@ -93,11 +105,6 @@ export default function CirculationPage() {
                 </div>
 
               </div>
-            </div>
-
-            {/* TAGS */}
-            <div className="mt-6">
-              <TagsSection tags={['12 requests', 'near you', 'fast pickup']} />
             </div>
 
           </div>
