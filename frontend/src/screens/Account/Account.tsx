@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
+import { useTheme } from '../../contexts/ThemeContext'
 import { usersApi } from '../../utils/api'
 import Input from '../../components/shared/Input/Input'
 import Textarea from '../../components/shared/Textarea/Textarea'
@@ -14,6 +15,7 @@ import styles from './Account.module.css'
 const Account: React.FC = () => {
   const { user, logout } = useAuth()
   const { success, error: showError } = useToast()
+  const { theme, setTheme } = useTheme()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<'profile' | 'settings' | 'orderPreferences'>('profile')
@@ -278,6 +280,25 @@ const Account: React.FC = () => {
               <div className={styles.tabContent}>
                 <h2 className={styles.tabTitle}>Account Settings</h2>
                 <div className={styles.settingsList}>
+                  <div className={styles.settingItem}>
+                    <div className={styles.settingInfo}>
+                      <h3 className={styles.settingTitle}>Appearance</h3>
+                      <p className={styles.settingDescription}>
+                        Use the default look or the Home theme (colors and contrast). Current:{' '}
+                        <strong>{theme === 'home' ? 'Home' : 'Default'}</strong>.
+                      </p>
+                    </div>
+                    <label className={styles.toggle}>
+                      <input
+                        type="checkbox"
+                        checked={theme === 'home'}
+                        onChange={(e) => setTheme(e.target.checked ? 'home' : 'default')}
+                        aria-label={theme === 'home' ? 'Switch to default theme' : 'Switch to Home theme'}
+                      />
+                      <span className={styles.toggleSlider} />
+                    </label>
+                  </div>
+
                   <div className={styles.settingItem}>
                     <div className={styles.settingInfo}>
                       <h3 className={styles.settingTitle}>Email Notifications</h3>

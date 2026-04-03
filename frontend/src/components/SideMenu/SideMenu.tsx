@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation'
 import { useDroppable } from '@dnd-kit/core'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
-import { useTheme } from '../../contexts/ThemeContext'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { wishlistApi } from '../../utils/api'
 import styles from './SideMenu.module.css'
@@ -64,7 +63,6 @@ export default function SideMenu() {
   const pathname = usePathname()
   const { user } = useAuth()
   const { getItemCount } = useCart()
-  const { theme, toggleTheme } = useTheme()
   const [expanded, setExpanded] = useState(true)
   const [wishlistCount, setWishlistCount] = useState(0)
   const isMobile = useMediaQuery('(max-width: 767px)')
@@ -275,17 +273,6 @@ export default function SideMenu() {
         </div>
 
         <div className={styles.mobileBottomBar}>
-          <button
-            type="button"
-            className={styles.mobileThemeBtn}
-            aria-label={theme === 'home' ? 'Switch to light theme' : 'Switch to dark theme'}
-            onClick={toggleTheme}
-          >
-            <span className={styles.themeIcon} aria-hidden>
-              {theme === 'home' ? '☀︎' : '☾'}
-            </span>
-            <span className={styles.mobileThemeLabel}>Theme</span>
-          </button>
           <nav className={styles.mobileBottomScroll} aria-label="Account shortcuts">
             {bottomItems.map((item) => (
               <Fragment key={item.id}>{renderBottomLink(item, 'mobile')}</Fragment>
@@ -321,18 +308,6 @@ export default function SideMenu() {
         </nav>
 
         <div className={styles.bottomStack}>
-          <button
-            type="button"
-            className={styles.menuButton}
-            aria-label={theme === 'home' ? 'Switch to light theme' : 'Switch to dark theme'}
-            onClick={toggleTheme}
-          >
-            <span className={styles.menuIcon} aria-hidden>
-              <span className={styles.themeIcon}>{theme === 'home' ? '☀︎' : '☾'}</span>
-            </span>
-            <span className={styles.menuLabel}>Theme</span>
-          </button>
-
           <nav className={styles.menuList} aria-label="Account shortcuts">
             {bottomItems.map((item) => (
               <Fragment key={item.id}>{renderBottomLink(item, 'desktop')}</Fragment>

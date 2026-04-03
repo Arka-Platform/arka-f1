@@ -16,9 +16,10 @@
 }
 
 @media (max-width: 767px) {
+  /* Space for fixed nav bars (icon + 2-line labels + safe area) */
   .layout-body {
-    padding-top: calc(12px + 56px);
-    padding-bottom: calc(18px + 72px);
+    padding-top: calc(12px + 76px);
+    padding-bottom: calc(18px + 80px);
     padding-left: 12px;
     padding-right: 12px;
   }
