@@ -15,6 +15,7 @@
     "react-dom": "18.2.0",
 
     "framer-motion": "10.16.4",
+    "lucide-react": "^0.469.0",
 
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
