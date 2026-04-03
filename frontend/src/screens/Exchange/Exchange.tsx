@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { booksApi, exchangesApi, BookResponse } from '../../utils/api'
@@ -23,6 +23,7 @@ const genres = [
 
 const Exchange: React.FC = () => {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { success, error: showError } = useToast()
   const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
@@ -46,6 +47,11 @@ const Exchange: React.FC = () => {
     averageRating: book.averageRating || undefined,
     ratingsCount: book.ratingsCount || undefined,
   })
+
+  useEffect(() => {
+    const q = searchParams.get('search')
+    if (q) setSearchQuery(q)
+  }, [searchParams])
 
   useEffect(() => {
     loadBooks()
@@ -184,8 +190,8 @@ const Exchange: React.FC = () => {
       ) : books.length === 0 ? (
         <div className={styles.emptyState}>
           <p>No books available for exchange at the moment.</p>
-          <Button variant="primary" onClick={() => router.push('/circulation')}>
-            Circulation
+          <Button variant="primary" onClick={() => router.push('/home')}>
+            Back to home
           </Button>
         </div>
       ) : (

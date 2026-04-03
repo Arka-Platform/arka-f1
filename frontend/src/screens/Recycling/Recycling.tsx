@@ -108,7 +108,7 @@ const Recycling: React.FC = () => {
       <div className={styles.header}>
         <h1 className={styles.pageTitle}>Recycling & Waste Paper Pickup</h1>
         <p className={styles.subtitle}>
-          Browse available waste paper for recycling and schedule a pickup. Part of the same circulation idea — materials move instead of sitting.
+          Browse available waste paper for recycling and schedule a pickup. Materials move instead of sitting idle.
         </p>
       </div>
 

@@ -9,21 +9,21 @@ const Home: React.FC = () => {
   const [searchText, setSearchText] = useState('')
 
   const handleBookSelect = (book: BookResponse) => {
-    router.push(`/circulation?search=${encodeURIComponent(book.title)}`)
+    router.push(`/exchange?search=${encodeURIComponent(book.title)}`)
   }
 
   const quickActions = [
     { title: 'Swap Books', subtitle: 'List & exchange', route: '/exchange', icon: '🔁' },
-    { title: 'Circulation', subtitle: 'Pick & pass', route: '/circulation', icon: '📚' },
+    { title: 'Exchange', subtitle: 'Browse & swap', route: '/exchange', icon: '📚' },
     { title: 'Wishlist', subtitle: 'Saved for later', route: '/wishlist', icon: '💛' },
     { title: 'My Library', subtitle: 'Owned & swapped', route: '/bookshelf', icon: '📖' },
   ]
 
   const exploreActions = [
     {
-      title: 'Circulation',
-      subtitle: "See what's in the pool",
-      route: '/circulation',
+      title: 'Browse books',
+      subtitle: "See what's available",
+      route: '/exchange',
       icon: '🔎',
     },
     {
@@ -98,7 +98,7 @@ const Home: React.FC = () => {
       <section className={styles.featuredSection}>
         <div className={styles.featuredHeader}>
           <h2>Featured Picks for You</h2>
-          <button type="button" className={styles.seeAllBtn} onClick={() => router.push('/circulation')}>
+          <button type="button" className={styles.seeAllBtn} onClick={() => router.push('/exchange')}>
             See All
           </button>
         </div>
@@ -107,11 +107,11 @@ const Home: React.FC = () => {
             className={`${styles.featuredCard} ${styles.cardAncient}`}
             role="button"
             tabIndex={0}
-            onClick={() => router.push('/circulation')}
+            onClick={() => router.push('/exchange')}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                router.push('/circulation')
+                router.push('/exchange')
               }
             }}
             aria-label="Browse books: Lost Cities of the Past"
@@ -125,11 +125,11 @@ const Home: React.FC = () => {
             className={`${styles.featuredCard} ${styles.cardFantasy}`}
             role="button"
             tabIndex={0}
-            onClick={() => router.push('/circulation')}
+            onClick={() => router.push('/exchange')}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                router.push('/circulation')
+                router.push('/exchange')
               }
             }}
             aria-label="Browse books: Epic Fantasy Adventures"

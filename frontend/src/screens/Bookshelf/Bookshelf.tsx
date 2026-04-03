@@ -76,7 +76,7 @@ const Bookshelf: React.FC = () => {
             </svg>
           </div>
           <p>Your bookshelf is empty. Start adding books you own!</p>
-          <Link href="/circulation" className={styles.browseButton}>Circulation</Link>
+          <Link href="/exchange" className={styles.browseButton}>Browse books</Link>
         </div>
       ) : (
         <div className={styles.bookshelfGrid}>

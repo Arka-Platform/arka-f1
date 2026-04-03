@@ -100,8 +100,8 @@ const OrderHistory: React.FC = () => {
             <p className={styles.emptyDescription}>
               Your order history will appear here once you place your first order.
             </p>
-            <Button variant="primary" onClick={() => router.push('/circulation')}>
-              Circulation
+            <Button variant="primary" onClick={() => router.push('/exchange')}>
+              Browse books
             </Button>
           </div>
         )}

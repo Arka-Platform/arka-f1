@@ -8,7 +8,7 @@ const AdBanner: React.FC = () => {
   const router = useRouter()
 
   const handleBannerClick = () => {
-    router.push('/circulation')
+    router.push('/exchange')
   }
 
   return (
