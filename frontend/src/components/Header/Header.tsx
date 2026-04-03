@@ -113,6 +113,13 @@ const Header: React.FC = () => {
               </svg>
             </Link>
 
+            <Link
+              href="/circulation"
+              className={`${styles.navLink} ${isActiveLink('/circulation') ? styles.active : ''}`}
+            >
+              Circulation
+            </Link>
+
             {/* Sell */}
             <Link
               href="/inventory"
@@ -284,6 +291,14 @@ const Header: React.FC = () => {
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
             <span className={styles.mobileNavIconLabel}>Home</span>
+          </Link>
+
+          <Link
+            href="/circulation"
+            className={`${styles.mobileNavLink} ${isActiveLink('/circulation') ? styles.mobileNavLinkActive : ''}`}
+            onClick={closeMobileMenu}
+          >
+            Circulation
           </Link>
 
           <Link

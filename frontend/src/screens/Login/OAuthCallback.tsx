@@ -28,7 +28,7 @@ const OAuthCallback: React.FC = () => {
     if (!raw.startsWith('/')) return fallback
     if (raw.startsWith('/auth/callback')) return fallback
     // Keep it simple: only allow internal app routes.
-    const allowed = new Set(['/home', '/account', '/exchange', '/requests', '/wishlist'])
+    const allowed = new Set(['/home', '/account', '/exchange', '/circulation', '/requests', '/wishlist'])
     return allowed.has(raw) ? raw : fallback
   }, [searchParams])
 

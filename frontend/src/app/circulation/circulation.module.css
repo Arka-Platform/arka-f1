@@ -1,0 +1,386 @@
+/* Circulation — warm minimal book cards (design reference) */
+
+.page {
+  --font-serif: var(--font-circ-serif), 'Playfair Display', Georgia, serif;
+  --font-sans: var(--font-circ-sans), 'Inter', system-ui, sans-serif;
+  font-family: var(--font-sans);
+  position: relative;
+  min-height: min(100vh, 960px);
+  padding: clamp(28px, 5vw, 56px) clamp(12px, 2.5vw, 32px) 40px;
+  background: #f9f7f2;
+  overflow-x: hidden;
+}
+
+.pageInner {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Soft organic background blobs */
+.page::before {
+  content: '';
+  position: absolute;
+  width: min(90vw, 820px);
+  height: min(70vh, 560px);
+  top: -12%;
+  left: -18%;
+  background: radial-gradient(ellipse at 40% 40%, rgba(232, 224, 214, 0.55) 0%, transparent 72%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page::after {
+  content: '';
+  position: absolute;
+  width: min(70vw, 620px);
+  height: min(55vh, 480px);
+  bottom: -8%;
+  right: -12%;
+  background: radial-gradient(ellipse at 60% 60%, rgba(220, 210, 198, 0.4) 0%, transparent 68%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(18px, 2.2vw, 26px);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 12px 4px 28px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.row::-webkit-scrollbar {
+  display: none;
+}
+
+/* Shared card shell */
+.card {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 28px;
+  padding: 18px 18px 20px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06);
+}
+
+.cardLeft {
+  width: 280px;
+  background: #f2ede4;
+}
+
+.cardCenter {
+  width: 340px;
+  background: #ffffff;
+  padding: 20px 20px 22px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+.cardRight {
+  width: 280px;
+  background: #e9e4de;
+}
+
+.imageWrap {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  margin-bottom: 16px;
+  background: #e0dcd6;
+}
+
+.imageFill {
+  object-fit: cover;
+}
+
+/* Card 1 overlays */
+.badgeNear {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(245, 242, 238, 0.96);
+  color: #333333;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.chevronBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(245, 242, 238, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #444444;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.chevronBtn:focus-visible {
+  outline: 2px solid #333;
+  outline-offset: 2px;
+}
+
+/* Card 2 — requests */
+.requestsRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e67e22;
+  letter-spacing: 0.01em;
+}
+
+.flameIcon {
+  flex-shrink: 0;
+  color: #e67e22;
+}
+
+/* Card 3 — trending */
+.badgeTrending {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #333333;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Typography */
+.titleSerif {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.25;
+  color: #2b2b2b;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px;
+}
+
+.cardCenter .titleSerif {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.author {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a4a4a;
+}
+
+.cardCenter .author {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: normal;
+  color: #757575;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+
+.authorLight {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #757575;
+}
+
+.subtitleCaps {
+  margin: 0 0 6px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: #8a8a8a;
+  text-transform: uppercase;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: #e8e1d5;
+  color: #333333;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.tagPink {
+  background: #ebe4dc;
+}
+
+.tagLight {
+  background: #e8e1d5;
+}
+
+.offered {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: #757575;
+  font-weight: 400;
+}
+
+.offeredStrong {
+  margin: 0;
+  font-size: 12px;
+  color: #757575;
+}
+
+.offeredStrong strong {
+  color: #2b2b2b;
+  font-weight: 600;
+}
+
+.statLine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #757575;
+  margin-bottom: 6px;
+}
+
+.statLine:last-child {
+  margin-bottom: 0;
+}
+
+.iconMuted {
+  color: #9a9a9a;
+  flex-shrink: 0;
+}
+
+.starRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #4a4a4a;
+}
+
+.starIcon {
+  color: #e5b84a;
+  flex-shrink: 0;
+}
+
+.circulations {
+  font-size: 12px;
+  color: #9a9a9a;
+  font-weight: 400;
+  margin-left: 2px;
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.footerMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.camCount {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #757575;
+  font-weight: 500;
+}
+
+.chevronRight {
+  color: #9a9a9a;
+  flex-shrink: 0;
+}
+
+.stackSm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (max-width: 1100px) {
+  .cardLeft,
+  .cardRight {
+    width: 260px;
+  }
+
+  .cardCenter {
+    width: 300px;
+  }
+}
+
+@media (max-width: 900px) {
+  .row {
+    justify-content: flex-start;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .cardLeft,
+  .cardCenter,
+  .cardRight {
+    width: min(280px, 78vw);
+  }
+
+  .cardCenter {
+    width: min(300px, 85vw);
+  }
+}

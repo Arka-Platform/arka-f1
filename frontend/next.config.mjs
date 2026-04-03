@@ -10,6 +10,14 @@ const __dirname = path.dirname(__filename)
 const nextConfig = {
   reactStrictMode: true,
   productionBrowserSourceMaps: true,
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'covers.openlibrary.org', pathname: '/**' },
+      { protocol: 'https', hostname: 'images-na.ssl-images-amazon.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'm.media-amazon.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'i.pravatar.cc', pathname: '/**' },
+    ],
+  },
 }
 
 const withPwaConfig = withPWA({
