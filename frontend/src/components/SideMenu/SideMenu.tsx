@@ -205,7 +205,7 @@ export default function SideMenu() {
         ? `${styles.mobileNavItem} ${active ? styles.mobileNavItemActive : ''}`
         : `${styles.menuItem} ${active ? styles.menuItemActive : ''}`
     return (
-      <Link key={item.id} href={item.href} className={linkClass}>
+      <Link href={item.href} className={linkClass}>
         <span className={styles.menuIcon} aria-hidden>
           {item.icon}
           {typeof item.badge === 'number' && item.badge > 0 ? (
@@ -260,12 +260,12 @@ export default function SideMenu() {
       )
     }
 
-    return <span>{link}</span>
+    return <span className={styles.mobileBottomItemPlain}>{link}</span>
   }
 
   return (
     <>
-      <div className={styles.mobileNavHost} aria-hidden={false}>
+      <div className={styles.mobileNavHost}>
         <div className={styles.mobileTopBar}>
           <nav className={styles.mobileTopScroll} aria-label="App menu">
             {items.map((item) => (

@@ -267,6 +267,12 @@
 /* Mobile: horizontal top + bottom bars (desktop keeps left sidebar) */
 .mobileNavHost {
   display: none;
+  /* Same tokens as .sidebar so icons size correctly when sidebar is hidden */
+  --menu-pad: 6px;
+  --menu-gap: 4px;
+  --menu-item-pad-y: 6px;
+  --menu-item-pad-x: 4px;
+  --icon-box: 32px;
 }
 
 @media (max-width: 767px) {
@@ -275,6 +281,12 @@
   }
 
   .sidebar {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobileNavHost {
     display: none !important;
   }
 }
@@ -298,6 +310,7 @@
   display: flex;
   flex-direction: row;
   flex: 1;
+  min-width: 0;
   overflow-x: auto;
   gap: 6px;
   -webkit-overflow-scrolling: touch;
@@ -328,6 +341,7 @@
   display: flex;
   flex-direction: row;
   flex: 1;
+  min-width: 0;
   overflow-x: auto;
   gap: 4px;
   align-items: stretch;
@@ -337,10 +351,6 @@
 
 .mobileBottomScroll::-webkit-scrollbar {
   display: none;
-}
-
-.mobileBottomScroll .mobileDropSlot {
-  flex: 0 0 auto;
 }
 
 .mobileNavItem {
@@ -366,6 +376,7 @@
 }
 
 .mobileNavItem .menuLabel {
+  flex: 0 1 auto;
   font-size: 0.62rem;
   font-weight: 700;
   text-align: center;
@@ -419,7 +430,16 @@
   font-weight: 700;
 }
 
+.mobileBottomItemPlain {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+}
+
 .mobileDropSlot {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
   border-radius: 12px;
   transition: box-shadow 0.15s ease, background 0.15s ease;
 }

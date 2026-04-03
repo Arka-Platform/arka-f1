@@ -1,18 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 
+/**
+ * Subscribes to matchMedia without a one-frame delay after mount (avoids wrong drop targets / layout).
+ */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false)
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const mq = window.matchMedia(query)
-    setMatches(mq.matches)
-    const handler = () => setMatches(mq.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [query])
-
-  return matches
+  return useSyncExternalStore(
+    (onChange) => {
+      if (typeof window === 'undefined') return () => {}
+      const mq = window.matchMedia(query)
+      mq.addEventListener('change', onChange)
+      return () => mq.removeEventListener('change', onChange)
+    },
+    () => (typeof window !== 'undefined' ? window.matchMedia(query).matches : false),
+    () => false,
+  )
 }
