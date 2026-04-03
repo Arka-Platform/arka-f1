@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import BookCard from '@/components/circulation/BookCard'
+import BookCard from '../../components/circulation/BookCard'
 
 export default function Page() {
   const book = {
