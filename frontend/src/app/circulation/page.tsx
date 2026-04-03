@@ -3,6 +3,7 @@
 import React from 'react'
 import BookMeta from '../../components/circulation/BookMeta'
 import UserTrustSection from '../../components/circulation/UserTrustSection'
+import SignalRibbon from '../../components/circulation/SignalRibbon'
 
 export default function CirculationPage() {
   return (
@@ -19,6 +20,9 @@ export default function CirculationPage() {
           transition-all duration-500
           hover:shadow-[0_60px_140px_rgba(0,0,0,0.14)]
         ">
+
+          {/* 🔥 RIBBON (single signal only) */}
+          <SignalRibbon text="12 requests" variant="highlight" />
 
           {/* LIGHT */}
           <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.6),transparent_60%)]" />
@@ -67,9 +71,9 @@ export default function CirculationPage() {
                     Atomic Habits
                   </h1>
 
-                  {/* SUBTLE SIGNALS (INLINE, EDITORIAL) */}
+                  {/* SUBTLE SECONDARY INFO */}
                   <div className="mt-1 text-[13px] text-[#1c1917]/55 tracking-[-0.01em]">
-                    12 requests · 2 nearby · fast pickup
+                    2 nearby · fast pickup
                   </div>
 
                   {/* META */}
