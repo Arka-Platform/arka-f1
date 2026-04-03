@@ -1,4 +1,4 @@
-import type { ListingCondition, ListingResponse, SwapRequestCounts } from '../../utils/api'
+import type { BookResponse, ListingCondition, ListingResponse, SwapRequestCounts } from '../../utils/api'
 
 export function formatCondition(c: ListingCondition): string {
   const map: Record<ListingCondition, string> = {
@@ -26,6 +26,16 @@ export function trustToRatingDisplay(trustScore: number): string {
 export function mediaCountForListing(listing: ListingResponse): number {
   const n = listing.conditionImageUrls.length + (listing.coverUrl ? 1 : 0)
   return Math.max(0, n)
+}
+
+export function buildTagPairFromBook(book: BookResponse): [string, string] {
+  const genre = book.genre?.trim() || 'General'
+  const status = (book.status || 'AVAILABLE').replace(/_/g, ' ')
+  return [genre, status]
+}
+
+export function mediaCountForBook(book: BookResponse): number {
+  return (book.imageUrl || book.thumbnailUrl ? 1 : 0)
 }
 
 export function sortListingsByDemand(

@@ -1,38 +1,53 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Flame, Camera, Star, ChevronRight } from 'lucide-react'
-import type { ListingResponse } from '../../utils/api'
-import { buildTagPair } from './circulationData'
+import type { BookResponse, ListingResponse } from '../../utils/api'
+import { buildTagPair, buildTagPairFromBook } from './circulationData'
 import styles from './circulation.module.css'
 
 export type CirculationCardVariant = 'feature' | 'side'
 
-export type CirculationBookCardProps = {
-  listing: ListingResponse
-  requestCount: number
-  circulationCount: number
-  ownerFirstName: string
-  ownerAvatarUrl: string
-  ratingDisplay: string
-  mediaCount: number
-  variant: CirculationCardVariant
-  priority?: boolean
-}
+export type CirculationBookCardProps =
+  | {
+      kind: 'listing'
+      listing: ListingResponse
+      requestCount: number
+      circulationCount: number
+      ownerFirstName: string
+      ownerAvatarUrl: string
+      ratingDisplay: string
+      mediaCount: number
+      variant: CirculationCardVariant
+      priority?: boolean
+    }
+  | {
+      kind: 'catalog'
+      book: BookResponse
+      requestCount: number
+      circulationCount: number
+      ownerFirstName: string
+      ownerAvatarUrl: string
+      ratingDisplay: string
+      mediaCount: number
+      variant: CirculationCardVariant
+      priority?: boolean
+    }
 
 const PLACEHOLDER =
   'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=520&fit=crop&q=80'
 
-export default function CirculationBookCard({
-  listing,
-  requestCount,
-  circulationCount,
-  ownerFirstName,
-  ownerAvatarUrl,
-  ratingDisplay,
-  mediaCount,
-  variant,
-  priority,
-}: CirculationBookCardProps) {
+export default function CirculationBookCard(props: CirculationBookCardProps) {
+  const {
+    requestCount,
+    circulationCount,
+    ownerFirstName,
+    ownerAvatarUrl,
+    ratingDisplay,
+    mediaCount,
+    variant,
+    priority,
+  } = props
+
   const isFeature = variant === 'feature'
   const cardClass = isFeature ? `${styles.card} ${styles.cardFeature}` : `${styles.card} ${styles.cardSide}`
   const tagClass = `${styles.tag} ${styles.tagLight}`
@@ -40,8 +55,18 @@ export default function CirculationBookCard({
   const camSize = isFeature ? 14 : 12
   const chevronSize = isFeature ? 18 : 16
 
-  const coverSrc = listing.coverUrl?.trim() || PLACEHOLDER
+  const title = props.kind === 'listing' ? props.listing.title : props.book.title
+  const author = props.kind === 'listing' ? props.listing.author : props.book.author
+  const coverSrc =
+    props.kind === 'listing'
+      ? props.listing.coverUrl?.trim() || PLACEHOLDER
+      : props.book.imageUrl || props.book.thumbnailUrl || PLACEHOLDER
   const useUnoptimized = coverSrc.startsWith('http') && !coverSrc.includes('localhost')
+  const [tagA, tagB] = props.kind === 'listing' ? buildTagPair(props.listing) : buildTagPairFromBook(props.book)
+  const detailHref =
+    props.kind === 'listing'
+      ? `/three/listings/${props.listing.listingId}`
+      : `/exchange?search=${encodeURIComponent(props.book.title)}`
 
   return (
     <article className={cardClass} role="listitem">
@@ -55,7 +80,7 @@ export default function CirculationBookCard({
       <div className={styles.imageWrap}>
         <Image
           src={coverSrc}
-          alt={`${listing.title} by ${listing.author}`}
+          alt={`${title} by ${author}`}
           fill
           className={styles.imageFill}
           sizes={isFeature ? '340px' : '280px'}
@@ -64,19 +89,12 @@ export default function CirculationBookCard({
         />
       </div>
 
-      <h2 className={styles.titleSerif}>{listing.title}</h2>
-      <p className={styles.author}>{listing.author}</p>
+      <h2 className={styles.titleSerif}>{title}</h2>
+      <p className={styles.author}>{author}</p>
 
       <div className={styles.tags}>
-        {(() => {
-          const [a, b] = buildTagPair(listing)
-          return (
-            <>
-              <span className={tagClass}>{a}</span>
-              <span className={tagClass}>{b}</span>
-            </>
-          )
-        })()}
+        <span className={tagClass}>{tagA}</span>
+        <span className={tagClass}>{tagB}</span>
       </div>
 
       <div className={styles.starRow}>
@@ -102,14 +120,14 @@ export default function CirculationBookCard({
           </p>
         </div>
         <div className={styles.footerMeta}>
-          <span className={styles.camCount} title="Listing photos">
+          <span className={styles.camCount} title={props.kind === 'listing' ? 'Listing photos' : 'Cover image'}>
             <Camera size={camSize} strokeWidth={1.5} className={styles.iconMuted} aria-hidden />
             {mediaCount}
           </span>
           <Link
-            href={`/three/listings/${listing.listingId}`}
+            href={detailHref}
             className={styles.listingLink}
-            aria-label={`Open ${listing.title}`}
+            aria-label={props.kind === 'listing' ? `Open ${title}` : `Find ${title} on Exchange`}
           >
             <ChevronRight size={chevronSize} strokeWidth={1.5} className={styles.chevronRight} aria-hidden />
           </Link>
