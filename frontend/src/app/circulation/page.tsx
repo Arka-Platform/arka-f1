@@ -3,7 +3,6 @@
 import React from 'react'
 import HeaderBar from '../../components/circulation/HeaderBar'
 import BookMeta from '../../components/circulation/BookMeta'
-import ActionButtons from '../../components/circulation/ActionButtons'
 import UserTrustSection from '../../components/circulation/UserTrustSection'
 import TagsSection from '../../components/circulation/TagsSection'
 
