@@ -53,7 +53,6 @@ export default function CirculationPage() {
                     {/* USER (MINIMIZED + INTEGRATED) */}
                     <div className="pt-2 border-t border-[var(--app-border)]/60">
                       <UserTrustSection
-                        roleLabel="Provider"
                         userName="Aarav Mehta"
                         trustScore={86}
                       />
