@@ -56,7 +56,7 @@ export default function BookMeta({ name, author, genre, condition, rating }: Boo
             </svg>
           }
         >
-          Author: <span className="font-medium text-[#5a3812]">{author}</span>
+        <span className="font-medium text-[#5a3812]">{author}</span>
         </Row>
 
         <Row
@@ -69,7 +69,7 @@ export default function BookMeta({ name, author, genre, condition, rating }: Boo
             </svg>
           }
         >
-          Genre: <span className="font-medium text-[#5a3812]">{genre}</span>
+        <span className="font-medium text-[#5a3812]">{genre}</span>
         </Row>
 
         <Row
@@ -81,7 +81,7 @@ export default function BookMeta({ name, author, genre, condition, rating }: Boo
             </svg>
           }
         >
-          Condition: <span className="font-medium text-[#5a3812]">{condition}</span>
+        <span className="font-medium text-[#5a3812]">{condition}</span>
         </Row>
 
         <Row
@@ -91,7 +91,7 @@ export default function BookMeta({ name, author, genre, condition, rating }: Boo
             </svg>
           }
         >
-          Rating:{' '}
+        {' '}
           <span className="inline-flex items-center gap-2">
             <span className="font-medium text-[#5a3812]">{rating.toFixed(1)}</span>
             <span className="inline-flex items-center gap-1">
