@@ -341,20 +341,6 @@
   font-size: 11px;
 }
 
-.trustMini {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: 6px;
-  font-size: 10px;
-  line-height: 1.35;
-  color: #6b6b6b;
-}
-
-.cardSide .trustMini {
-  font-size: 9px;
-}
-
 .footerRow {
   display: flex;
   align-items: center;

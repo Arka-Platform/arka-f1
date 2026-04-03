@@ -164,9 +164,6 @@ export default function CirculationView() {
         mediaCount: mediaCountForListing(listing),
         variant,
         priority,
-        trustLine1: o.trustLine1,
-        trustLine2: o.trustLine2,
-        trustLine3: o.trustLine3,
       }
     },
     [counts, owners],
@@ -192,9 +189,6 @@ export default function CirculationView() {
         mediaCount: mediaCountForBook(book),
         variant,
         priority,
-        trustLine1: o.trustLine1,
-        trustLine2: o.trustLine2,
-        trustLine3: o.trustLine3,
       }
     },
     [owners],
