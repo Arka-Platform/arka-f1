@@ -1,9 +1,9 @@
-
-"use client"
+'use client'
 
 import React from 'react'
 import { usePathname } from 'next/navigation'
 import SideMenu from '../SideMenu/SideMenu'
+import { CirculationDndProvider } from './CirculationDndContext'
 import './Layout.css'
 
 interface LayoutProps {
@@ -33,12 +33,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
-      <div className="layout-body">
-        <SideMenu />
-        <main className="layout-main" id="main-content">
-          {children}
-        </main>
-      </div>
+      <CirculationDndProvider>
+        <div className="layout-body">
+          <SideMenu />
+          <main className="layout-main" id="main-content">
+            {children}
+          </main>
+        </div>
+      </CirculationDndProvider>
     </div>
   )
 }

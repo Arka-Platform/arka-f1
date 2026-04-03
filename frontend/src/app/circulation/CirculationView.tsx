@@ -1,15 +1,50 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { BookResponse, ListingResponse, SwapRequestCounts } from '../../utils/api'
+import { bookshelfApi, wishlistApi } from '../../utils/api'
+import { useAuth } from '../../contexts/AuthContext'
+import { useCart } from '../../contexts/CartContext'
+import { useToast } from '../../contexts/ToastContext'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
+import type { CirculationDragPayload } from '../../components/Layout/CirculationDndContext'
+import { useCirculationDndRegistration } from '../../components/Layout/CirculationDndContext'
 import CirculationBookCard from './CirculationBookCard'
+import { CirculationDraggableWrap } from './CirculationDraggableWrap'
 import { loadCirculationFromSupabase, ownerKeyForBook, type CirculationOwner } from './loadCirculationData'
 import { avatarUrlForUserId, mediaCountForBook, mediaCountForListing } from './circulationData'
 import styles from './circulation.module.css'
 
 type LoadKind = 'listings' | 'catalog'
 
+function payloadFromListing(l: ListingResponse): CirculationDragPayload {
+  return {
+    bookId: l.bookId,
+    title: l.title,
+    author: l.author,
+    price: l.price,
+    imageUrl: l.coverUrl,
+  }
+}
+
+function payloadFromBook(b: BookResponse): CirculationDragPayload {
+  return {
+    bookId: b.id,
+    title: b.title,
+    author: b.author,
+    price: b.price ?? 0,
+    imageUrl: b.imageUrl ?? b.thumbnailUrl,
+  }
+}
+
 export default function CirculationView() {
+  const { user } = useAuth()
+  const { success, error: showError } = useToast()
+  const { addToCart } = useCart()
+  const registerDrop = useCirculationDndRegistration()
+  const isMobile = useMediaQuery('(max-width: 767px)')
+  const dndActive = isMobile && !!user
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [kind, setKind] = useState<LoadKind | null>(null)
@@ -48,6 +83,45 @@ export default function CirculationView() {
   useEffect(() => {
     void load()
   }, [load])
+
+  const handleDrop = useCallback(
+    async (target: 'wishlist' | 'shelf' | 'cart', payload: CirculationDragPayload) => {
+      if (!user?.id) {
+        showError('Log in to save books')
+        return
+      }
+      try {
+        if (target === 'wishlist') {
+          await wishlistApi.addToWishlist(user.id, payload.bookId)
+          window.dispatchEvent(new Event('wishlistUpdated'))
+          success('Added to wishlist')
+        } else if (target === 'shelf') {
+          await bookshelfApi.addToBookshelf(user.id, payload.bookId)
+          success('Added to My Shelf')
+        } else {
+          addToCart({
+            id: payload.bookId,
+            title: payload.title,
+            author: payload.author,
+            description: '',
+            price: payload.price,
+            image: payload.imageUrl ?? undefined,
+            thumbnail: payload.imageUrl ?? undefined,
+            genre: '',
+          })
+          success('Added to cart')
+        }
+      } catch (e) {
+        showError(e instanceof Error ? e.message : 'Could not add book')
+      }
+    },
+    [user?.id, addToCart, success, showError],
+  )
+
+  useEffect(() => {
+    registerDrop(handleDrop)
+    return () => registerDrop(null)
+  }, [registerDrop, handleDrop])
 
   const n = kind === 'listings' ? listings.length : kind === 'catalog' ? books.length : 0
 
@@ -90,6 +164,9 @@ export default function CirculationView() {
         mediaCount: mediaCountForListing(listing),
         variant,
         priority,
+        trustLine1: o.trustLine1,
+        trustLine2: o.trustLine2,
+        trustLine3: o.trustLine3,
       }
     },
     [counts, owners],
@@ -115,9 +192,24 @@ export default function CirculationView() {
         mediaCount: mediaCountForBook(book),
         variant,
         priority,
+        trustLine1: o.trustLine1,
+        trustLine2: o.trustLine2,
+        trustLine3: o.trustLine3,
       }
     },
     [owners],
+  )
+
+  const wrapCard = useCallback(
+    (node: ReactNode, dragId: string, payload: CirculationDragPayload) => {
+      if (!dndActive) return node
+      return (
+        <CirculationDraggableWrap id={dragId} payload={payload} disabled={false}>
+          {node}
+        </CirculationDraggableWrap>
+      )
+    },
+    [dndActive],
   )
 
   if (loading) {
@@ -169,6 +261,11 @@ export default function CirculationView() {
   return (
     <div className={styles.page}>
       <div className={styles.pageInner}>
+        {dndActive && (
+          <p className={styles.dndHint} role="note">
+            Drag a card to the bottom bar: My Shelf, Wishlist, or Cart.
+          </p>
+        )}
         {n > 1 && (
           <div className={styles.carouselControls} aria-label="Browse books">
             <button type="button" className={styles.carouselBtn} onClick={goPrev} aria-label="Previous">
@@ -180,24 +277,42 @@ export default function CirculationView() {
           </div>
         )}
         <div className={styles.row} role="list">
-          {!single && kind === 'listings' && (
-            <CirculationBookCard {...cardPropsListing(listings[indices.prev], 'side', false)} />
-          )}
-          {!single && kind === 'catalog' && (
-            <CirculationBookCard {...cardPropsCatalog(books[indices.prev], 'side', false)} />
-          )}
-          {kind === 'listings' && (
-            <CirculationBookCard {...cardPropsListing(listings[indices.cur], 'feature', true)} />
-          )}
-          {kind === 'catalog' && (
-            <CirculationBookCard {...cardPropsCatalog(books[indices.cur], 'feature', true)} />
-          )}
-          {!single && kind === 'listings' && (
-            <CirculationBookCard {...cardPropsListing(listings[indices.next], 'side', false)} />
-          )}
-          {!single && kind === 'catalog' && (
-            <CirculationBookCard {...cardPropsCatalog(books[indices.next], 'side', false)} />
-          )}
+          {!single && kind === 'listings' &&
+            wrapCard(
+              <CirculationBookCard {...cardPropsListing(listings[indices.prev], 'side', false)} />,
+              `circ-drag-${listings[indices.prev].listingId}`,
+              payloadFromListing(listings[indices.prev]),
+            )}
+          {!single && kind === 'catalog' &&
+            wrapCard(
+              <CirculationBookCard {...cardPropsCatalog(books[indices.prev], 'side', false)} />,
+              `circ-drag-book-${books[indices.prev].id}-prev`,
+              payloadFromBook(books[indices.prev]),
+            )}
+          {kind === 'listings' &&
+            wrapCard(
+              <CirculationBookCard {...cardPropsListing(listings[indices.cur], 'feature', true)} />,
+              `circ-drag-${listings[indices.cur].listingId}`,
+              payloadFromListing(listings[indices.cur]),
+            )}
+          {kind === 'catalog' &&
+            wrapCard(
+              <CirculationBookCard {...cardPropsCatalog(books[indices.cur], 'feature', true)} />,
+              `circ-drag-book-${books[indices.cur].id}-cur`,
+              payloadFromBook(books[indices.cur]),
+            )}
+          {!single && kind === 'listings' &&
+            wrapCard(
+              <CirculationBookCard {...cardPropsListing(listings[indices.next], 'side', false)} />,
+              `circ-drag-${listings[indices.next].listingId}`,
+              payloadFromListing(listings[indices.next]),
+            )}
+          {!single && kind === 'catalog' &&
+            wrapCard(
+              <CirculationBookCard {...cardPropsCatalog(books[indices.next], 'side', false)} />,
+              `circ-drag-book-${books[indices.next].id}-next`,
+              payloadFromBook(books[indices.next]),
+            )}
         </div>
       </div>
     </div>

@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useDroppable } from '@dnd-kit/core'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
 import { useTheme } from '../../contexts/ThemeContext'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { wishlistApi } from '../../utils/api'
 import styles from './SideMenu.module.css'
 
@@ -26,6 +28,38 @@ function initials(firstName?: string, lastName?: string, email?: string | null) 
   return 'A'
 }
 
+const DROP_IDS: Record<string, 'circulation-drop-shelf' | 'circulation-drop-wishlist' | 'circulation-drop-cart'> = {
+  shelf: 'circulation-drop-shelf',
+  wishlist: 'circulation-drop-wishlist',
+  pick: 'circulation-drop-cart',
+}
+
+function DroppableBottomSlot({
+  dropId,
+  disabled,
+  children,
+  className,
+}: {
+  dropId: string
+  disabled: boolean
+  children: React.ReactNode
+  className?: string
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: dropId,
+    disabled,
+  })
+  return (
+    <div
+      ref={setNodeRef}
+      className={`${className ?? ''} ${!disabled && isOver ? styles.dropOver : ''}`.trim()}
+      data-drop-target={disabled ? undefined : dropId}
+    >
+      {children}
+    </div>
+  )
+}
+
 export default function SideMenu() {
   const pathname = usePathname()
   const { user } = useAuth()
@@ -33,6 +67,9 @@ export default function SideMenu() {
   const { theme, toggleTheme } = useTheme()
   const [expanded, setExpanded] = useState(true)
   const [wishlistCount, setWishlistCount] = useState(0)
+  const isMobile = useMediaQuery('(max-width: 767px)')
+  const isCirculationRoute = pathname.startsWith('/circulation')
+  const dropEnabled = isCirculationRoute && isMobile && !!user
 
   useEffect(() => {
     const loadWishlistCount = async () => {
@@ -112,7 +149,7 @@ export default function SideMenu() {
         ),
       },
     ],
-    []
+    [],
   )
 
   const bottomItems: MenuItem[] = useMemo(
@@ -157,91 +194,152 @@ export default function SideMenu() {
         icon: <span className={styles.profileCircle}>{profileAvatar}</span>,
       },
     ],
-    [cartCount, profileAvatar, wishlistCount]
+    [cartCount, profileAvatar, wishlistCount],
   )
+
+  const renderTopLink = (item: MenuItem, variant: 'desktop' | 'mobile') => {
+    const hrefPath = item.href.split('?')[0]
+    const active = pathname === hrefPath || pathname.startsWith(hrefPath + '/')
+    const linkClass =
+      variant === 'mobile'
+        ? `${styles.mobileNavItem} ${active ? styles.mobileNavItemActive : ''}`
+        : `${styles.menuItem} ${active ? styles.menuItemActive : ''}`
+    return (
+      <Link key={item.id} href={item.href} className={linkClass}>
+        <span className={styles.menuIcon} aria-hidden>
+          {item.icon}
+          {typeof item.badge === 'number' && item.badge > 0 ? (
+            <span
+              className={`${styles.badgeInIcon} ${item.id === 'wishlist' ? styles.badgeDanger : styles.badgeSuccess}`}
+              aria-label={`${item.badge} notifications`}
+            >
+              {item.badge > 99 ? '99+' : item.badge}
+            </span>
+          ) : null}
+        </span>
+        <span className={styles.menuLabel}>{item.label}</span>
+      </Link>
+    )
+  }
+
+  const renderBottomLink = (item: MenuItem, variant: 'desktop' | 'mobile') => {
+    const hrefPath = item.href.split('?')[0]
+    const active = pathname === hrefPath || pathname.startsWith(hrefPath + '/')
+    const dropId = DROP_IDS[item.id]
+    const linkClass =
+      variant === 'mobile'
+        ? `${styles.mobileNavItem} ${active ? styles.mobileNavItemActive : ''}`
+        : `${styles.menuItem} ${active ? styles.menuItemActive : ''}`
+
+    const link = (
+      <Link href={item.href} className={linkClass}>
+        <span className={styles.menuIcon} aria-hidden>
+          {item.icon}
+          {typeof item.badge === 'number' && item.badge > 0 ? (
+            <span
+              className={`${styles.badgeInIcon} ${item.id === 'wishlist' ? styles.badgeDanger : styles.badgeSuccess}`}
+              aria-label={`${item.badge} notifications`}
+            >
+              {item.badge > 99 ? '99+' : item.badge}
+            </span>
+          ) : null}
+        </span>
+        <span className={styles.menuLabel}>{item.label}</span>
+      </Link>
+    )
+
+    if (variant === 'desktop') {
+      return link
+    }
+
+    if (dropId) {
+      return (
+        <DroppableBottomSlot dropId={dropId} disabled={!dropEnabled} className={styles.mobileDropSlot}>
+          {link}
+        </DroppableBottomSlot>
+      )
+    }
+
+    return <span>{link}</span>
+  }
 
   return (
-    <aside className={`${styles.sidebar} ${expanded ? styles.sidebarExpanded : styles.sidebarCollapsed}`} aria-label="Menu">
-      <div className={styles.sidebarTop}>
-        <button
-          type="button"
-          className={styles.expandToggle}
-          aria-label={expanded ? 'Collapse menu' : 'Expand menu'}
-          aria-expanded={expanded}
-          onClick={() => setExpanded((v) => !v)}
-        >
-          <span aria-hidden className={styles.expandToggleIcon}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              {expanded ? <path d="M15 18l-6-6 6-6" /> : <path d="M9 18l6-6-6-6" />}
-            </svg>
-          </span>
-        </button>
+    <>
+      <div className={styles.mobileNavHost} aria-hidden={false}>
+        <div className={styles.mobileTopBar}>
+          <nav className={styles.mobileTopScroll} aria-label="App menu">
+            {items.map((item) => (
+              <Fragment key={item.id}>{renderTopLink(item, 'mobile')}</Fragment>
+            ))}
+          </nav>
+        </div>
+
+        <div className={styles.mobileBottomBar}>
+          <button
+            type="button"
+            className={styles.mobileThemeBtn}
+            aria-label={theme === 'home' ? 'Switch to light theme' : 'Switch to dark theme'}
+            onClick={toggleTheme}
+          >
+            <span className={styles.themeIcon} aria-hidden>
+              {theme === 'home' ? '☀︎' : '☾'}
+            </span>
+            <span className={styles.mobileThemeLabel}>Theme</span>
+          </button>
+          <nav className={styles.mobileBottomScroll} aria-label="Account shortcuts">
+            {bottomItems.map((item) => (
+              <Fragment key={item.id}>{renderBottomLink(item, 'mobile')}</Fragment>
+            ))}
+          </nav>
+        </div>
       </div>
 
-      <nav className={styles.menuList} aria-label="App menu">
-        {items.map((item) => {
-          const hrefPath = item.href.split('?')[0]
-          const active = pathname === hrefPath || pathname.startsWith(hrefPath + '/')
-          return (
-            <Link key={item.id} href={item.href} className={`${styles.menuItem} ${active ? styles.menuItemActive : ''}`}>
-              <span className={styles.menuIcon} aria-hidden>
-                {item.icon}
-                {typeof item.badge === 'number' && item.badge > 0 ? (
-                  <span
-                    className={`${styles.badgeInIcon} ${
-                      item.id === 'wishlist' ? styles.badgeDanger : styles.badgeSuccess
-                    }`}
-                    aria-label={`${item.badge} notifications`}
-                  >
-                    {item.badge > 99 ? '99+' : item.badge}
-                  </span>
-                ) : null}
-              </span>
-              <span className={styles.menuLabel}>{item.label}</span>
-            </Link>
-          )
-        })}
-      </nav>
+      <aside
+        className={`${styles.sidebar} ${expanded ? styles.sidebarExpanded : styles.sidebarCollapsed}`}
+        aria-label="Menu"
+      >
+        <div className={styles.sidebarTop}>
+          <button
+            type="button"
+            className={styles.expandToggle}
+            aria-label={expanded ? 'Collapse menu' : 'Expand menu'}
+            aria-expanded={expanded}
+            onClick={() => setExpanded((v) => !v)}
+          >
+            <span aria-hidden className={styles.expandToggleIcon}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                {expanded ? <path d="M15 18l-6-6 6-6" /> : <path d="M9 18l6-6-6-6" />}
+              </svg>
+            </span>
+          </button>
+        </div>
 
-      <div className={styles.bottomStack}>
-        <button
-          type="button"
-          className={styles.menuButton}
-          aria-label={theme === 'home' ? 'Switch to light theme' : 'Switch to dark theme'}
-          onClick={toggleTheme}
-        >
-          <span className={styles.menuIcon} aria-hidden>
-            <span className={styles.themeIcon}>{theme === 'home' ? '☀︎' : '☾'}</span>
-          </span>
-          <span className={styles.menuLabel}>Theme</span>
-        </button>
-
-        <nav className={styles.menuList} aria-label="Account shortcuts">
-          {bottomItems.map((item) => {
-            const hrefPath = item.href.split('?')[0]
-            const active = pathname === hrefPath || pathname.startsWith(hrefPath + '/')
-            return (
-              <Link key={item.id} href={item.href} className={`${styles.menuItem} ${active ? styles.menuItemActive : ''}`}>
-                <span className={styles.menuIcon} aria-hidden>
-                  {item.icon}
-                  {typeof item.badge === 'number' && item.badge > 0 ? (
-                    <span
-                      className={`${styles.badgeInIcon} ${
-                        item.id === 'wishlist' ? styles.badgeDanger : styles.badgeSuccess
-                      }`}
-                      aria-label={`${item.badge} notifications`}
-                    >
-                      {item.badge > 99 ? '99+' : item.badge}
-                    </span>
-                  ) : null}
-                </span>
-                <span className={styles.menuLabel}>{item.label}</span>
-              </Link>
-            )
-          })}
+        <nav className={styles.menuList} aria-label="App menu">
+          {items.map((item) => (
+            <Fragment key={item.id}>{renderTopLink(item, 'desktop')}</Fragment>
+          ))}
         </nav>
-      </div>
-    </aside>
+
+        <div className={styles.bottomStack}>
+          <button
+            type="button"
+            className={styles.menuButton}
+            aria-label={theme === 'home' ? 'Switch to light theme' : 'Switch to dark theme'}
+            onClick={toggleTheme}
+          >
+            <span className={styles.menuIcon} aria-hidden>
+              <span className={styles.themeIcon}>{theme === 'home' ? '☀︎' : '☾'}</span>
+            </span>
+            <span className={styles.menuLabel}>Theme</span>
+          </button>
+
+          <nav className={styles.menuList} aria-label="Account shortcuts">
+            {bottomItems.map((item) => (
+              <Fragment key={item.id}>{renderBottomLink(item, 'desktop')}</Fragment>
+            ))}
+          </nav>
+        </div>
+      </aside>
+    </>
   )
 }
-

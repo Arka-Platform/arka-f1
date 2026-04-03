@@ -19,6 +19,9 @@ export type CirculationBookCardProps =
       mediaCount: number
       variant: CirculationCardVariant
       priority?: boolean
+      trustLine1?: string
+      trustLine2?: string
+      trustLine3?: string
     }
   | {
       kind: 'catalog'
@@ -31,6 +34,9 @@ export type CirculationBookCardProps =
       mediaCount: number
       variant: CirculationCardVariant
       priority?: boolean
+      trustLine1?: string
+      trustLine2?: string
+      trustLine3?: string
     }
 
 const PLACEHOLDER =
@@ -46,6 +52,9 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
     mediaCount,
     variant,
     priority,
+    trustLine1,
+    trustLine2,
+    trustLine3,
   } = props
 
   const isFeature = variant === 'feature'
@@ -104,6 +113,14 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
           {circulationCount} {circulationCount === 1 ? 'circulation' : 'circulations'}
         </span>
       </div>
+
+      {(trustLine1 || trustLine2 || trustLine3) && (
+        <div className={styles.trustMini} aria-label="Trust metrics">
+          {trustLine1 ? <span>{trustLine1}</span> : null}
+          {trustLine2 ? <span>{trustLine2}</span> : null}
+          {trustLine3 ? <span>{trustLine3}</span> : null}
+        </div>
+      )}
 
       <div className={styles.footerRow}>
         <div className={styles.footerLeft}>

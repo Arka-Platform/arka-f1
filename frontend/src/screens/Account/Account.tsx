@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { usersApi, trustScoreApi } from '../../utils/api'
+import { usersApi } from '../../utils/api'
 import Input from '../../components/shared/Input/Input'
 import Textarea from '../../components/shared/Textarea/Textarea'
 import Select from '../../components/shared/Select/Select'
@@ -19,8 +19,6 @@ const Account: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'profile' | 'settings' | 'orderPreferences'>('profile')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [trustScore, setTrustScore] = useState<number | null>(null)
-
   // Set active tab from URL query parameter
   useEffect(() => {
     const tab = searchParams.get('tab')
@@ -29,11 +27,10 @@ const Account: React.FC = () => {
     }
   }, [searchParams])
 
-  // Load user data and trust score
+  // Load user data
   useEffect(() => {
     if (user?.id) {
       loadUserData()
-      loadTrustScore()
     }
   }, [user?.id])
 
@@ -82,23 +79,6 @@ const Account: React.FC = () => {
       }
     } finally {
       setLoading(false)
-    }
-  }
-
-  const loadTrustScore = async () => {
-    if (!user?.id) return
-    
-    try {
-      const scoreData = await trustScoreApi.getTrustScore(user.id)
-      setTrustScore(scoreData.trustScore)
-    } catch (error: any) {
-      // Trust score is optional, so don't show error to user
-      // Only log if it's not a "user not found" error (which is expected for new users)
-      if (error.message && !error.message.includes('User not found')) {
-        console.error('Error loading trust score:', error)
-      }
-      // Set trust score to null to indicate it's not available
-      setTrustScore(null)
     }
   }
 
@@ -208,9 +188,9 @@ const Account: React.FC = () => {
                 {profileData.firstName || user?.firstName} {profileData.lastName || user?.lastName}
               </h2>
               <p className={styles.profileEmail}>{profileData.email || user?.email}</p>
-              {trustScore !== null && (
+              {user?.id && (
                 <div className={styles.trustScoreContainer}>
-                  <TrustScoreBadge trustScore={trustScore} size="medium" showLabel={true} />
+                  <TrustScoreBadge userId={user.id} size="medium" showLabel={true} showDetails />
                 </div>
               )}
             </div>

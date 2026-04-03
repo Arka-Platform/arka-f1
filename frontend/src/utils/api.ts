@@ -1468,6 +1468,14 @@ export interface TrustScoreResponse {
   cancellationRate: number
   cancelledTransactions: number
   lastCalculatedAt: string
+  /** Completed swaps where this user was the listing owner (books sent). */
+  booksSharedCount: number
+  /** Mean hours from request created_at to owner decided_at (swap_requests). */
+  avgResponseHours: number | null
+  /** Rows used for avgResponseHours. */
+  responseSamples: number
+  /** Blended completion / swap return rate for display (0–100). */
+  returnRatePercent: number
 }
 
 // Trust Score API functions

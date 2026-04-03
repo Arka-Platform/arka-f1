@@ -13,6 +13,7 @@ import {
   type ListingResponse,
   type SwapRequestCounts,
 } from '../../utils/api'
+import { formatTrustMetrics } from '../../utils/trustScoreFormat'
 import {
   avatarUrlForUserId,
   displayNameFromProfile,
@@ -26,6 +27,9 @@ export type CirculationOwner = {
   firstName: string
   avatarUrl: string
   ratingDisplay: string
+  trustLine1?: string
+  trustLine2?: string
+  trustLine3?: string
 }
 
 const CATALOG_OWNER_KEY = '__catalog__'
@@ -55,11 +59,17 @@ async function enrichOwners(ownerIds: string[]): Promise<Record<string, Circulat
         const firstName = firstNameOnly(profile.firstName, profile.lastName, displayName)
         const trustScore = trust?.trustScore ?? 0
         const ratingDisplay = trustToRatingDisplay(trustScore)
+        const fmt = trust ? formatTrustMetrics(trust) : null
         const enrichment: CirculationOwner = {
           displayName,
           firstName,
           avatarUrl: avatarUrlForUserId(oid),
           ratingDisplay,
+          ...(fmt && {
+            trustLine1: fmt.successRate,
+            trustLine2: fmt.activity,
+            trustLine3: fmt.responseTime,
+          }),
         }
         return [oid, enrichment] as const
       } catch {

@@ -367,11 +367,41 @@ export function createBookshelfApi({ supabase, ApiError, asErrorMessage }: Deps)
   return bookshelfApi
 }
 
+function emptyTrustScoreResponse(userId: string): TrustScoreResponse {
+  const now = new Date().toISOString()
+  return {
+    userId,
+    trustScore: 0,
+    conditionAccuracyScore: 0,
+    conditionAssessmentsCount: 0,
+    accurateConditionCount: 0,
+    showupReliabilityScore: 0,
+    pickupCommitmentsCount: 0,
+    successfulShowupsCount: 0,
+    noShowsCount: 0,
+    responseTimeScore: 0,
+    averageResponseTimeHours: 0,
+    requestsRespondedCount: 0,
+    completionRate: 0,
+    totalTransactions: 0,
+    completedTransactions: 0,
+    cancellationRate: 0,
+    cancelledTransactions: 0,
+    lastCalculatedAt: now,
+    booksSharedCount: 0,
+    avgResponseHours: null,
+    responseSamples: 0,
+    returnRatePercent: 0,
+  }
+}
+
 export function createTrustScoreApi({ supabase, ApiError, asErrorMessage }: Deps) {
   return {
     getTrustScore: async (userId: string): Promise<TrustScoreResponse> => {
-      const { data, error } = await supabase.from('user_trust_scores').select('*').eq('user_id', userId).single()
+      const { data, error } = await supabase.from('user_trust_scores').select('*').eq('user_id', userId).maybeSingle()
       if (error) throw new ApiError(asErrorMessage(error), 500, error)
+      if (!data) return emptyTrustScoreResponse(userId)
+      const avgH = data.avg_response_hours
       return {
         userId,
         trustScore: Number(data.trust_score ?? 0),
@@ -383,14 +413,18 @@ export function createTrustScoreApi({ supabase, ApiError, asErrorMessage }: Deps
         successfulShowupsCount: 0,
         noShowsCount: 0,
         responseTimeScore: Number(data.responsiveness_score ?? 0),
-        averageResponseTimeHours: 0,
-        requestsRespondedCount: 0,
+        averageResponseTimeHours: avgH != null ? Number(avgH) : 0,
+        requestsRespondedCount: Number(data.response_samples ?? 0),
         completionRate: Number(data.completion_rate ?? 0),
         totalTransactions: Number(data.events_considered ?? 0),
         completedTransactions: 0,
         cancellationRate: 0,
         cancelledTransactions: 0,
-        lastCalculatedAt: data.computed_at,
+        lastCalculatedAt: data.computed_at ?? new Date().toISOString(),
+        booksSharedCount: Number(data.books_shared_count ?? 0),
+        avgResponseHours: avgH != null ? Number(avgH) : null,
+        responseSamples: Number(data.response_samples ?? 0),
+        returnRatePercent: Number(data.return_rate_percent ?? data.completion_rate ?? 0),
       }
     },
   }
