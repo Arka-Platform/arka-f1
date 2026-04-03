@@ -7,77 +7,71 @@ import SignalRibbon from '../../components/circulation/SignalRibbon'
 
 export default function CirculationPage() {
   return (
-    <div className="w-full py-12 bg-[#f8f7f4]">
+    <div className="w-full py-12 bg-[#f6f5f2]">
       <div className="mx-auto w-full max-w-[560px] px-4">
 
         {/* CARD */}
         <div className="
-          relative rounded-[32px]
-          bg-gradient-to-br from-[#f4f3ef] via-[#f7f6f2] to-[#eceae4]
-          ring-1 ring-black/[0.04]
-          shadow-[0_40px_120px_rgba(0,0,0,0.10)]
+          relative rounded-[28px]
+          bg-[#f8f7f4]
+          ring-1 ring-black/[0.05]
+          shadow-[0_30px_80px_rgba(0,0,0,0.08)]
           overflow-hidden
-          transition-all duration-500
-          hover:shadow-[0_60px_140px_rgba(0,0,0,0.14)]
+          transition-all duration-300
+          hover:shadow-[0_40px_100px_rgba(0,0,0,0.12)]
         ">
 
-          {/* 🔥 RIBBON (single signal only) */}
+          {/* RIBBON */}
           <SignalRibbon text="12 requests" variant="highlight" />
 
-          {/* LIGHT */}
-          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.6),transparent_60%)]" />
-
-          <div className="relative px-6 py-7">
+          <div className="px-6 py-7">
 
             <div className="flex gap-6">
 
-              {/* IMAGE */}
-              <div className="w-[44%] flex-shrink-0">
-                <div className="
-                  relative rounded-[20px]
-                  bg-white/80
-                  ring-1 ring-black/[0.05]
-                  shadow-[0_25px_50px_rgba(0,0,0,0.12)]
-                  p-3
-                  transition-all duration-500
-                  hover:scale-[1.04]
-                ">
-                  <div className="[perspective:1200px]">
-                    <img
-                      src="/atomic-habits.png"
-                      alt="Atomic Habits cover"
-                      className="
-                        w-full h-auto
-                        [transform:rotateY(-6deg)]
-                        drop-shadow-[0_28px_40px_rgba(0,0,0,0.20)]
-                      "
-                    />
-                  </div>
+              {/* IMAGE — CLEAN (no box) */}
+              <div className="w-[42%] flex-shrink-0">
+                <div className="[perspective:1000px]">
+                  <img
+                    src="/atomic-habits.png"
+                    alt="Atomic Habits cover"
+                    className="
+                      w-full h-auto
+                      rounded-[14px]
+                      [transform:rotateY(-5deg)]
+                      drop-shadow-[0_18px_28px_rgba(0,0,0,0.18)]
+                      transition-transform duration-300
+                      hover:rotate-y-0 hover:scale-[1.02]
+                    "
+                  />
                 </div>
               </div>
 
               {/* RIGHT CONTENT */}
               <div className="flex-1 flex flex-col justify-between">
 
-                {/* TITLE BLOCK */}
+                {/* TITLE + INFO */}
                 <div>
                   <h1 className="
-                    text-[26px]
-                    leading-[1.1]
+                    text-[24px]
+                    leading-[1.15]
                     font-semibold
-                    tracking-[-0.03em]
+                    tracking-[-0.02em]
                     text-[#1c1917]
                   ">
                     Atomic Habits
                   </h1>
 
-                  {/* SUBTLE SECONDARY INFO */}
-                  <div className="mt-1 text-[13px] text-[#1c1917]/55 tracking-[-0.01em]">
+                  {/* SIGNAL LINE (clean, no clutter) */}
+                  <div className="
+                    mt-1 text-[13px]
+                    text-[#1c1917]/55
+                    tracking-[-0.01em]
+                  ">
                     2 nearby · fast pickup
                   </div>
 
                   {/* META */}
-                  <div className="mt-3 opacity-80">
+                  <div className="mt-3">
                     <BookMeta
                       name=""
                       author="James Clear"
@@ -90,8 +84,8 @@ export default function CirculationPage() {
 
                 {/* USER */}
                 <div className="
-                  mt-5 pt-3
-                  border-t border-black/[0.05]
+                  mt-6 pt-3
+                  border-t border-black/[0.06]
                 ">
                   <UserTrustSection
                     userName="Aarav Mehta"
