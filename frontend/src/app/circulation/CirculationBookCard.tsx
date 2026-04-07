@@ -97,26 +97,28 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
           alt={`${title} by ${author}`}
           fill
           className={styles.imageFill}
-          sizes={isFeature ? '340px' : '280px'}
+          sizes="(max-width: 767px) 200px, 280px"
           priority={priority}
           unoptimized={useUnoptimized}
         />
       </div>
 
-      <h2 className={styles.titleSerif}>{title}</h2>
-      <p className={styles.author}>{author}</p>
+      <div className={styles.cardBody}>
+        <h2 className={styles.titleSerif}>{title}</h2>
+        <p className={styles.author}>{author}</p>
 
-      <div className={styles.tags}>
-        <span className={tagClass}>{tagA}</span>
-        <span className={tagClass}>{tagB}</span>
-      </div>
+        <div className={styles.tags}>
+          <span className={tagClass}>{tagA}</span>
+          <span className={tagClass}>{tagB}</span>
+        </div>
 
-      <div className={styles.starRow}>
-        <Star size={starSize} strokeWidth={1.5} className={styles.starIcon} fill="currentColor" aria-hidden />
-        <span>{props.ratingDisplay}</span>
-        <span className={styles.circulations}>
-          {props.circulationCount} {props.circulationCount === 1 ? 'circulation' : 'circulations'}
-        </span>
+        <div className={styles.starRow}>
+          <Star size={starSize} strokeWidth={1.5} className={styles.starIcon} fill="currentColor" aria-hidden />
+          <span>{props.ratingDisplay}</span>
+          <span className={styles.circulations}>
+            {props.circulationCount} {props.circulationCount === 1 ? 'circulation' : 'circulations'}
+          </span>
+        </div>
       </div>
 
       <div className={styles.footerRow}>
@@ -124,8 +126,8 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
           <Image
             src={props.ownerAvatarUrl}
             alt=""
-            width={isFeature ? 36 : 32}
-            height={isFeature ? 36 : 32}
+            width={32}
+            height={32}
             className={styles.avatar}
             unoptimized
           />
