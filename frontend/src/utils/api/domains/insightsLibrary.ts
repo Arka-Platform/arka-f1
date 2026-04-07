@@ -300,7 +300,7 @@ export function createBookshelfApi({ supabase, ApiError, asErrorMessage }: Deps)
             notes,
             created_at,
             books:book_id (
-              id,title,author,credit_price
+              id,title,author,genre,image_url,thumbnail_url,credit_price
             )
           `)
           .eq('user_id', userId)
@@ -313,7 +313,8 @@ export function createBookshelfApi({ supabase, ApiError, asErrorMessage }: Deps)
           bookId: row.book_id,
           bookTitle: row.books?.title ?? '',
           bookAuthor: row.books?.author ?? '',
-          bookImageUrl: null,
+          bookImageUrl: row.books?.image_url ?? row.books?.thumbnail_url ?? null,
+          bookGenre: row.books?.genre ?? null,
           bookPrice: Number(row.books?.credit_price ?? 0),
           notes: row.notes ?? null,
           addedAt: row.created_at,

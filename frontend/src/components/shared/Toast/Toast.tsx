@@ -8,10 +8,12 @@ export interface ToastProps {
   message: string
   type: 'success' | 'error' | 'info' | 'warning'
   duration?: number
+  actionLabel?: string
+  onAction?: (id: string) => void
   onClose: (id: string) => void
 }
 
-const Toast: React.FC<ToastProps> = ({ id, message, type, duration = 5000, onClose }) => {
+const Toast: React.FC<ToastProps> = ({ id, message, type, duration = 5000, actionLabel, onAction, onClose }) => {
   useEffect(() => {
     if (duration > 0) {
       const timer = setTimeout(() => {
@@ -57,6 +59,18 @@ const Toast: React.FC<ToastProps> = ({ id, message, type, duration = 5000, onClo
         </span>
         <span className={styles.toastMessage}>{message}</span>
       </div>
+      {actionLabel && onAction ? (
+        <button
+          className={styles.toastAction}
+          onClick={() => {
+            onAction(id)
+            onClose(id)
+          }}
+          aria-label={actionLabel}
+        >
+          {actionLabel}
+        </button>
+      ) : null}
       <button
         className={styles.toastClose}
         onClick={() => onClose(id)}

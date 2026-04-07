@@ -1434,6 +1434,7 @@ export interface BookshelfItemResponse {
   bookTitle: string
   bookAuthor: string
   bookImageUrl: string | null
+  bookGenre: string | null
   bookPrice: number
   notes: string | null
   addedAt: string

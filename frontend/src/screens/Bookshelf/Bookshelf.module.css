@@ -95,6 +95,53 @@
   gap: 2rem;
 }
 
+.genreSections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.genreSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.genreHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.genreTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-black);
+}
+
+.genreCount {
+  font-size: 0.95rem;
+  color: var(--color-gray-dark);
+  font-weight: 700;
+}
+
+.genreRow {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 0.25rem 0.25rem 0.5rem;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+
+.genreRow::-webkit-scrollbar {
+  display: none;
+}
+
 .bookshelfItem {
   background: var(--color-white);
   border: 1px solid var(--color-gray-light);
@@ -103,6 +150,9 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
+  flex: 0 0 auto;
+  width: 240px;
+  scroll-snap-align: start;
 }
 
 .bookshelfItem:hover {
@@ -186,6 +236,14 @@
   .bookshelfGrid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1.5rem;
+  }
+
+  .genreSections {
+    gap: 1.5rem;
+  }
+
+  .bookshelfItem {
+    width: 200px;
   }
 
   .bookImageWrapper {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { bookshelfApi, BookshelfItemResponse } from '../../utils/api'
@@ -79,39 +79,71 @@ const Bookshelf: React.FC = () => {
           <Link href="/exchange" className={styles.browseButton}>Browse books</Link>
         </div>
       ) : (
-        <div className={styles.bookshelfGrid}>
-          {bookshelf.map((item) => (
-            <div key={item.id} className={styles.bookshelfItem}>
-              <div className={styles.bookImageWrapper} role="presentation">
-                <img 
-                  src={item.bookImageUrl || '/images/default-book.png'} 
-                  alt={item.bookTitle} 
-                  className={styles.bookImage} 
-                />
-              </div>
-              <div className={styles.bookDetails}>
-                <div className={styles.bookTitle}>{item.bookTitle}</div>
-                <p className={styles.bookAuthor}>{item.bookAuthor}</p>
-                {item.notes && (
-                  <p className={styles.bookNotes}>{item.notes}</p>
-                )}
-                <p className={styles.bookPrice}>₹{item.bookPrice.toFixed(2)}</p>
-                <Button 
-                  variant="secondary" 
-                  onClick={() => handleRemoveFromBookshelf(item.bookId)}
-                  small
-                >
-                  Remove
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+        <BookshelfByGenre
+          items={bookshelf}
+          onRemove={(bookId) => void handleRemoveFromBookshelf(bookId)}
+        />
       )}
     </div>
   )
 }
 
 export default Bookshelf
+
+function normalizeGenre(g: string | null | undefined): string {
+  const v = (g ?? '').trim()
+  return v.length ? v : 'Uncategorized'
+}
+
+function BookshelfByGenre({ items, onRemove }: { items: BookshelfItemResponse[]; onRemove: (bookId: string) => void }) {
+  const sections = useMemo(() => {
+    const map = new Map<string, BookshelfItemResponse[]>()
+    for (const item of items) {
+      const genre = normalizeGenre(item.bookGenre)
+      const arr = map.get(genre)
+      if (arr) arr.push(item)
+      else map.set(genre, [item])
+    }
+    const out = Array.from(map.entries()).map(([genre, list]) => ({ genre, list }))
+    out.sort((a, b) => a.genre.localeCompare(b.genre))
+    return out
+  }, [items])
+
+  return (
+    <div className={styles.genreSections}>
+      {sections.map(({ genre, list }) => (
+        <section key={genre} className={styles.genreSection} aria-label={genre}>
+          <div className={styles.genreHeader}>
+            <h2 className={styles.genreTitle}>{genre}</h2>
+            <div className={styles.genreCount}>{list.length}</div>
+          </div>
+          <div className={styles.genreRow} role="list">
+            {list.map((item) => (
+              <div key={item.id} className={styles.bookshelfItem} role="listitem">
+                <div className={styles.bookImageWrapper} role="presentation">
+                  <img
+                    src={item.bookImageUrl || '/images/default-book.png'}
+                    alt={item.bookTitle}
+                    className={styles.bookImage}
+                    loading="lazy"
+                  />
+                </div>
+                <div className={styles.bookDetails}>
+                  <div className={styles.bookTitle}>{item.bookTitle}</div>
+                  <p className={styles.bookAuthor}>{item.bookAuthor}</p>
+                  {item.notes && <p className={styles.bookNotes}>{item.notes}</p>}
+                  <p className={styles.bookPrice}>₹{item.bookPrice.toFixed(2)}</p>
+                  <Button variant="secondary" onClick={() => onRemove(item.bookId)} small>
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  )
+}
 
 

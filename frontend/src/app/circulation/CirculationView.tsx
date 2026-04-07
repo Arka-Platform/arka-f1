@@ -45,7 +45,7 @@ function payloadFromBook(b: BookResponse): CirculationDragPayload {
 
 export default function CirculationView() {
   const { user } = useAuth()
-  const { success, error: showError } = useToast()
+  const { success, error: showError, showToastWithAction } = useToast()
   const { addToCart } = useCart()
   const registerDrop = useCirculationDndRegistration()
   const setActivePayload = useCirculationActivePayload()
@@ -291,13 +291,29 @@ export default function CirculationView() {
     if (id) {
       setPassedIds((prev) => new Set(prev).add(id))
     }
+    const prevIndex = activeIndex
     const next = Math.min(activeIndex + 1, n - 1)
     if (next !== activeIndex) {
       setActiveIndex(next)
       advanceToIndex(next)
     }
-    success('Passed')
-  }, [kind, n, listings, books, activeIndex, advanceToIndex, success])
+    showToastWithAction(
+      'Passed',
+      'info',
+      'Undo',
+      () => {
+        if (!id) return
+        setPassedIds((prev) => {
+          const nextSet = new Set(prev)
+          nextSet.delete(id)
+          return nextSet
+        })
+        setActiveIndex(prevIndex)
+        advanceToIndex(prevIndex)
+      },
+      4500,
+    )
+  }, [kind, n, listings, books, activeIndex, advanceToIndex, showToastWithAction])
 
   useEffect(() => {
     registerPassHandler(() => handlePass())
@@ -402,6 +418,7 @@ export default function CirculationView() {
                     selected={selected?.kind === 'listing' && selected.id === listing.listingId}
                     onSelect={() => handleSelect({ kind: 'listing', id: listing.listingId })}
                     passed={passedIds.has(listing.listingId)}
+                    active={isMobile && idx === activeIndex}
                   />,
                   `circ-drag-${listing.listingId}`,
                   payloadFromListing(listing),
@@ -415,6 +432,7 @@ export default function CirculationView() {
                     selected={selected?.kind === 'catalog' && selected.id === book.id}
                     onSelect={() => handleSelect({ kind: 'catalog', id: book.id })}
                     passed={passedIds.has(book.id)}
+                    active={isMobile && idx === activeIndex}
                   />,
                   `circ-drag-book-${book.id}`,
                   payloadFromBook(book),

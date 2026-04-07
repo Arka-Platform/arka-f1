@@ -44,6 +44,29 @@
   flex: 1;
 }
 
+.toastAction {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.12);
+  color: inherit;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.toastAction:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.toastAction:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 .toastClose {
   background: none;
   border: none;

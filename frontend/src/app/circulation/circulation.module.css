@@ -213,6 +213,15 @@
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
 }
 
+.cardActive {
+  border-color: rgba(17, 17, 17, 0.32);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.12);
+}
+
+.cardActive::after {
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.26), transparent 70%);
+}
+
 .cardPassed {
   opacity: 0.65;
 }

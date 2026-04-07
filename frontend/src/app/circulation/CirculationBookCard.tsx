@@ -22,6 +22,7 @@ export type CirculationBookCardProps =
       selected?: boolean
       onSelect?: () => void
       passed?: boolean
+      active?: boolean
     }
   | {
       kind: 'catalog'
@@ -37,6 +38,7 @@ export type CirculationBookCardProps =
       selected?: boolean
       onSelect?: () => void
       passed?: boolean
+      active?: boolean
     }
 
 const PLACEHOLDER =
@@ -49,6 +51,7 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
     selected,
     onSelect,
     passed,
+    active,
   } = props
 
   const isFeature = variant === 'feature'
@@ -73,7 +76,9 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
 
   return (
     <article
-      className={`${cardClass} ${selected ? styles.cardSelected : ''} ${passed ? styles.cardPassed : ''}`.trim()}
+      className={`${cardClass} ${active ? styles.cardActive : ''} ${selected ? styles.cardSelected : ''} ${
+        passed ? styles.cardPassed : ''
+      }`.trim()}
       role="listitem"
       data-variant={variant}
       data-circ-card="true"

@@ -6,6 +6,13 @@ type ToastMessage = Omit<ToastProps, 'onClose'>
 interface ToastContextType {
   toasts: ToastMessage[]
   showToast: (message: string, type: ToastProps['type'], duration?: number) => void
+  showToastWithAction: (
+    message: string,
+    type: ToastProps['type'],
+    actionLabel: string,
+    onAction: () => void,
+    duration?: number,
+  ) => void
   removeToast: (id: string) => void
   success: (message: string, duration?: number) => void
   error: (message: string, duration?: number) => void
@@ -41,6 +48,25 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
     setToasts((prev) => [...prev, newToast])
   }
 
+  const showToastWithAction = (
+    message: string,
+    type: ToastProps['type'],
+    actionLabel: string,
+    onAction: () => void,
+    duration?: number,
+  ) => {
+    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9)
+    const newToast: ToastMessage = {
+      id,
+      message,
+      type,
+      duration,
+      actionLabel,
+      onAction: () => onAction(),
+    }
+    setToasts((prev) => [...prev, newToast])
+  }
+
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id))
   }
@@ -66,6 +92,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
       value={{
         toasts,
         showToast,
+        showToastWithAction,
         removeToast,
         success,
         error,
