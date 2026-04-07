@@ -4,12 +4,9 @@
   min-height: 100vh;
 }
 
-/* Global book-card sizing tokens (device-dependent, app-consistent) */
+/* Global book-card width: fluid between readable min and cap (no fixed breakpoints). */
 :root {
-  --book-card-w: 280px;
-  --book-card-w-mobile: 200px;
-  --book-card-h: 620px;
-  --book-card-h-mobile: 520px;
+  --book-card-w: max(11rem, min(calc(100vw - 4.5rem), 21rem));
 }
 
 .layout-body {

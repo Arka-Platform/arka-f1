@@ -170,8 +170,9 @@
 }
 
 .bookImageWrapper {
+  position: relative;
   width: 100%;
-  height: 300px;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
   background: var(--color-gray-light);
   display: flex;
@@ -251,13 +252,6 @@
     gap: 1.5rem;
   }
 
-  .bookshelfItem {
-    width: var(--book-card-w-mobile);
-  }
-
-  .bookImageWrapper {
-    height: 250px;
-  }
 }
 
 

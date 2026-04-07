@@ -247,7 +247,6 @@
 .cardFeature,
 .cardSide {
   width: var(--book-card-w);
-  height: var(--book-card-h);
   padding: 16px 16px 18px;
   box-shadow: var(--component-shadow, 0 10px 26px rgba(0, 0, 0, 0.08));
 }
@@ -257,14 +256,6 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-}
-
-@media (max-width: 767px) {
-  .cardFeature,
-  .cardSide {
-    width: var(--book-card-w-mobile);
-    height: var(--book-card-h-mobile);
-  }
 }
 
 @media (max-width: 767px) {
@@ -321,7 +312,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   font-size: 11px;
   font-weight: 600;
   color: #e67e22;
@@ -344,7 +335,7 @@
 
 .card .imageWrap {
   border-radius: 18px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   flex-shrink: 0;
 }
 
@@ -382,7 +373,7 @@
   color: rgba(15, 23, 42, 0.62);
   font-size: 13px;
   letter-spacing: 0.01em;
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -393,9 +384,9 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   flex-shrink: 0;
-  max-height: 3.4em;
+  max-height: 3.2em;
   overflow: hidden;
 }
 
@@ -442,7 +433,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-top: 12px;
+  margin-top: 10px;
   flex-shrink: 0;
 }
 
