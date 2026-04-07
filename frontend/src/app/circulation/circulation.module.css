@@ -42,6 +42,18 @@
   padding: 0 1.5rem;
 }
 
+@media (max-width: 767px) {
+  .page {
+    /* Mobile: let Layout provide the background; avoid extra layers */
+    padding: 1.25rem 0 2.25rem;
+  }
+
+  .pageInner {
+    max-width: none;
+    padding: 0 12px;
+  }
+}
+
 .errorText,
 .emptyText {
   text-align: center;
@@ -200,21 +212,8 @@
 }
 
 .row::after {
-  content: '';
-  position: absolute;
-  left: 2px;
-  right: 2px;
-  bottom: 6px;
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    color-mix(in srgb, var(--app-text) 12%, transparent) 12%,
-    color-mix(in srgb, var(--app-text) 12%, transparent) 88%,
-    transparent 100%
-  );
-  pointer-events: none;
+  /* Remove decorative rail line (clean Netflix rows). */
+  display: none;
 }
 
 /* Bumble-like “slide” on mobile: snap to a card, with a tiny peek */
@@ -223,7 +222,7 @@
     scroll-snap-type: x mandatory;
     scroll-padding-left: 16px;
     padding-left: 12px;
-    padding-right: 18px; /* lets next card peek */
+    padding-right: 12px;
     gap: 14px;
   }
 }
@@ -235,13 +234,13 @@
   flex-direction: column;
   height: 100%;
   align-self: stretch;
-  border-radius: 24px;
+  border-radius: 18px;
   background: var(--app-surface);
   border: 1px solid var(--app-border);
   overflow: hidden;
   position: relative;
   box-shadow: var(--component-shadow, 0 10px 26px rgba(0, 0, 0, 0.08));
-  transition: box-shadow 140ms ease, border-color 140ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
 .cardFeature,
@@ -265,30 +264,22 @@
 }
 
 .card::after {
-  content: '';
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: -10px;
-  height: 14px;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--app-text) 18%, transparent), transparent 70%);
-  filter: blur(0.2px);
-  pointer-events: none;
-  z-index: -1;
+  /* Remove shelf-shadow layer (no noise). */
+  display: none;
 }
 
 .cardSelected {
-  border-color: rgba(0, 0, 0, 0.18);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  border-color: color-mix(in srgb, var(--app-text) 18%, var(--app-border));
+  box-shadow: 0 14px 42px rgba(15, 23, 42, 0.14);
 }
 
 .cardActive {
-  border-color: color-mix(in srgb, var(--app-text) 22%, var(--app-border));
-  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.12);
+  border-color: color-mix(in srgb, var(--app-text) 24%, var(--app-border));
+  box-shadow: 0 18px 56px rgba(15, 23, 42, 0.18);
 }
 
 .cardActive::after {
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--app-text) 22%, transparent), transparent 70%);
+  display: none;
 }
 
 .cardPassed {
@@ -297,7 +288,9 @@
 
 @media (hover: hover) and (pointer: fine) {
   .card:hover {
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 64px rgba(15, 23, 42, 0.18);
+    border-color: color-mix(in srgb, var(--app-text) 18%, var(--app-border));
   }
 }
 
@@ -315,14 +308,14 @@
   margin-bottom: 8px;
   font-size: 11px;
   font-weight: 600;
-  color: #e67e22;
+  color: rgba(15, 23, 42, 0.72);
   letter-spacing: 0.01em;
   flex-shrink: 0;
 }
 
 .flameIcon {
   flex-shrink: 0;
-  color: #e67e22;
+  color: color-mix(in srgb, #e50914 60%, var(--app-text));
 }
 
 .imageWrap {
