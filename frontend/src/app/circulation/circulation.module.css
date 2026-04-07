@@ -178,15 +178,22 @@
 
 /* Restored sizes/variants */
 .cardFeature {
-  width: 340px;
+  width: var(--book-card-w);
   padding: 20px 20px 22px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
 }
 
 .cardSide {
-  width: 280px;
+  width: var(--book-card-w);
   padding: 16px 16px 18px;
   border-radius: 24px;
+}
+
+@media (max-width: 767px) {
+  .cardFeature,
+  .cardSide {
+    width: var(--book-card-w-mobile);
+  }
 }
 
 @media (max-width: 767px) {

@@ -151,7 +151,7 @@
   display: flex;
   flex-direction: column;
   flex: 0 0 auto;
-  width: 240px;
+  width: var(--book-card-w);
   scroll-snap-align: start;
 }
 
@@ -243,7 +243,7 @@
   }
 
   .bookshelfItem {
-    width: 200px;
+    width: var(--book-card-w-mobile);
   }
 
   .bookImageWrapper {
