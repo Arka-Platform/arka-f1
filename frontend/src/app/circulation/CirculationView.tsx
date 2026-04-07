@@ -52,7 +52,6 @@ export default function CirculationView() {
   const [books, setBooks] = useState<BookResponse[]>([])
   const [counts, setCounts] = useState<Record<string, SwapRequestCounts>>({})
   const [owners, setOwners] = useState<Record<string, CirculationOwner>>({})
-  const [selectedIndex, setSelectedIndex] = useState(0)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -72,7 +71,6 @@ export default function CirculationView() {
         setCounts({})
         setOwners(data.owners)
       }
-      setSelectedIndex(0)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load from Supabase')
     } finally {
@@ -124,25 +122,6 @@ export default function CirculationView() {
   }, [registerDrop, handleDrop])
 
   const n = kind === 'listings' ? listings.length : kind === 'catalog' ? books.length : 0
-
-  const indices = useMemo(() => {
-    if (n === 0) return { prev: -1, cur: -1, next: -1 }
-    if (n === 1) return { prev: 0, cur: 0, next: 0 }
-    const cur = Math.min(selectedIndex, n - 1)
-    const prev = (cur - 1 + n) % n
-    const next = (cur + 1) % n
-    return { prev, cur, next }
-  }, [n, selectedIndex])
-
-  const goPrev = useCallback(() => {
-    if (n <= 1) return
-    setSelectedIndex((i) => (i - 1 + n) % n)
-  }, [n])
-
-  const goNext = useCallback(() => {
-    if (n <= 1) return
-    setSelectedIndex((i) => (i + 1) % n)
-  }, [n])
 
   const cardPropsListing = useCallback(
     (listing: ListingResponse, variant: 'feature' | 'side', priority: boolean) => {
@@ -206,15 +185,31 @@ export default function CirculationView() {
     [dndActive],
   )
 
+  const metaLabel = useMemo(() => {
+    if (kind === 'listings') return 'Listings'
+    if (kind === 'catalog') return 'Catalog'
+    return 'Books'
+  }, [kind])
+
   if (loading) {
     return (
       <div className={styles.page}>
         <div className={styles.pageInner}>
-          <div className={styles.row} aria-busy="true" aria-label="Loading circulation from Supabase">
-            <div className={`${styles.card} ${styles.cardSide} ${styles.skeleton}`} />
-            <div className={`${styles.card} ${styles.cardFeature} ${styles.skeleton}`} />
-            <div className={`${styles.card} ${styles.cardSide} ${styles.skeleton}`} />
-          </div>
+          <header className={styles.header}>
+            <h1 className={styles.h1}>Circulation</h1>
+            <div className={styles.sectionMeta}>
+              <span className={styles.pill}>Loading</span>
+            </div>
+          </header>
+
+          <section aria-busy="true" aria-label="Loading circulation from Supabase">
+            <div className={styles.row} role="list">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className={`${styles.card} ${styles.skeleton}`} role="listitem" aria-hidden="true" />
+              ))}
+            </div>
+          </section>
+          <div className={styles.bottomSpace} aria-hidden="true" />
         </div>
       </div>
     )
@@ -239,18 +234,20 @@ export default function CirculationView() {
     return (
       <div className={styles.page}>
         <div className={styles.pageInner}>
+          <header className={styles.header}>
+            <h1 className={styles.h1}>Circulation</h1>
+          </header>
           <p className={styles.emptyText}>
             No books in circulation yet. List a book on Exchange or check back when the catalog is seeded.
           </p>
           <button type="button" className={styles.retryBtn} onClick={() => void load()}>
             Refresh
           </button>
+          <div className={styles.bottomSpace} aria-hidden="true" />
         </div>
       </div>
     )
   }
-
-  const single = n === 1
 
   return (
     <div className={styles.page}>
@@ -260,54 +257,36 @@ export default function CirculationView() {
             Drag a card to the bottom bar: My Shelf, Wishlist, or Cart.
           </p>
         )}
-        {n > 1 && (
-          <div className={styles.carouselControls} aria-label="Browse books">
-            <button type="button" className={styles.carouselBtn} onClick={goPrev} aria-label="Previous">
-              ‹
-            </button>
-            <button type="button" className={styles.carouselBtn} onClick={goNext} aria-label="Next">
-              ›
-            </button>
+        <header className={styles.header}>
+          <h1 className={styles.h1}>Circulation</h1>
+          <div className={styles.sectionMeta} aria-label="Section filters">
+            <span className={styles.pill}>{metaLabel}</span>
+            <span className={styles.metaCount}>{n}</span>
           </div>
-        )}
-        <div className={styles.row} role="list">
-          {!single && kind === 'listings' &&
-            wrapCard(
-              <CirculationBookCard {...cardPropsListing(listings[indices.prev], 'side', false)} />,
-              `circ-drag-${listings[indices.prev].listingId}`,
-              payloadFromListing(listings[indices.prev]),
-            )}
-          {!single && kind === 'catalog' &&
-            wrapCard(
-              <CirculationBookCard {...cardPropsCatalog(books[indices.prev], 'side', false)} />,
-              `circ-drag-book-${books[indices.prev].id}-prev`,
-              payloadFromBook(books[indices.prev]),
-            )}
-          {kind === 'listings' &&
-            wrapCard(
-              <CirculationBookCard {...cardPropsListing(listings[indices.cur], 'feature', true)} />,
-              `circ-drag-${listings[indices.cur].listingId}`,
-              payloadFromListing(listings[indices.cur]),
-            )}
-          {kind === 'catalog' &&
-            wrapCard(
-              <CirculationBookCard {...cardPropsCatalog(books[indices.cur], 'feature', true)} />,
-              `circ-drag-book-${books[indices.cur].id}-cur`,
-              payloadFromBook(books[indices.cur]),
-            )}
-          {!single && kind === 'listings' &&
-            wrapCard(
-              <CirculationBookCard {...cardPropsListing(listings[indices.next], 'side', false)} />,
-              `circ-drag-${listings[indices.next].listingId}`,
-              payloadFromListing(listings[indices.next]),
-            )}
-          {!single && kind === 'catalog' &&
-            wrapCard(
-              <CirculationBookCard {...cardPropsCatalog(books[indices.next], 'side', false)} />,
-              `circ-drag-book-${books[indices.next].id}-next`,
-              payloadFromBook(books[indices.next]),
-            )}
-        </div>
+        </header>
+
+        <section aria-label="Books">
+          <div className={styles.row} role="list">
+            {kind === 'listings' &&
+              listings.map((listing, idx) =>
+                wrapCard(
+                  <CirculationBookCard {...cardPropsListing(listing, 'side', idx < 3)} />,
+                  `circ-drag-${listing.listingId}`,
+                  payloadFromListing(listing),
+                ),
+              )}
+            {kind === 'catalog' &&
+              books.map((book, idx) =>
+                wrapCard(
+                  <CirculationBookCard {...cardPropsCatalog(book, 'side', idx < 3)} />,
+                  `circ-drag-book-${book.id}`,
+                  payloadFromBook(book),
+                ),
+              )}
+          </div>
+        </section>
+
+        <div className={styles.bottomSpace} aria-hidden="true" />
       </div>
     </div>
   )
