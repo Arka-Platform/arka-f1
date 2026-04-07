@@ -169,7 +169,7 @@ export default function CirculationView() {
         ownerFirstName: o.firstName,
         ownerAvatarUrl: o.avatarUrl,
         ratingDisplay: o.ratingDisplay,
-        mediaCount: mediaCountForListing(listing),
+        trustScore: mediaCountForListing(listing),
         variant,
         priority,
       }
@@ -194,7 +194,7 @@ export default function CirculationView() {
         ownerFirstName: o.firstName,
         ownerAvatarUrl: o.avatarUrl,
         ratingDisplay: o.ratingDisplay,
-        mediaCount: mediaCountForBook(book),
+        trustScore: mediaCountForBook(book),
         variant,
         priority,
       }

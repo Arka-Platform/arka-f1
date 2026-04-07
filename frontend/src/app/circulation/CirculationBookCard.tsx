@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Flame, Camera, Star, ChevronRight } from 'lucide-react'
+import { Flame, ShieldCheck, Star, ChevronRight } from 'lucide-react'
 import type { BookResponse, ListingResponse } from '../../utils/api'
 import { buildTagPair, buildTagPairFromBook } from './circulationData'
 import styles from './circulation.module.css'
@@ -16,7 +16,7 @@ export type CirculationBookCardProps =
       ownerFirstName: string
       ownerAvatarUrl: string
       ratingDisplay: string
-      mediaCount: number
+      trustScore: number
       variant: CirculationCardVariant
       priority?: boolean
       selected?: boolean
@@ -31,7 +31,7 @@ export type CirculationBookCardProps =
       ownerFirstName: string
       ownerAvatarUrl: string
       ratingDisplay: string
-      mediaCount: number
+      trustScore: number
       variant: CirculationCardVariant
       priority?: boolean
       selected?: boolean
@@ -55,7 +55,7 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
   const cardClass = isFeature ? `${styles.card} ${styles.cardFeature}` : `${styles.card} ${styles.cardSide}`
   const tagClass = `${styles.tag} ${styles.tagLight}`
   const starSize = isFeature ? 15 : 13
-  const camSize = isFeature ? 14 : 12
+  const trustSize = isFeature ? 14 : 12
   const chevronSize = isFeature ? 18 : 16
 
   const title = props.kind === 'listing' ? props.listing.title : props.book.title
@@ -129,9 +129,9 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
           </p>
         </div>
         <div className={styles.footerMeta} onClick={(e) => e.stopPropagation()}>
-          <span className={styles.camCount} title={props.kind === 'listing' ? 'Listing photos' : 'Cover image'}>
-            <Camera size={camSize} strokeWidth={1.5} className={styles.iconMuted} aria-hidden />
-            {props.mediaCount}
+          <span className={styles.camCount} title="Trust score">
+            <ShieldCheck size={trustSize} strokeWidth={1.5} className={styles.iconMuted} aria-hidden />
+            {props.trustScore}
           </span>
           <Link href={detailHref} className={styles.listingLink} aria-label={`Open ${title}`}>
             <ChevronRight size={chevronSize} strokeWidth={1.5} className={styles.chevronRight} aria-hidden />
