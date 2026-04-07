@@ -31,27 +31,24 @@
   --font-serif: var(--font-circ-serif), 'Playfair Display', Georgia, serif;
   --font-sans: var(--font-circ-sans), 'Inter', system-ui, sans-serif;
   font-family: var(--font-sans);
-  position: relative;
-  min-height: 100vh;
-  padding: clamp(22px, 4vw, 40px) clamp(12px, 2.5vw, 32px) 28px;
-  background: #fafafa;
-  overflow-x: hidden;
+  width: 100%;
+  padding: 2.75rem 0 4rem;
+  background: transparent;
 }
 
 .pageInner {
-  position: relative;
-  z-index: 1;
-  max-width: 1200px;
+  max-width: 1120px;
   margin: 0 auto;
+  padding: 0 1.5rem;
 }
 
 .errorText,
 .emptyText {
   text-align: center;
-  color: #555;
-  font-size: 15px;
+  color: rgba(15, 23, 42, 0.72);
+  font-size: 0.95rem;
   max-width: 420px;
-  margin: 48px auto;
+  margin: 3rem auto;
   line-height: 1.5;
 }
 
@@ -60,20 +57,20 @@
   margin: 16px auto 0;
   padding: 10px 20px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: #fff;
-  color: #333;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
 }
 
 .retryBtn:hover {
-  background: #f5f2ed;
+  background: color-mix(in srgb, var(--app-text) 4%, var(--app-surface));
 }
 
 .retryBtn:focus-visible {
-  outline: 2px solid #333;
+  outline: 2px solid var(--app-text);
   outline-offset: 2px;
 }
 
@@ -91,7 +88,7 @@
   font-weight: 600;
   font-size: 22px;
   letter-spacing: -0.02em;
-  color: #111;
+  color: var(--app-text);
 }
 
 .sectionMeta {
@@ -107,9 +104,9 @@
   height: 26px;
   padding: 0 10px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fff;
-  color: #333;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text);
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
@@ -117,7 +114,7 @@
 
 .metaCount {
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.55);
+  color: rgba(15, 23, 42, 0.62);
   font-weight: 500;
 }
 
@@ -126,10 +123,10 @@
   flex-direction: row;
   align-items: flex-end; /* books sit on a baseline */
   justify-content: flex-start;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: nowrap;
   overflow-x: auto;
-  padding: 8px 4px 16px; /* room for shelf line + shadows */
+  padding: 6px 2px 14px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   position: relative;
@@ -165,24 +162,30 @@
   font-weight: 600;
   font-size: 16px;
   letter-spacing: -0.01em;
-  color: #111;
+  color: var(--app-text);
 }
 
 .genreCount {
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.55);
+  color: rgba(15, 23, 42, 0.62);
   font-weight: 600;
 }
 
 .row::after {
   content: '';
   position: absolute;
-  left: 4px;
-  right: 4px;
+  left: 2px;
+  right: 2px;
   bottom: 6px;
   height: 2px;
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.14) 12%, rgba(0, 0, 0, 0.14) 88%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--app-text) 12%, transparent) 12%,
+    color-mix(in srgb, var(--app-text) 12%, transparent) 88%,
+    transparent 100%
+  );
   pointer-events: none;
 }
 
@@ -191,8 +194,8 @@
   .row {
     scroll-snap-type: x mandatory;
     scroll-padding-left: 16px;
-    padding-left: 16px;
-    padding-right: 24px; /* lets next card peek */
+    padding-left: 12px;
+    padding-right: 18px; /* lets next card peek */
     gap: 14px;
   }
 }
@@ -203,11 +206,11 @@
   display: flex;
   flex-direction: column;
   border-radius: 28px;
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
   overflow: hidden;
   position: relative;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--component-shadow, 0 10px 26px rgba(0, 0, 0, 0.08));
   transition: box-shadow 140ms ease, border-color 140ms ease;
 }
 
@@ -244,7 +247,7 @@
   right: 10px;
   bottom: -10px;
   height: 14px;
-  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.22), transparent 70%);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--app-text) 18%, transparent), transparent 70%);
   filter: blur(0.2px);
   pointer-events: none;
   z-index: -1;
@@ -256,12 +259,12 @@
 }
 
 .cardActive {
-  border-color: rgba(17, 17, 17, 0.32);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.12);
+  border-color: color-mix(in srgb, var(--app-text) 22%, var(--app-border));
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.12);
 }
 
 .cardActive::after {
-  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.26), transparent 70%);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--app-text) 22%, transparent), transparent 70%);
 }
 
 .cardPassed {
@@ -557,8 +560,8 @@
   gap: 14px;
   padding: 12px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fff;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
 }
 
 .detailText {
@@ -569,7 +572,7 @@
   font-family: var(--font-serif);
   font-weight: 600;
   font-size: 14px;
-  color: #111;
+  color: var(--app-text);
   letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
@@ -581,7 +584,7 @@
   font-family: var(--font-serif);
   font-weight: 400;
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.62);
+  color: rgba(15, 23, 42, 0.62);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -600,16 +603,16 @@
   height: 32px;
   padding: 0 12px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--app-border);
   text-decoration: none;
-  color: #111;
+  color: var(--app-text);
   font-size: 13px;
   font-weight: 500;
-  background: #fff;
+  background: var(--app-surface);
 }
 
 .detailLink:focus-visible {
-  outline: 2px solid #111;
+  outline: 2px solid var(--app-text);
   outline-offset: 2px;
 }
 
@@ -619,16 +622,16 @@
   height: 32px;
   padding: 0 12px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: #fff;
-  color: rgba(0, 0, 0, 0.7);
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: rgba(15, 23, 42, 0.72);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
 }
 
 .detailClose:focus-visible {
-  outline: 2px solid #111;
+  outline: 2px solid var(--app-text);
   outline-offset: 2px;
 }
 
