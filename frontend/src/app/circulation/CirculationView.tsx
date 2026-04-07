@@ -23,9 +23,27 @@ type SelectedKey =
   | { kind: 'catalog'; id: string }
   | null
 
-function normalizeGenre(g: string | null | undefined): string {
-  const v = (g ?? '').trim()
-  return v.length ? v : 'Uncategorized'
+function normalizeLabel(v: string | null | undefined): string | null {
+  const s = (v ?? '').trim()
+  return s.length ? s : null
+}
+
+function sectionLabelForListing(l: ListingResponse): string {
+  return (
+    normalizeLabel(l.genre) ??
+    normalizeLabel(l.category) ??
+    normalizeLabel(l.subcategory) ??
+    'Uncategorized'
+  )
+}
+
+function sectionLabelForBook(b: BookResponse): string {
+  return (
+    normalizeLabel(b.genre) ??
+    normalizeLabel(b.category) ??
+    normalizeLabel(b.subcategory) ??
+    'Uncategorized'
+  )
 }
 
 function payloadFromListing(l: ListingResponse): CirculationDragPayload {
@@ -51,7 +69,7 @@ function payloadFromBook(b: BookResponse): CirculationDragPayload {
 export default function CirculationView() {
   const { user } = useAuth()
   const { success, error: showError, showToastWithAction } = useToast()
-  const { addToCart } = useCart()
+  const { addToCart, removeFromCart } = useCart()
   const registerDrop = useCirculationDndRegistration()
   const setActivePayload = useCirculationActivePayload()
   const { registerPassHandler } = useCirculationQuickActions()
@@ -114,10 +132,28 @@ export default function CirculationView() {
         if (target === 'wishlist') {
           await wishlistApi.addToWishlist(user.id, payload.bookId)
           window.dispatchEvent(new Event('wishlistUpdated'))
-          success('Added to wishlist')
+          showToastWithAction(
+            'Added to wishlist',
+            'success',
+            'Undo',
+            () => {
+              void wishlistApi.removeFromWishlist(user.id!, payload.bookId).finally(() => {
+                window.dispatchEvent(new Event('wishlistUpdated'))
+              })
+            },
+            4500,
+          )
         } else if (target === 'shelf') {
           await bookshelfApi.addToBookshelf(user.id, payload.bookId)
-          success('Added to My Shelf')
+          showToastWithAction(
+            'Added to My Shelf',
+            'success',
+            'Undo',
+            () => {
+              void bookshelfApi.removeFromBookshelf(user.id!, payload.bookId)
+            },
+            4500,
+          )
         } else {
           addToCart({
             id: payload.bookId,
@@ -129,13 +165,21 @@ export default function CirculationView() {
             thumbnail: payload.imageUrl ?? undefined,
             genre: '',
           })
-          success('Added to cart')
+          showToastWithAction(
+            'Picked',
+            'success',
+            'Undo',
+            () => {
+              removeFromCart(payload.bookId)
+            },
+            4500,
+          )
         }
       } catch (e) {
         showError(e instanceof Error ? e.message : 'Could not add book')
       }
     },
-    [user?.id, addToCart, success, showError],
+    [user?.id, addToCart, removeFromCart, showError, showToastWithAction],
   )
 
   useEffect(() => {
@@ -149,25 +193,28 @@ export default function CirculationView() {
     if (kind === 'listings') {
       const map = new Map<string, ListingResponse[]>()
       for (const l of listings) {
-        const g = normalizeGenre(l.genre)
-        const arr = map.get(g)
+        const label = sectionLabelForListing(l)
+        const arr = map.get(label)
         if (arr) arr.push(l)
-        else map.set(g, [l])
+        else map.set(label, [l])
       }
-      const out = Array.from(map.entries()).map(([genre, items]) => ({ key: `genre:${genre}`, genre, items }))
+      const out = Array.from(map.entries()).map(([label, items]) => ({ key: `genre:${label}`, label, items }))
       out.sort((a, b) => a.genre.localeCompare(b.genre))
-      return { kind: 'listings' as const, rows: out }
+      return {
+        kind: 'listings' as const,
+        rows: out.map((r) => ({ ...r, label: r.label })),
+      }
     }
     if (kind === 'catalog') {
       const map = new Map<string, BookResponse[]>()
       for (const b of books) {
-        const g = normalizeGenre(b.genre)
-        const arr = map.get(g)
+        const label = sectionLabelForBook(b)
+        const arr = map.get(label)
         if (arr) arr.push(b)
-        else map.set(g, [b])
+        else map.set(label, [b])
       }
-      const out = Array.from(map.entries()).map(([genre, items]) => ({ key: `genre:${genre}`, genre, items }))
-      out.sort((a, b) => a.genre.localeCompare(b.genre))
+      const out = Array.from(map.entries()).map(([label, items]) => ({ key: `genre:${label}`, label, items }))
+      out.sort((a, b) => a.label.localeCompare(b.label))
       return { kind: 'catalog' as const, rows: out }
     }
     return { kind: null as const, rows: [] as any[] }
@@ -455,16 +502,16 @@ export default function CirculationView() {
 
         <section aria-label="Books" className={styles.genreSections}>
           {sections.rows.map((row: any) => (
-            <section key={row.key} className={styles.genreSection} aria-label={row.genre}>
+            <section key={row.key} className={styles.genreSection} aria-label={row.label}>
               <div className={styles.genreHeader}>
-                <h2 className={styles.genreTitle}>{row.genre}</h2>
+                <h2 className={styles.genreTitle}>{row.label}</h2>
                 <div className={styles.genreCount}>{row.items.length}</div>
               </div>
               <div
                 ref={(el) => {
                   rowRefs.current[row.key] = el
                 }}
-                className={styles.row}
+                className={`${styles.row} ${styles.netflixRow}`.trim()}
                 role="list"
                 onScroll={() => {
                   if (!isMobile) return

@@ -8,7 +8,7 @@ import Link from 'next/link'
 
 const Bookshelf: React.FC = () => {
   const { user } = useAuth()
-  const { success, error: showError } = useToast()
+  const { success, error: showError, showToastWithAction } = useToast()
   const [bookshelf, setBookshelf] = useState<BookshelfItemResponse[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -36,14 +36,24 @@ const Bookshelf: React.FC = () => {
 
   const handleRemoveFromBookshelf = async (bookId: string) => {
     if (!user?.id) return
-    if (!confirm('Are you sure you want to remove this book from your bookshelf?')) {
-      return
-    }
+    const removed = bookshelf.find((b) => b.bookId === bookId) ?? null
+    setBookshelf((prev) => prev.filter((b) => b.bookId !== bookId))
     try {
       await bookshelfApi.removeFromBookshelf(user.id, bookId)
-      success('Book removed from bookshelf!')
-      loadBookshelf()
+      showToastWithAction(
+        'Removed from My Bookshelf',
+        'info',
+        'Undo',
+        () => {
+          if (!user?.id || !removed) return
+          // best-effort restore; then resync
+          void bookshelfApi.addToBookshelf(user.id, removed.bookId).finally(() => void loadBookshelf())
+        },
+        4500,
+      )
     } catch (err: any) {
+      // Revert local removal on failure
+      if (removed) setBookshelf((prev) => [removed, ...prev])
       showError(err.message || 'Failed to remove book from bookshelf')
     }
   }
@@ -61,28 +71,31 @@ const Bookshelf: React.FC = () => {
 
   return (
     <div className={styles.bookshelf}>
-      <h1 className={styles.pageTitle}>My Bookshelf</h1>
-      <p className={styles.pageDescription}>
-        Books you own and have at home
-      </p>
+      <div className={styles.container}>
+        <h1 className={styles.pageTitle}>My Bookshelf</h1>
+        <p className={styles.pageDescription}>Books you own and have at home</p>
+      </div>
       {loading ? (
         <p className={styles.loading}>Loading bookshelf...</p>
       ) : bookshelf.length === 0 ? (
-        <div className={styles.empty}>
-          <div className={styles.emptyIcon}>
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            </svg>
+        <div className={styles.container}>
+          <div className={styles.empty}>
+            <div className={styles.emptyIcon}>
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              </svg>
+            </div>
+            <p>Your bookshelf is empty. Start adding books you own!</p>
+            <Link href="/exchange" className={styles.browseButton}>
+              Browse books
+            </Link>
           </div>
-          <p>Your bookshelf is empty. Start adding books you own!</p>
-          <Link href="/exchange" className={styles.browseButton}>Browse books</Link>
         </div>
       ) : (
-        <BookshelfByGenre
-          items={bookshelf}
-          onRemove={(bookId) => void handleRemoveFromBookshelf(bookId)}
-        />
+        <div className={styles.container}>
+          <BookshelfByGenre items={bookshelf} onRemove={(bookId) => void handleRemoveFromBookshelf(bookId)} />
+        </div>
       )}
     </div>
   )
