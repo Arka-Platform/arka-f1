@@ -1,5 +1,4 @@
 import Image from 'next/image'
-import Link from 'next/link'
 import type { BookResponse, ListingResponse } from '../../utils/api'
 import { buildTagPair, buildTagPairFromBook } from './circulationData'
 import styles from './circulation.module.css'
@@ -18,6 +17,8 @@ export type CirculationBookCardProps =
       mediaCount: number
       variant: CirculationCardVariant
       priority?: boolean
+      selected?: boolean
+      onSelect?: () => void
     }
   | {
       kind: 'catalog'
@@ -30,6 +31,8 @@ export type CirculationBookCardProps =
       mediaCount: number
       variant: CirculationCardVariant
       priority?: boolean
+      selected?: boolean
+      onSelect?: () => void
     }
 
 const PLACEHOLDER =
@@ -39,6 +42,8 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
   const {
     variant,
     priority,
+    selected,
+    onSelect,
   } = props
 
   const title = props.kind === 'listing' ? props.listing.title : props.book.title
@@ -49,14 +54,15 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
       : props.book.imageUrl || props.book.thumbnailUrl || PLACEHOLDER
   const useUnoptimized = coverSrc.startsWith('http') && !coverSrc.includes('localhost')
   const [tagA] = props.kind === 'listing' ? buildTagPair(props.listing) : buildTagPairFromBook(props.book)
-  const detailHref =
-    props.kind === 'listing'
-      ? `/three/listings/${props.listing.listingId}`
-      : `/exchange?search=${encodeURIComponent(props.book.title)}`
 
   return (
-    <article className={styles.card} role="listitem" data-variant={variant}>
-      <Link href={detailHref} className={styles.cardLink} aria-label={`Open ${title}`}>
+    <article
+      className={`${styles.card} ${selected ? styles.cardSelected : ''}`.trim()}
+      role="listitem"
+      data-variant={variant}
+      data-circ-card="true"
+    >
+      <button type="button" className={styles.cardBtn} onClick={onSelect} aria-pressed={selected} aria-label={title}>
         <div className={styles.imageWrap}>
           <Image
             src={coverSrc}
@@ -67,6 +73,9 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
             priority={priority}
             unoptimized={useUnoptimized}
           />
+          <div className={styles.hoverOverlay} aria-hidden="true">
+            <div className={styles.hoverTitle}>{title}</div>
+          </div>
         </div>
 
         <div className={styles.cardText}>
@@ -76,7 +85,7 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
             {tagA}
           </p>
         </div>
-      </Link>
+      </button>
     </article>
   )
 }
