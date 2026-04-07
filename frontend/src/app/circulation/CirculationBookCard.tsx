@@ -1,4 +1,6 @@
 import Image from 'next/image'
+import Link from 'next/link'
+import { Flame, Camera, Star, ChevronRight } from 'lucide-react'
 import type { BookResponse, ListingResponse } from '../../utils/api'
 import { buildTagPair, buildTagPairFromBook } from './circulationData'
 import styles from './circulation.module.css'
@@ -19,6 +21,7 @@ export type CirculationBookCardProps =
       priority?: boolean
       selected?: boolean
       onSelect?: () => void
+      passed?: boolean
     }
   | {
       kind: 'catalog'
@@ -33,6 +36,7 @@ export type CirculationBookCardProps =
       priority?: boolean
       selected?: boolean
       onSelect?: () => void
+      passed?: boolean
     }
 
 const PLACEHOLDER =
@@ -44,7 +48,15 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
     priority,
     selected,
     onSelect,
+    passed,
   } = props
+
+  const isFeature = variant === 'feature'
+  const cardClass = isFeature ? `${styles.card} ${styles.cardFeature}` : `${styles.card} ${styles.cardSide}`
+  const tagClass = `${styles.tag} ${styles.tagLight}`
+  const starSize = isFeature ? 15 : 13
+  const camSize = isFeature ? 14 : 12
+  const chevronSize = isFeature ? 18 : 16
 
   const title = props.kind === 'listing' ? props.listing.title : props.book.title
   const author = props.kind === 'listing' ? props.listing.author : props.book.author
@@ -53,39 +65,79 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
       ? props.listing.coverUrl?.trim() || PLACEHOLDER
       : props.book.imageUrl || props.book.thumbnailUrl || PLACEHOLDER
   const useUnoptimized = coverSrc.startsWith('http') && !coverSrc.includes('localhost')
-  const [tagA] = props.kind === 'listing' ? buildTagPair(props.listing) : buildTagPairFromBook(props.book)
+  const [tagA, tagB] = props.kind === 'listing' ? buildTagPair(props.listing) : buildTagPairFromBook(props.book)
+  const detailHref =
+    props.kind === 'listing'
+      ? `/three/listings/${props.listing.listingId}`
+      : `/exchange?search=${encodeURIComponent(props.book.title)}`
 
   return (
     <article
-      className={`${styles.card} ${selected ? styles.cardSelected : ''}`.trim()}
+      className={`${cardClass} ${selected ? styles.cardSelected : ''} ${passed ? styles.cardPassed : ''}`.trim()}
       role="listitem"
       data-variant={variant}
       data-circ-card="true"
+      onClick={onSelect}
     >
-      <button type="button" className={styles.cardBtn} onClick={onSelect} aria-pressed={selected} aria-label={title}>
-        <div className={styles.imageWrap}>
-          <Image
-            src={coverSrc}
-            alt={`${title} by ${author}`}
-            fill
-            className={styles.imageFill}
-            sizes="160px"
-            priority={priority}
-            unoptimized={useUnoptimized}
-          />
-          <div className={styles.hoverOverlay} aria-hidden="true">
-            <div className={styles.hoverTitle}>{title}</div>
-          </div>
-        </div>
+      <div className={styles.requestsRow}>
+        <Flame size={isFeature ? 15 : 13} strokeWidth={1.75} className={styles.flameIcon} fill="currentColor" aria-hidden />
+        <span>
+          {props.requestCount} {props.requestCount === 1 ? 'request' : 'requests'}
+        </span>
+      </div>
 
-        <div className={styles.cardText}>
-          <h2 className={styles.titleSerif}>{title}</h2>
-          <p className={styles.author}>{author}</p>
-          <p className={styles.microTag} aria-hidden="true">
-            {tagA}
+      <div className={styles.imageWrap}>
+        <Image
+          src={coverSrc}
+          alt={`${title} by ${author}`}
+          fill
+          className={styles.imageFill}
+          sizes={isFeature ? '340px' : '280px'}
+          priority={priority}
+          unoptimized={useUnoptimized}
+        />
+      </div>
+
+      <h2 className={styles.titleSerif}>{title}</h2>
+      <p className={styles.author}>{author}</p>
+
+      <div className={styles.tags}>
+        <span className={tagClass}>{tagA}</span>
+        <span className={tagClass}>{tagB}</span>
+      </div>
+
+      <div className={styles.starRow}>
+        <Star size={starSize} strokeWidth={1.5} className={styles.starIcon} fill="currentColor" aria-hidden />
+        <span>{props.ratingDisplay}</span>
+        <span className={styles.circulations}>
+          {props.circulationCount} {props.circulationCount === 1 ? 'circulation' : 'circulations'}
+        </span>
+      </div>
+
+      <div className={styles.footerRow}>
+        <div className={styles.footerLeft}>
+          <Image
+            src={props.ownerAvatarUrl}
+            alt=""
+            width={isFeature ? 36 : 32}
+            height={isFeature ? 36 : 32}
+            className={styles.avatar}
+            unoptimized
+          />
+          <p className={styles.offeredStrong}>
+            Offered by <strong>{props.ownerFirstName}</strong>
           </p>
         </div>
-      </button>
+        <div className={styles.footerMeta} onClick={(e) => e.stopPropagation()}>
+          <span className={styles.camCount} title={props.kind === 'listing' ? 'Listing photos' : 'Cover image'}>
+            <Camera size={camSize} strokeWidth={1.5} className={styles.iconMuted} aria-hidden />
+            {props.mediaCount}
+          </span>
+          <Link href={detailHref} className={styles.listingLink} aria-label={`Open ${title}`}>
+            <ChevronRight size={chevronSize} strokeWidth={1.5} className={styles.chevronRight} aria-hidden />
+          </Link>
+        </div>
+      </div>
     </article>
   )
 }

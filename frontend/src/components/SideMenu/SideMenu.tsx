@@ -8,6 +8,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { wishlistApi } from '../../utils/api'
+import { useCirculationQuickActions } from '../Layout/CirculationDndContext'
 import styles from './SideMenu.module.css'
 
 type MenuItem = {
@@ -63,6 +64,7 @@ export default function SideMenu() {
   const pathname = usePathname()
   const { user } = useAuth()
   const { getItemCount } = useCart()
+  const { triggerDrop, triggerPass, getActivePayload } = useCirculationQuickActions()
   const [expanded, setExpanded] = useState(true)
   const [wishlistCount, setWishlistCount] = useState(0)
   const isMobile = useMediaQuery('(max-width: 767px)')
@@ -150,8 +152,63 @@ export default function SideMenu() {
     [],
   )
 
-  const bottomItems: MenuItem[] = useMemo(
-    () => [
+  const bottomItems: MenuItem[] = useMemo(() => {
+    if (isCirculationRoute && isMobile) {
+      return [
+        {
+          id: 'shelf',
+          label: 'MyShelf',
+          href: '/bookshelf',
+          icon: (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+          ),
+        },
+        {
+          id: 'pass',
+          label: 'Pass',
+          href: '/circulation',
+          icon: (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18" />
+              <path d="M6 6l12 12" />
+            </svg>
+          ),
+        },
+        {
+          id: 'pick',
+          label: 'Pick',
+          href: '/cart',
+          badge: cartCount > 0 ? cartCount : undefined,
+          icon: (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+          ),
+        },
+        {
+          id: 'wishlist',
+          label: 'Wishlist',
+          href: '/wishlist',
+          badge: wishlistCount > 0 ? wishlistCount : undefined,
+          icon: (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
+            </svg>
+          ),
+        },
+        {
+          id: 'clubProfile',
+          label: 'Profile',
+          href: '/account',
+          icon: <span className={styles.profileCircle}>{profileAvatar}</span>,
+        },
+      ]
+    }
+
+    return [
       {
         id: 'shelf',
         label: 'My Shelf',
@@ -191,9 +248,8 @@ export default function SideMenu() {
         href: '/account',
         icon: <span className={styles.profileCircle}>{profileAvatar}</span>,
       },
-    ],
-    [cartCount, profileAvatar, wishlistCount],
-  )
+    ]
+  }, [cartCount, profileAvatar, wishlistCount, isCirculationRoute, isMobile])
 
   const renderTopLink = (item: MenuItem, variant: 'desktop' | 'mobile') => {
     const hrefPath = item.href.split('?')[0]
@@ -223,14 +279,14 @@ export default function SideMenu() {
   const renderBottomLink = (item: MenuItem, variant: 'desktop' | 'mobile') => {
     const hrefPath = item.href.split('?')[0]
     const active = pathname === hrefPath || pathname.startsWith(hrefPath + '/')
-    const dropId = DROP_IDS[item.id]
+    const dropId = DROP_IDS[item.id] ?? undefined
     const linkClass =
       variant === 'mobile'
         ? `${styles.mobileNavItem} ${active ? styles.mobileNavItemActive : ''}`
         : `${styles.menuItem} ${active ? styles.menuItemActive : ''}`
 
-    const link = (
-      <Link href={item.href} className={linkClass}>
+    const content = (
+      <>
         <span className={styles.menuIcon} aria-hidden>
           {item.icon}
           {typeof item.badge === 'number' && item.badge > 0 ? (
@@ -243,6 +299,39 @@ export default function SideMenu() {
           ) : null}
         </span>
         <span className={styles.menuLabel}>{item.label}</span>
+      </>
+    )
+
+    const isCirculationMobileActions = variant === 'mobile' && isCirculationRoute && isMobile && !!user
+
+    const maybeActionButton =
+      isCirculationMobileActions && (item.id === 'shelf' || item.id === 'wishlist' || item.id === 'pick' || item.id === 'pass')
+        ? (
+            <button
+              type="button"
+              className={linkClass}
+              onClick={(e) => {
+                e.preventDefault()
+                const payload = getActivePayload()
+                if (!payload?.bookId && item.id !== 'pass') return
+                if (item.id === 'pass') {
+                  triggerPass()
+                  return
+                }
+                if (item.id === 'shelf') triggerDrop('shelf')
+                else if (item.id === 'wishlist') triggerDrop('wishlist')
+                else if (item.id === 'pick') triggerDrop('cart')
+              }}
+              aria-label={item.label}
+            >
+              {content}
+            </button>
+          )
+        : null
+
+    const link = maybeActionButton ?? (
+      <Link href={item.href} className={linkClass}>
+        {content}
       </Link>
     )
 

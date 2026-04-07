@@ -357,6 +357,12 @@
   min-height: 48px;
 }
 
+button.mobileNavItem {
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
 .mobileNavItem .menuIcon {
   width: var(--icon-box);
   height: var(--icon-box);

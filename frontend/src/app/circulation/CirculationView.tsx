@@ -9,7 +9,7 @@ import { useCart } from '../../contexts/CartContext'
 import { useToast } from '../../contexts/ToastContext'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import type { CirculationDragPayload } from '../../components/Layout/CirculationDndContext'
-import { useCirculationDndRegistration } from '../../components/Layout/CirculationDndContext'
+import { useCirculationActivePayload, useCirculationDndRegistration, useCirculationQuickActions } from '../../components/Layout/CirculationDndContext'
 import CirculationBookCard from './CirculationBookCard'
 import { CirculationDraggableWrap } from './CirculationDraggableWrap'
 import { loadCirculationFromSupabase, ownerKeyForBook, type CirculationOwner } from './loadCirculationData'
@@ -48,6 +48,8 @@ export default function CirculationView() {
   const { success, error: showError } = useToast()
   const { addToCart } = useCart()
   const registerDrop = useCirculationDndRegistration()
+  const setActivePayload = useCirculationActivePayload()
+  const { registerPassHandler } = useCirculationQuickActions()
   const isMobile = useMediaQuery('(max-width: 767px)')
   const dndActive = isMobile && !!user
   const rowRef = useRef<HTMLDivElement | null>(null)
@@ -61,6 +63,7 @@ export default function CirculationView() {
   const [owners, setOwners] = useState<Record<string, CirculationOwner>>({})
   const [selected, setSelected] = useState<SelectedKey>(null)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [passedIds, setPassedIds] = useState<Set<string>>(() => new Set())
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -82,6 +85,7 @@ export default function CirculationView() {
       }
       setSelected(null)
       setActiveIndex(0)
+      setPassedIds(new Set())
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load from Supabase')
     } finally {
@@ -133,6 +137,20 @@ export default function CirculationView() {
   }, [registerDrop, handleDrop])
 
   const n = kind === 'listings' ? listings.length : kind === 'catalog' ? books.length : 0
+
+  const activePayload = useMemo(() => {
+    if (n <= 0 || kind === null) return null
+    if (kind === 'listings') {
+      const l = listings[activeIndex]
+      return l ? payloadFromListing(l) : null
+    }
+    const b = books[activeIndex]
+    return b ? payloadFromBook(b) : null
+  }, [n, kind, listings, books, activeIndex])
+
+  useEffect(() => {
+    setActivePayload(activePayload)
+  }, [activePayload, setActivePayload])
 
   const cardPropsListing = useCallback(
     (listing: ListingResponse, variant: 'feature' | 'side', priority: boolean) => {
@@ -255,6 +273,37 @@ export default function CirculationView() {
     setActiveIndex(bestIdx)
   }, [])
 
+  const advanceToIndex = useCallback(
+    (idx: number) => {
+      const row = rowRef.current
+      if (!row) return
+      const cards = row.querySelectorAll<HTMLElement>(`[data-circ-card='true']`)
+      const el = cards[idx]
+      if (!el) return
+      el.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
+    },
+    [],
+  )
+
+  const handlePass = useCallback(() => {
+    if (!kind || n <= 0) return
+    const id = kind === 'listings' ? listings[activeIndex]?.listingId : books[activeIndex]?.id
+    if (id) {
+      setPassedIds((prev) => new Set(prev).add(id))
+    }
+    const next = Math.min(activeIndex + 1, n - 1)
+    if (next !== activeIndex) {
+      setActiveIndex(next)
+      advanceToIndex(next)
+    }
+    success('Passed')
+  }, [kind, n, listings, books, activeIndex, advanceToIndex, success])
+
+  useEffect(() => {
+    registerPassHandler(() => handlePass())
+    return () => registerPassHandler(null)
+  }, [registerPassHandler, handlePass])
+
   useEffect(() => {
     if (!isMobile) return
     updateActiveFromScroll()
@@ -352,6 +401,7 @@ export default function CirculationView() {
                     {...cardPropsListing(listing, 'side', idx < 3)}
                     selected={selected?.kind === 'listing' && selected.id === listing.listingId}
                     onSelect={() => handleSelect({ kind: 'listing', id: listing.listingId })}
+                    passed={passedIds.has(listing.listingId)}
                   />,
                   `circ-drag-${listing.listingId}`,
                   payloadFromListing(listing),
@@ -364,6 +414,7 @@ export default function CirculationView() {
                     {...cardPropsCatalog(book, 'side', idx < 3)}
                     selected={selected?.kind === 'catalog' && selected.id === book.id}
                     onSelect={() => handleSelect({ kind: 'catalog', id: book.id })}
+                    passed={passedIds.has(book.id)}
                   />,
                   `circ-drag-book-${book.id}`,
                   payloadFromBook(book),
