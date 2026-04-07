@@ -6,7 +6,8 @@
 
 /* Global book-card width: fluid between readable min and cap (no fixed breakpoints). */
 :root {
-  --book-card-w: max(11rem, min(calc(100vw - 4.5rem), 21rem));
+  /* Smaller tiles → more visible in carousels, still readable */
+  --book-card-w: max(10rem, min(calc(100vw - 5rem), 18rem));
 }
 
 .layout-body {

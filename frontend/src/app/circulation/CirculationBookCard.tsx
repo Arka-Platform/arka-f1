@@ -97,7 +97,7 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
           alt={`${title} by ${author}`}
           fill
           className={styles.imageFill}
-          sizes="(max-width: 767px) min(calc(100vw - 4.5rem), 21rem), min(30vw, 21rem)"
+          sizes="(max-width: 767px) min(calc(100vw - 5rem), 18rem), min(24vw, 18rem)"
           priority={priority}
           unoptimized={useUnoptimized}
         />
