@@ -8,7 +8,7 @@ import Link from 'next/link'
 
 const Bookshelf: React.FC = () => {
   const { user } = useAuth()
-  const { success, error: showError, showToastWithAction } = useToast()
+  const { error: showError, showToastWithAction } = useToast()
   const [bookshelf, setBookshelf] = useState<BookshelfItemResponse[]>([])
   const [loading, setLoading] = useState(true)
 

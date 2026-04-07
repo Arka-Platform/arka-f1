@@ -68,7 +68,7 @@ function payloadFromBook(b: BookResponse): CirculationDragPayload {
 
 export default function CirculationView() {
   const { user } = useAuth()
-  const { success, error: showError, showToastWithAction } = useToast()
+  const { error: showError, showToastWithAction } = useToast()
   const { addToCart, removeFromCart } = useCart()
   const registerDrop = useCirculationDndRegistration()
   const setActivePayload = useCirculationActivePayload()
@@ -199,7 +199,7 @@ export default function CirculationView() {
         else map.set(label, [l])
       }
       const out = Array.from(map.entries()).map(([label, items]) => ({ key: `genre:${label}`, label, items }))
-      out.sort((a, b) => a.genre.localeCompare(b.genre))
+      out.sort((a, b) => a.label.localeCompare(b.label))
       return {
         kind: 'listings' as const,
         rows: out.map((r) => ({ ...r, label: r.label })),
@@ -217,7 +217,7 @@ export default function CirculationView() {
       out.sort((a, b) => a.label.localeCompare(b.label))
       return { kind: 'catalog' as const, rows: out }
     }
-    return { kind: null as const, rows: [] as any[] }
+    return { kind: null, rows: [] as any[] }
   }, [kind, listings, books])
 
   const activePayload = useMemo(() => {
