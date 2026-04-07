@@ -247,6 +247,7 @@
 .cardFeature,
 .cardSide {
   width: var(--book-card-w);
+  height: var(--book-card-h);
   padding: 16px 16px 18px;
   box-shadow: var(--component-shadow, 0 10px 26px rgba(0, 0, 0, 0.08));
 }
@@ -262,6 +263,7 @@
   .cardFeature,
   .cardSide {
     width: var(--book-card-w-mobile);
+    height: var(--book-card-h-mobile);
   }
 }
 

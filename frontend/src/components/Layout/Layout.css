@@ -8,6 +8,8 @@
 :root {
   --book-card-w: 280px;
   --book-card-w-mobile: 200px;
+  --book-card-h: 620px;
+  --book-card-h-mobile: 520px;
 }
 
 .layout-body {
