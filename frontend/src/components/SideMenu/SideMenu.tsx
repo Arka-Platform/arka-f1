@@ -342,15 +342,15 @@ export default function SideMenu() {
             ))}
           </nav>
         </div>
-
-        {user ? (
-          <Link href={addBookHref} className={styles.addBookFab} aria-label="Add a book" title="Add a book">
-            <span aria-hidden className={styles.addBookFabPlus}>
-              +
-            </span>
-          </Link>
-        ) : null}
       </div>
+
+      {user ? (
+        <Link href={addBookHref} className={styles.addBookFab} aria-label="Add a book" title="Add a book">
+          <span aria-hidden className={styles.addBookFabPlus}>
+            +
+          </span>
+        </Link>
+      ) : null}
 
       <aside
         className={`${styles.sidebar} ${expanded ? styles.sidebarExpanded : styles.sidebarCollapsed}`}
