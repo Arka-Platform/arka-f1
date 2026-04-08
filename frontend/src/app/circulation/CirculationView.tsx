@@ -13,6 +13,7 @@ import { useCirculationActivePayload, useCirculationDndRegistration, useCirculat
 import Input from '../../components/shared/Input/Input'
 import Select from '../../components/shared/Select/Select'
 import Button from '../../components/shared/Button/Button'
+import BookSearchInput from '../../components/shared/BookSearchInput/BookSearchInput'
 import CirculationBookCard from './CirculationBookCard'
 import { CirculationDraggableWrap } from './CirculationDraggableWrap'
 import { loadCirculationFromSupabase, ownerKeyForBook, type CirculationOwner } from './loadCirculationData'
@@ -97,7 +98,6 @@ export default function CirculationView() {
   const [query, setQuery] = useState<string>('')
   const [genreFilter, setGenreFilter] = useState<string>('')
   const [sortKey, setSortKey] = useState<SortKey>('recommended')
-  const [hidePassed, setHidePassed] = useState<boolean>(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -211,7 +211,6 @@ export default function CirculationView() {
     if (kind !== 'listings') return []
     const q = query.trim().toLowerCase()
     return listings
-      .filter((l) => (hidePassed ? !passedIds.has(l.listingId) : true))
       .filter((l) => (genreFilter ? sectionLabelForListing(l) === genreFilter : true))
       .filter((l) => {
         if (!q) return true
@@ -230,13 +229,12 @@ export default function CirculationView() {
         }
         return 0
       })
-  }, [kind, listings, query, genreFilter, sortKey, hidePassed, passedIds, counts])
+  }, [kind, listings, query, genreFilter, sortKey, counts])
 
   const filteredBooks = useMemo(() => {
     if (kind !== 'catalog') return []
     const q = query.trim().toLowerCase()
     return books
-      .filter((b) => (hidePassed ? !passedIds.has(b.id) : true))
       .filter((b) => (genreFilter ? sectionLabelForBook(b) === genreFilter : true))
       .filter((b) => {
         if (!q) return true
@@ -250,7 +248,7 @@ export default function CirculationView() {
         if (sortKey === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         return 0
       })
-  }, [kind, books, query, genreFilter, sortKey, hidePassed, passedIds])
+  }, [kind, books, query, genreFilter, sortKey])
 
   const n = kind === 'listings' ? filteredListings.length : kind === 'catalog' ? filteredBooks.length : 0
 
@@ -378,7 +376,6 @@ export default function CirculationView() {
     setQuery('')
     setGenreFilter('')
     setSortKey('recommended')
-    setHidePassed(false)
   }, [])
 
   const selectedDetail = useMemo(() => {
@@ -586,6 +583,27 @@ export default function CirculationView() {
     return (
       <div className={styles.page}>
         <div className={styles.pageInner}>
+          <div className={styles.heroSection} aria-label="Search books">
+            <div className={styles.heroContent}>
+              <div className={styles.heroHeader}>
+                <h2 className={styles.heroTitle}>Pick your next read</h2>
+                <p className={styles.heroSubtitle}>Search any title and explore what’s circulating right now.</p>
+              </div>
+              <div className={styles.heroSearchBar}>
+                <BookSearchInput
+                  value={query}
+                  onChange={setQuery}
+                  onBookSelect={(book) => {
+                    if (book.genre) setGenreFilter(book.genre)
+                    setQuery(book.title)
+                  }}
+                  placeholder="Search by title, author, ISBN…"
+                  fullWidth
+                />
+              </div>
+            </div>
+          </div>
+
           <header className={styles.header}>
             <div className={styles.headerLeft}>
               <h1 className={styles.h1}>Circulation</h1>
@@ -623,15 +641,10 @@ export default function CirculationView() {
               </Select>
 
               <div className={styles.filtersActions}>
-                <label className={styles.hidePassed}>
-                  <input type="checkbox" checked={hidePassed} onChange={(e) => setHidePassed(e.target.checked)} />
-                  Hide passed
-                </label>
-
                 <Button
                   variant="outline"
                   onClick={clearFilters}
-                  disabled={!query && !genreFilter && sortKey === 'recommended' && !hidePassed}
+                  disabled={!query && !genreFilter && sortKey === 'recommended'}
                   className={styles.clearButton}
                 >
                   Clear
@@ -654,6 +667,27 @@ export default function CirculationView() {
   return (
     <div className={styles.page}>
       <div className={styles.pageInner}>
+        <div className={styles.heroSection} aria-label="Search books">
+          <div className={styles.heroContent}>
+            <div className={styles.heroHeader}>
+              <h2 className={styles.heroTitle}>Pick your next read</h2>
+              <p className={styles.heroSubtitle}>Search any title and explore what’s circulating right now.</p>
+            </div>
+            <div className={styles.heroSearchBar}>
+              <BookSearchInput
+                value={query}
+                onChange={setQuery}
+                onBookSelect={(book) => {
+                  if (book.genre) setGenreFilter(book.genre)
+                  setQuery(book.title)
+                }}
+                placeholder="Search by title, author, ISBN…"
+                fullWidth
+              />
+            </div>
+          </div>
+        </div>
+
         {dndActive && (
           <p className={styles.dndHint} role="note">
             Drag a card to the bottom bar: My Shelf, Wishlist, or Cart.
@@ -701,15 +735,10 @@ export default function CirculationView() {
             </Select>
 
             <div className={styles.filtersActions}>
-              <label className={styles.hidePassed}>
-                <input type="checkbox" checked={hidePassed} onChange={(e) => setHidePassed(e.target.checked)} />
-                Hide passed
-              </label>
-
               <Button
                 variant="outline"
                 onClick={clearFilters}
-                disabled={!query && !genreFilter && sortKey === 'recommended' && !hidePassed}
+                disabled={!query && !genreFilter && sortKey === 'recommended'}
                 className={styles.clearButton}
               >
                 Clear

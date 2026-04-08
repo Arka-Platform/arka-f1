@@ -42,6 +42,82 @@
   padding: 0 1.5rem;
 }
 
+/* Requests-inspired hero search section */
+.heroSection {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  background: var(--theme-accent-gradient);
+  padding: 2.75rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--theme-shadow-lg);
+  overflow: hidden;
+}
+
+.heroSection::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  right: -12%;
+  width: 320px;
+  height: 320px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.heroContent {
+  max-width: 1120px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.heroHeader {
+  text-align: center;
+  color: var(--theme-text-inverse);
+  margin-bottom: 1.25rem;
+}
+
+.heroTitle {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--theme-text-inverse);
+}
+
+.heroSubtitle {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--theme-text-inverse) 92%, transparent);
+}
+
+.heroSearchBar {
+  max-width: 820px;
+  margin: 0 auto;
+  background: var(--theme-surface-strong);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  padding: 0.5rem;
+}
+
+.heroSearchBar :global(input) {
+  font-size: 1.05rem;
+  padding: 1rem 1.25rem;
+  border: none;
+  border-radius: 12px;
+}
+
+.heroSearchBar :global(input):focus {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--app-text) 18%, transparent);
+}
+
 @media (max-width: 767px) {
   .page {
     /* Mobile: let Layout provide the background; avoid extra layers */
@@ -51,6 +127,19 @@
   .pageInner {
     max-width: none;
     padding: 0 12px;
+  }
+
+  .heroSection {
+    padding: 2.25rem 12px;
+    margin-bottom: 1rem;
+  }
+
+  .heroTitle {
+    font-size: 1.6rem;
+  }
+
+  .heroSubtitle {
+    font-size: 0.98rem;
   }
 }
 
@@ -272,21 +361,6 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-}
-
-.hidePassed {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(15, 23, 42, 0.78);
-  user-select: none;
-  white-space: nowrap;
-}
-
-.hidePassed input {
-  accent-color: color-mix(in srgb, var(--app-text) 70%, transparent);
 }
 
 .clearButton {
