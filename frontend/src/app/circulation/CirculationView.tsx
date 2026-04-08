@@ -484,6 +484,51 @@ export default function CirculationView() {
     )
   }, [kind, n, sections, activeRowKey, activeIndexByRow, advanceToIndex, showToastWithAction])
 
+  const handlePickPayload = useCallback(
+    (payload: CirculationDragPayload) => {
+      addToCart({
+        id: payload.bookId,
+        title: payload.title,
+        author: payload.author,
+        description: '',
+        price: payload.price,
+        image: payload.imageUrl ?? undefined,
+        thumbnail: payload.imageUrl ?? undefined,
+        genre: '',
+      })
+      showToastWithAction(
+        'Picked',
+        'success',
+        'Undo',
+        () => {
+          removeFromCart(payload.bookId)
+        },
+        4500,
+      )
+    },
+    [addToCart, removeFromCart, showToastWithAction],
+  )
+
+  const handlePassId = useCallback(
+    (id: string) => {
+      setPassedIds((prev) => new Set(prev).add(id))
+      showToastWithAction(
+        'Passed',
+        'info',
+        'Undo',
+        () => {
+          setPassedIds((prev) => {
+            const next = new Set(prev)
+            next.delete(id)
+            return next
+          })
+        },
+        4500,
+      )
+    },
+    [showToastWithAction],
+  )
+
   useEffect(() => {
     registerPassHandler(() => handlePass())
     return () => registerPassHandler(null)
@@ -707,6 +752,8 @@ export default function CirculationView() {
                         onSelect={() => handleSelect({ kind: 'listing', id: listing.listingId })}
                         passed={passedIds.has(listing.listingId)}
                         active={isMobile && activeRowKey === row.key && (activeIndexByRow[row.key] ?? 0) === idx}
+                        onPick={() => handlePickPayload(payloadFromListing(listing))}
+                        onPass={() => handlePassId(listing.listingId)}
                       />,
                       `circ-drag-${listing.listingId}`,
                       payloadFromListing(listing),
@@ -721,6 +768,8 @@ export default function CirculationView() {
                         onSelect={() => handleSelect({ kind: 'catalog', id: book.id })}
                         passed={passedIds.has(book.id)}
                         active={isMobile && activeRowKey === row.key && (activeIndexByRow[row.key] ?? 0) === idx}
+                        onPick={() => handlePickPayload(payloadFromBook(book))}
+                        onPass={() => handlePassId(book.id)}
                       />,
                       `circ-drag-book-${book.id}`,
                       payloadFromBook(book),

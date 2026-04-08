@@ -530,6 +530,67 @@
   flex-shrink: 0;
 }
 
+.primaryActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+  flex-shrink: 0;
+}
+
+.pickBtn,
+.passBtn {
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--app-border);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.pickBtn {
+  background: var(--app-text);
+  color: var(--app-surface);
+  border-color: color-mix(in srgb, var(--app-text) 36%, var(--app-border));
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+}
+
+.pickBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.2);
+}
+
+.passBtn {
+  background: var(--app-surface);
+  color: var(--app-text);
+}
+
+.passBtn:hover {
+  background: color-mix(in srgb, var(--app-text) 4%, var(--app-surface));
+  transform: translateY(-1px);
+}
+
+.pickBtn:disabled,
+.passBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+.pickBtn:focus-visible,
+.passBtn:focus-visible {
+  outline: 2px solid var(--app-text);
+  outline-offset: 2px;
+}
+
 .starIcon {
   color: #e5b84a;
   flex-shrink: 0;

@@ -1,11 +1,22 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Flame, ShieldCheck, Star, ChevronRight } from 'lucide-react'
+import { Flame, ShieldCheck, Star, ChevronRight, ArrowDownToLine, ArrowUpToLine } from 'lucide-react'
 import type { BookResponse, ListingResponse } from '../../utils/api'
 import { buildTagPair, buildTagPairFromBook } from './circulationData'
 import styles from './circulation.module.css'
 
 export type CirculationCardVariant = 'feature' | 'side'
+
+type BaseCardProps = {
+  variant: CirculationCardVariant
+  priority?: boolean
+  selected?: boolean
+  onSelect?: () => void
+  passed?: boolean
+  active?: boolean
+  onPick?: () => void
+  onPass?: () => void
+}
 
 export type CirculationBookCardProps =
   | {
@@ -17,13 +28,7 @@ export type CirculationBookCardProps =
       ownerAvatarUrl: string
       ratingDisplay: string
       trustScore: number
-      variant: CirculationCardVariant
-      priority?: boolean
-      selected?: boolean
-      onSelect?: () => void
-      passed?: boolean
-      active?: boolean
-    }
+    } & BaseCardProps
   | {
       kind: 'catalog'
       book: BookResponse
@@ -33,13 +38,7 @@ export type CirculationBookCardProps =
       ownerAvatarUrl: string
       ratingDisplay: string
       trustScore: number
-      variant: CirculationCardVariant
-      priority?: boolean
-      selected?: boolean
-      onSelect?: () => void
-      passed?: boolean
-      active?: boolean
-    }
+    } & BaseCardProps
 
 const PLACEHOLDER =
   'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=520&fit=crop&q=80'
@@ -52,6 +51,8 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
     onSelect,
     passed,
     active,
+    onPick,
+    onPass,
   } = props
 
   const isFeature = variant === 'feature'
@@ -73,6 +74,7 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
     props.kind === 'listing'
       ? `/exchange?search=${encodeURIComponent(props.listing.title)}`
       : `/exchange?search=${encodeURIComponent(props.book.title)}`
+  const actionSize = isFeature ? 16 : 15
 
   return (
     <article
@@ -119,6 +121,29 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
             {props.circulationCount} {props.circulationCount === 1 ? 'circulation' : 'circulations'}
           </span>
         </div>
+      </div>
+
+      <div className={styles.primaryActions} onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          className={styles.pickBtn}
+          onClick={onPick}
+          disabled={!onPick}
+          aria-label={`Pick ${title}`}
+        >
+          <ArrowDownToLine size={actionSize} strokeWidth={1.9} aria-hidden />
+          Pick
+        </button>
+        <button
+          type="button"
+          className={styles.passBtn}
+          onClick={onPass}
+          disabled={!onPass}
+          aria-label={`Pass ${title}`}
+        >
+          <ArrowUpToLine size={actionSize} strokeWidth={1.9} aria-hidden />
+          Pass
+        </button>
       </div>
 
       <div className={styles.footerRow}>
