@@ -44,27 +44,25 @@
 
 /* Requests-inspired hero search section */
 .heroSection {
-  width: 100vw;
+  width: 100%;
   position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  background: var(--theme-accent-gradient);
-  padding: 2.75rem 1.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow: var(--theme-shadow-lg);
+  background: color-mix(in srgb, var(--app-surface) 88%, transparent);
+  padding: 1.25rem 1.25rem;
+  margin: 0 0 1.25rem;
+  border-radius: 18px;
+  border: 1px solid var(--app-border);
+  box-shadow: 0 14px 44px rgba(15, 23, 42, 0.08);
   overflow: hidden;
 }
 
 .heroSection::before {
   content: '';
   position: absolute;
-  top: -60%;
-  right: -12%;
+  top: -45%;
+  right: -10%;
   width: 320px;
   height: 320px;
-  background: rgba(255, 255, 255, 0.12);
+  background: color-mix(in srgb, var(--app-text) 6%, transparent);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -78,7 +76,6 @@
 
 .heroHeader {
   text-align: center;
-  color: var(--theme-text-inverse);
   margin-bottom: 1.25rem;
 }
 
@@ -87,14 +84,14 @@
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--theme-text-inverse);
+  color: var(--app-text);
 }
 
 .heroSubtitle {
   margin: 0;
   font-size: 1.05rem;
   line-height: 1.6;
-  color: color-mix(in srgb, var(--theme-text-inverse) 92%, transparent);
+  color: rgba(15, 23, 42, 0.66);
 }
 
 .heroSearchBar {
@@ -102,7 +99,7 @@
   margin: 0 auto;
   background: var(--theme-surface-strong);
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
   padding: 0.5rem;
 }
 
@@ -130,8 +127,9 @@
   }
 
   .heroSection {
-    padding: 2.25rem 12px;
+    padding: 1.1rem 12px;
     margin-bottom: 1rem;
+    border-radius: 16px;
   }
 
   .heroTitle {
