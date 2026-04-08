@@ -30,9 +30,6 @@
 .page {
   --font-serif: var(--font-circ-serif), 'Playfair Display', Georgia, serif;
   --font-sans: var(--font-circ-sans), 'Inter', system-ui, sans-serif;
-  /* Paper surface that adapts to theme */
-  --circ-paper: color-mix(in srgb, #f4ecd8 82%, var(--app-surface));
-  --circ-paper-2: color-mix(in srgb, #efe2c3 26%, var(--circ-paper));
   font-family: var(--font-sans);
   width: 100%;
   padding: 2.75rem 0 4rem;
@@ -131,8 +128,8 @@
   margin: 8px 0 16px;
   padding: 12px;
   border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--app-border) 78%, #d9c9a3);
-  background: color-mix(in srgb, var(--circ-paper) 76%, transparent);
+  border: 1px solid var(--app-border);
+  background: color-mix(in srgb, var(--app-surface) 84%, transparent);
   backdrop-filter: blur(10px);
 }
 
@@ -246,6 +243,73 @@
 .clearBtn:focus-visible {
   outline: 2px solid var(--app-text);
   outline-offset: 2px;
+}
+
+/* Exchange-style filter row: shared components (Input/Select/Button) */
+.filtersRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.searchControl {
+  flex: 1 1 360px;
+  max-width: 520px;
+}
+
+.genreControl {
+  width: 200px;
+}
+
+.sortControl {
+  width: 220px;
+}
+
+.filtersActions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hidePassed {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(15, 23, 42, 0.78);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.hidePassed input {
+  accent-color: color-mix(in srgb, var(--app-text) 70%, transparent);
+}
+
+.clearButton {
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .filtersRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchControl,
+  .genreControl,
+  .sortControl {
+    width: 100%;
+    max-width: none;
+  }
+
+  .filtersActions {
+    margin-left: 0;
+    justify-content: space-between;
+  }
 }
 
 .pill {
@@ -373,16 +437,8 @@
   height: 100%;
   align-self: stretch;
   border-radius: 18px;
-  background:
-    linear-gradient(180deg, var(--circ-paper) 0%, var(--circ-paper-2) 100%),
-    repeating-linear-gradient(
-      135deg,
-      color-mix(in srgb, #000 3%, transparent) 0px,
-      color-mix(in srgb, #000 3%, transparent) 1px,
-      transparent 1px,
-      transparent 6px
-    );
-  border: 1px solid color-mix(in srgb, var(--app-border) 78%, #d9c9a3);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
   overflow: hidden;
   position: relative;
   box-shadow: var(--component-shadow, 0 10px 26px rgba(0, 0, 0, 0.08));

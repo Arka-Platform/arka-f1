@@ -10,6 +10,9 @@ import { useToast } from '../../contexts/ToastContext'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import type { CirculationDragPayload } from '../../components/Layout/CirculationDndContext'
 import { useCirculationActivePayload, useCirculationDndRegistration, useCirculationQuickActions } from '../../components/Layout/CirculationDndContext'
+import Input from '../../components/shared/Input/Input'
+import Select from '../../components/shared/Select/Select'
+import Button from '../../components/shared/Button/Button'
 import CirculationBookCard from './CirculationBookCard'
 import { CirculationDraggableWrap } from './CirculationDraggableWrap'
 import { loadCirculationFromSupabase, ownerKeyForBook, type CirculationOwner } from './loadCirculationData'
@@ -592,56 +595,48 @@ export default function CirculationView() {
             </div>
           </header>
           <div className={styles.controls} aria-label="Sort and filter">
-            <div className={styles.controlsRow}>
-              <div className={styles.searchWrap}>
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search by title or author"
-                  className={styles.searchInput}
-                  aria-label="Search books"
-                />
-              </div>
+            <div className={styles.filtersRow}>
+              <Input
+                type="text"
+                placeholder="Search by title or author…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className={styles.searchControl}
+              />
 
-              <div className={styles.selects}>
-                <label className={styles.selectLabel}>
-                  <span className={styles.selectText}>Genre</span>
-                  <select value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)} className={styles.select} aria-label="Filter by genre">
-                    <option value="">All</option>
-                    {genreOptions.map((g) => (
-                      <option key={g} value={g}>
-                        {g}
-                      </option>
-                    ))}
-                  </select>
+              <Select value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)} className={styles.genreControl}>
+                <option value="">All genres</option>
+                {genreOptions.map((g) => (
+                  <option key={g} value={g}>
+                    {g}
+                  </option>
+                ))}
+              </Select>
+
+              <Select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className={styles.sortControl}>
+                <option value="recommended">Recommended</option>
+                {kind === 'listings' ? <option value="requests_desc">Most requested</option> : null}
+                <option value="newest">Newest</option>
+                <option value="title_asc">Title: A–Z</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+              </Select>
+
+              <div className={styles.filtersActions}>
+                <label className={styles.hidePassed}>
+                  <input type="checkbox" checked={hidePassed} onChange={(e) => setHidePassed(e.target.checked)} />
+                  Hide passed
                 </label>
 
-                <label className={styles.selectLabel}>
-                  <span className={styles.selectText}>Sort</span>
-                  <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className={styles.select} aria-label="Sort results">
-                    <option value="recommended">Recommended</option>
-                    {kind === 'listings' ? <option value="requests_desc">Most requested</option> : null}
-                    <option value="newest">Newest</option>
-                    <option value="title_asc">Title: A–Z</option>
-                    <option value="price_asc">Price: Low to High</option>
-                    <option value="price_desc">Price: High to Low</option>
-                  </select>
-                </label>
+                <Button
+                  variant="outline"
+                  onClick={clearFilters}
+                  disabled={!query && !genreFilter && sortKey === 'recommended' && !hidePassed}
+                  className={styles.clearButton}
+                >
+                  Clear
+                </Button>
               </div>
-
-              <label className={styles.checkbox}>
-                <input type="checkbox" checked={hidePassed} onChange={(e) => setHidePassed(e.target.checked)} />
-                Hide passed
-              </label>
-
-              <button
-                type="button"
-                className={styles.clearBtn}
-                onClick={clearFilters}
-                disabled={!query && !genreFilter && sortKey === 'recommended' && !hidePassed}
-              >
-                Clear
-              </button>
             </div>
           </div>
           <p className={styles.emptyText}>
@@ -678,56 +673,48 @@ export default function CirculationView() {
         </header>
 
         <div className={styles.controls} aria-label="Sort and filter">
-          <div className={styles.controlsRow}>
-            <div className={styles.searchWrap}>
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by title or author"
-                className={styles.searchInput}
-                aria-label="Search books"
-              />
-            </div>
+          <div className={styles.filtersRow}>
+            <Input
+              type="text"
+              placeholder="Search by title or author…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className={styles.searchControl}
+            />
 
-            <div className={styles.selects}>
-              <label className={styles.selectLabel}>
-                <span className={styles.selectText}>Genre</span>
-                <select value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)} className={styles.select} aria-label="Filter by genre">
-                  <option value="">All</option>
-                  {genreOptions.map((g) => (
-                    <option key={g} value={g}>
-                      {g}
-                    </option>
-                  ))}
-                </select>
+            <Select value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)} className={styles.genreControl}>
+              <option value="">All genres</option>
+              {genreOptions.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </Select>
+
+            <Select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className={styles.sortControl}>
+              <option value="recommended">Recommended</option>
+              {kind === 'listings' ? <option value="requests_desc">Most requested</option> : null}
+              <option value="newest">Newest</option>
+              <option value="title_asc">Title: A–Z</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+            </Select>
+
+            <div className={styles.filtersActions}>
+              <label className={styles.hidePassed}>
+                <input type="checkbox" checked={hidePassed} onChange={(e) => setHidePassed(e.target.checked)} />
+                Hide passed
               </label>
 
-              <label className={styles.selectLabel}>
-                <span className={styles.selectText}>Sort</span>
-                <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className={styles.select} aria-label="Sort results">
-                  <option value="recommended">Recommended</option>
-                  {kind === 'listings' ? <option value="requests_desc">Most requested</option> : null}
-                  <option value="newest">Newest</option>
-                  <option value="title_asc">Title: A–Z</option>
-                  <option value="price_asc">Price: Low to High</option>
-                  <option value="price_desc">Price: High to Low</option>
-                </select>
-              </label>
+              <Button
+                variant="outline"
+                onClick={clearFilters}
+                disabled={!query && !genreFilter && sortKey === 'recommended' && !hidePassed}
+                className={styles.clearButton}
+              >
+                Clear
+              </Button>
             </div>
-
-            <label className={styles.checkbox}>
-              <input type="checkbox" checked={hidePassed} onChange={(e) => setHidePassed(e.target.checked)} />
-              Hide passed
-            </label>
-
-            <button
-              type="button"
-              className={styles.clearBtn}
-              onClick={clearFilters}
-              disabled={!query && !genreFilter && sortKey === 'recommended' && !hidePassed}
-            >
-              Clear
-            </button>
           </div>
         </div>
 
