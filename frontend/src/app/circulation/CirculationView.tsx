@@ -610,10 +610,19 @@ export default function CirculationView() {
     return (
       <div className={styles.page}>
         <div className={styles.pageInner}>
+          <header className={styles.header}>
+            <div className={styles.headerLeft}>
+              <h1 className={styles.h1}>Circulation</h1>
+              <p className={styles.subtitle}>
+                Browse what’s trending in the community. Pick what you want, pass what you don’t.
+              </p>
+            </div>
+          </header>
+
           <div className={styles.heroSection} aria-label="Search books">
             <div className={styles.heroContent}>
               <div className={styles.heroHeader}>
-                <h2 className={styles.heroTitle}>Pick your next read</h2>
+                <h2 className={styles.heroTitle}>Keep Reading, Keep Passing.</h2>
                 <p className={styles.heroSubtitle}>Search any title and explore what’s circulating right now.</p>
               </div>
               <div className={styles.heroSearchBar}>
@@ -628,54 +637,46 @@ export default function CirculationView() {
                   fullWidth
                 />
               </div>
-            </div>
-          </div>
 
-          <header className={styles.header}>
-            <div className={styles.headerLeft}>
-              <h1 className={styles.h1}>Circulation</h1>
-              <p className={styles.subtitle}>
-                Browse what’s trending in the community. Pick what you want, pass what you don’t.
-              </p>
-            </div>
-          </header>
-          <div className={styles.controls} aria-label="Sort and filter">
-            <div className={styles.filtersRow}>
-              <Input
-                type="text"
-                placeholder="Search by title or author…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className={styles.searchControl}
-              />
+              <div className={styles.controls} aria-label="Sort and filter">
+                <div className={styles.filtersRow}>
+                  <Input
+                    type="text"
+                    placeholder="Search by title or author…"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className={styles.searchControl}
+                  />
 
-              <Select value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)} className={styles.genreControl}>
-                <option value="">All genres</option>
-                {genreOptions.map((g) => (
-                  <option key={g} value={g}>
-                    {g}
-                  </option>
-                ))}
-              </Select>
+                  <Select value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)} className={styles.genreControl}>
+                    <option value="">All genres</option>
+                    {genreOptions.map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
+                  </Select>
 
-              <Select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className={styles.sortControl}>
-                <option value="recommended">Recommended</option>
-                {kind === 'listings' ? <option value="requests_desc">Most requested</option> : null}
-                <option value="newest">Newest</option>
-                <option value="title_asc">Title: A–Z</option>
-                <option value="price_asc">Price: Low to High</option>
-                <option value="price_desc">Price: High to Low</option>
-              </Select>
+                  <Select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className={styles.sortControl}>
+                    <option value="recommended">Recommended</option>
+                    {kind === 'listings' ? <option value="requests_desc">Most requested</option> : null}
+                    <option value="newest">Newest</option>
+                    <option value="title_asc">Title: A–Z</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                  </Select>
 
-              <div className={styles.filtersActions}>
-                <Button
-                  variant="outline"
-                  onClick={clearFilters}
-                  disabled={!query && !genreFilter && sortKey === 'recommended'}
-                  className={styles.clearButton}
-                >
-                  Clear
-                </Button>
+                  <div className={styles.filtersActions}>
+                    <Button
+                      variant="outline"
+                      onClick={clearFilters}
+                      disabled={!query && !genreFilter && sortKey === 'recommended'}
+                      className={styles.clearButton}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -694,10 +695,23 @@ export default function CirculationView() {
   return (
     <div className={styles.page}>
       <div className={styles.pageInner}>
+        <header className={styles.header}>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.h1}>Circulation</h1>
+            <p className={styles.subtitle}>
+              Browse what’s trending in the community. Pick what you want, pass what you don’t.
+            </p>
+          </div>
+          <div className={styles.sectionMeta} aria-label="Section filters">
+            <span className={styles.pill}>{metaLabel}</span>
+            <span className={styles.metaCount}>{n}</span>
+          </div>
+        </header>
+
         <div className={styles.heroSection} aria-label="Search books">
           <div className={styles.heroContent}>
             <div className={styles.heroHeader}>
-              <h2 className={styles.heroTitle}>Pick your next read</h2>
+              <h2 className={styles.heroTitle}>Keep Reading, Keep Passing.</h2>
               <p className={styles.heroSubtitle}>Search any title and explore what’s circulating right now.</p>
             </div>
             <div className={styles.heroSearchBar}>
@@ -712,6 +726,47 @@ export default function CirculationView() {
                 fullWidth
               />
             </div>
+
+            <div className={styles.controls} aria-label="Sort and filter">
+              <div className={styles.filtersRow}>
+                <Input
+                  type="text"
+                  placeholder="Search by title or author…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className={styles.searchControl}
+                />
+
+                <Select value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)} className={styles.genreControl}>
+                  <option value="">All genres</option>
+                  {genreOptions.map((g) => (
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
+                  ))}
+                </Select>
+
+                <Select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className={styles.sortControl}>
+                  <option value="recommended">Recommended</option>
+                  {kind === 'listings' ? <option value="requests_desc">Most requested</option> : null}
+                  <option value="newest">Newest</option>
+                  <option value="title_asc">Title: A–Z</option>
+                  <option value="price_asc">Price: Low to High</option>
+                  <option value="price_desc">Price: High to Low</option>
+                </Select>
+
+                <div className={styles.filtersActions}>
+                  <Button
+                    variant="outline"
+                    onClick={clearFilters}
+                    disabled={!query && !genreFilter && sortKey === 'recommended'}
+                    className={styles.clearButton}
+                  >
+                    Clear
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -720,59 +775,6 @@ export default function CirculationView() {
             Drag a card to the bottom bar: My Shelf, Wishlist, or Cart.
           </p>
         )}
-        <header className={styles.header}>
-          <div className={styles.headerLeft}>
-            <h1 className={styles.h1}>Circulation</h1>
-            <p className={styles.subtitle}>
-              Browse what’s trending in the community. Pick what you want, pass what you don’t.
-            </p>
-          </div>
-          <div className={styles.sectionMeta} aria-label="Section filters">
-            <span className={styles.pill}>{metaLabel}</span>
-            <span className={styles.metaCount}>{n}</span>
-          </div>
-        </header>
-
-        <div className={styles.controls} aria-label="Sort and filter">
-          <div className={styles.filtersRow}>
-            <Input
-              type="text"
-              placeholder="Search by title or author…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className={styles.searchControl}
-            />
-
-            <Select value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)} className={styles.genreControl}>
-              <option value="">All genres</option>
-              {genreOptions.map((g) => (
-                <option key={g} value={g}>
-                  {g}
-                </option>
-              ))}
-            </Select>
-
-            <Select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className={styles.sortControl}>
-              <option value="recommended">Recommended</option>
-              {kind === 'listings' ? <option value="requests_desc">Most requested</option> : null}
-              <option value="newest">Newest</option>
-              <option value="title_asc">Title: A–Z</option>
-              <option value="price_asc">Price: Low to High</option>
-              <option value="price_desc">Price: High to Low</option>
-            </Select>
-
-            <div className={styles.filtersActions}>
-              <Button
-                variant="outline"
-                onClick={clearFilters}
-                disabled={!query && !genreFilter && sortKey === 'recommended'}
-                className={styles.clearButton}
-              >
-                Clear
-              </Button>
-            </div>
-          </div>
-        </div>
 
         <section aria-label="Books" className={styles.genreSections}>
           {sections.rows.map((row: any) => (

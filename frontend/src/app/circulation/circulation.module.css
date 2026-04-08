@@ -46,12 +46,12 @@
 .heroSection {
   width: 100%;
   position: relative;
-  background: color-mix(in srgb, var(--app-surface) 88%, transparent);
+  background: var(--theme-accent-gradient);
   padding: 1.25rem 1.25rem;
   margin: 0 0 1.25rem;
   border-radius: 18px;
-  border: 1px solid var(--app-border);
-  box-shadow: 0 14px 44px rgba(15, 23, 42, 0.08);
+  border: 1px solid color-mix(in srgb, var(--app-border) 65%, transparent);
+  box-shadow: var(--theme-shadow-lg);
   overflow: hidden;
 }
 
@@ -62,7 +62,7 @@
   right: -10%;
   width: 320px;
   height: 320px;
-  background: color-mix(in srgb, var(--app-text) 6%, transparent);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -84,14 +84,14 @@
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--app-text);
+  color: var(--theme-text-inverse);
 }
 
 .heroSubtitle {
   margin: 0;
   font-size: 1.05rem;
   line-height: 1.6;
-  color: rgba(15, 23, 42, 0.66);
+  color: color-mix(in srgb, var(--theme-text-inverse) 92%, transparent);
 }
 
 .heroSearchBar {
@@ -99,7 +99,7 @@
   margin: 0 auto;
   background: var(--theme-surface-strong);
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
   padding: 0.5rem;
 }
 
