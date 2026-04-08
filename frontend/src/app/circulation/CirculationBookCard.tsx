@@ -22,20 +22,12 @@ export type CirculationBookCardProps =
       listing: ListingResponse
       requestCount: number
       circulationCount: number
-      ownerFirstName: string
-      ownerAvatarUrl: string
-      ratingDisplay: string
-      trustScore: number
     } & BaseCardProps
   | {
       kind: 'catalog'
       book: BookResponse
       requestCount: number
       circulationCount: number
-      ownerFirstName: string
-      ownerAvatarUrl: string
-      ratingDisplay: string
-      trustScore: number
     } & BaseCardProps
 
 const PLACEHOLDER =
