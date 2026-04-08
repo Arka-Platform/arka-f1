@@ -93,8 +93,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isAdmin: metadata?.is_admin ?? false,
       }
 
-      setUser(normalizedUser)
-      if (typeof window !== 'undefined') localStorage.setItem('arka_user', JSON.stringify(normalizedUser))
+      // Resolve admin state from DB (authoritative) when possible.
+      // Rationale: auth metadata can be stale, and RLS may block reading `users.is_admin` directly.
+      let resolvedIsAdmin = normalizedUser.isAdmin
+      try {
+        const { data, error } = await supabase.rpc('is_admin_user', { p_uid: supabaseUser.id })
+        if (!error && typeof data === 'boolean') resolvedIsAdmin = data
+      } catch {
+        // Ignore: fall back to metadata/public hydration
+      }
+
+      const resolvedUser = { ...normalizedUser, isAdmin: resolvedIsAdmin }
+      setUser(resolvedUser)
+      if (typeof window !== 'undefined') localStorage.setItem('arka_user', JSON.stringify(resolvedUser))
 
       // Best-effort profile sync: never block auth UX.
       // Prevent redundant syncs for the same user within a session, and avoid races.
@@ -127,7 +138,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 email: publicUser.email ?? prev.email ?? null,
                 phoneNumber: publicUser.phone ?? prev.phoneNumber ?? null,
                 avatar: publicUser.avatar_url ?? prev.avatar ?? null,
-                isAdmin: publicUser.is_admin ?? prev.isAdmin ?? false,
+                // Keep DB-resolved admin if present; otherwise hydrate from public row.
+                isAdmin: prev.isAdmin ?? publicUser.is_admin ?? false,
               }
             })
           } catch (err) {
