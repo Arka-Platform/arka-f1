@@ -37,9 +37,10 @@
 }
 
 .pageInner {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 0 1rem;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 
 /* Requests-inspired hero search section */
