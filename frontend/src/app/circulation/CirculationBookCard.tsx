@@ -1,8 +1,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Flame, ShieldCheck, Star, ChevronRight, ArrowDownToLine, ArrowUpToLine } from 'lucide-react'
+import { Flame, Star, ChevronRight, ArrowUpToLine, Repeat } from 'lucide-react'
 import type { BookResponse, ListingResponse } from '../../utils/api'
-import { buildTagPair, buildTagPairFromBook } from './circulationData'
+import { buildTagPairFromBook } from './circulationData'
 import styles from './circulation.module.css'
 
 export type CirculationCardVariant = 'feature' | 'side'
@@ -51,7 +51,6 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
     onSelect,
     passed,
     active,
-    onPick,
     onPass,
   } = props
 
@@ -59,7 +58,6 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
   const cardClass = isFeature ? `${styles.card} ${styles.cardFeature}` : `${styles.card} ${styles.cardSide}`
   const tagClass = `${styles.tag} ${styles.tagLight}`
   const starSize = isFeature ? 15 : 13
-  const trustSize = isFeature ? 14 : 12
   const chevronSize = isFeature ? 18 : 16
 
   const title = props.kind === 'listing' ? props.listing.title : props.book.title
@@ -69,7 +67,10 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
       ? props.listing.coverUrl?.trim() || PLACEHOLDER
       : props.book.imageUrl || props.book.thumbnailUrl || PLACEHOLDER
   const useUnoptimized = coverSrc.startsWith('http') && !coverSrc.includes('localhost')
-  const [tagA, tagB] = props.kind === 'listing' ? buildTagPair(props.listing) : buildTagPairFromBook(props.book)
+  const [tagA, tagB] =
+    props.kind === 'listing'
+      ? [props.listing.genre?.trim() || props.listing.tags?.[0]?.trim() || 'General', 'Available']
+      : buildTagPairFromBook(props.book)
   const detailHref =
     props.kind === 'listing'
       ? `/exchange?search=${encodeURIComponent(props.listing.title)}`
@@ -123,8 +124,11 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
         <div className={styles.starRow}>
           <Star size={starSize} strokeWidth={1.5} className={styles.starIcon} fill="currentColor" aria-hidden />
           <span>{props.ratingDisplay}</span>
-          {props.circulationCount > 1 ? (
-            <span className={styles.circulations}>{props.circulationCount} circulations</span>
+          {props.circulationCount > 0 ? (
+            <span className={styles.circulations} title="circulations">
+              <Repeat size={isFeature ? 14 : 13} strokeWidth={1.8} className={styles.iconMuted} aria-hidden />
+              {props.circulationCount}
+            </span>
           ) : null}
         </div>
       </div>
@@ -132,17 +136,7 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
       <div className={styles.primaryActions} onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
-          className={styles.pickBtn}
-          onClick={onPick}
-          disabled={!onPick}
-          aria-label={`Pick ${title}`}
-        >
-          <ArrowDownToLine size={actionSize} strokeWidth={1.9} aria-hidden />
-          Pick
-        </button>
-        <button
-          type="button"
-          className={styles.passBtn}
+          className={styles.passBtnFull}
           onClick={onPass}
           disabled={!onPass}
           aria-label={`Pass ${title}`}
@@ -153,24 +147,8 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
       </div>
 
       <div className={styles.footerRow}>
-        <div className={styles.footerLeft}>
-          <Image
-            src={props.ownerAvatarUrl}
-            alt=""
-            width={32}
-            height={32}
-            className={styles.avatar}
-            unoptimized
-          />
-          <p className={styles.offeredStrong}>
-            Offered by <strong>{props.ownerFirstName}</strong>
-          </p>
-        </div>
+        <div className={styles.footerLeft} />
         <div className={styles.footerMeta} onClick={(e) => e.stopPropagation()}>
-          <span className={styles.camCount} title="Trust score">
-            <ShieldCheck size={trustSize} strokeWidth={1.5} className={styles.iconMuted} aria-hidden />
-            {props.trustScore}
-          </span>
           <Link href={detailHref} className={styles.listingLink} aria-label={`Open ${title}`}>
             <ChevronRight size={chevronSize} strokeWidth={1.5} className={styles.chevronRight} aria-hidden />
           </Link>

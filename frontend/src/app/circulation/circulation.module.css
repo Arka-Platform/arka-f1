@@ -686,9 +686,7 @@
 }
 
 .primaryActions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  display: block;
   margin-top: 12px;
   flex-shrink: 0;
 }
@@ -708,6 +706,11 @@
   cursor: pointer;
   user-select: none;
   transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+  width: 100%;
+}
+
+.passBtnFull {
+  width: 100%;
 }
 
 .pickBtn {

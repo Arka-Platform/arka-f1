@@ -10,13 +10,11 @@ type Props = {
   open: boolean
   title: string
   author: string
-  bookHref: string
   listings: ListingResponse[]
   owners: Record<string, CirculationOwner>
   countsByListingId: Record<string, SwapRequestCounts>
   onClose: () => void
   onPickListing: (listing: ListingResponse) => void
-  onPassListing: (listingId: string) => void
   passedListingIds: Set<string>
 }
 
@@ -33,13 +31,11 @@ export default function CirculationDetailsModal({
   open,
   title,
   author,
-  bookHref,
   listings,
   owners,
   countsByListingId,
   onClose,
   onPickListing,
-  onPassListing,
   passedListingIds,
 }: Props) {
   const closeBtnRef = useRef<HTMLButtonElement | null>(null)
@@ -92,12 +88,6 @@ export default function CirculationDetailsModal({
         </header>
 
         <div className={styles.modalBody}>
-          <div className={styles.modalActionsRow}>
-            <a className={styles.modalOpenLink} href={bookHref}>
-              Open in Exchange
-            </a>
-          </div>
-
           <section className={styles.giversSection} aria-label="Givers">
             {sorted.map((l) => {
               const owner = owners[l.ownerId]
@@ -144,14 +134,6 @@ export default function CirculationDetailsModal({
                         aria-label={`Pick copy from ${owner?.firstName ?? 'giver'}`}
                       >
                         Pick this copy
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.giverPass}
-                        onClick={() => onPassListing(l.listingId)}
-                        aria-label={`Pass copy from ${owner?.firstName ?? 'giver'}`}
-                      >
-                        Pass
                       </button>
                     </div>
                   </div>

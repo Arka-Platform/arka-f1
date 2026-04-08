@@ -843,7 +843,6 @@ export default function CirculationView() {
           open={!!selectedDetail && kind === 'listings'}
           title={selectedDetail?.title ?? ''}
           author={selectedDetail?.author ?? ''}
-          bookHref={selectedDetail?.href ?? '#'}
           listings={selectedDetail?.listings ?? []}
           owners={owners}
           countsByListingId={counts}
@@ -853,7 +852,6 @@ export default function CirculationView() {
             handlePickPayload(payloadFromListing(listing))
             setSelected(null)
           }}
-          onPassListing={(listingId) => handlePassId(listingId)}
         />
 
         <div className={styles.bottomSpace} aria-hidden="true" />

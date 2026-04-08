@@ -70,6 +70,7 @@ export default function SideMenu() {
   const isMobile = useMediaQuery('(max-width: 767px)')
   const isCirculationRoute = pathname.startsWith('/circulation')
   const dropEnabled = isCirculationRoute && isMobile && !!user
+  const addBookHref = '/inventory?focus=add'
 
   useEffect(() => {
     const loadWishlistCount = async () => {
@@ -368,6 +369,14 @@ export default function SideMenu() {
             ))}
           </nav>
         </div>
+
+        {user ? (
+          <Link href={addBookHref} className={styles.addBookFab} aria-label="Add a book" title="Add a book">
+            <span aria-hidden className={styles.addBookFabPlus}>
+              +
+            </span>
+          </Link>
+        ) : null}
       </div>
 
       <aside
@@ -397,6 +406,21 @@ export default function SideMenu() {
         </nav>
 
         <div className={styles.bottomStack}>
+          {user ? (
+            <Link
+              href={addBookHref}
+              className={`${styles.addBookDesktop} ${pathname.startsWith('/inventory') ? styles.menuItemActive : ''}`.trim()}
+              aria-label="Add a book"
+            >
+              <span className={styles.menuIcon} aria-hidden>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 8v8M8 12h8" strokeLinecap="round" />
+                </svg>
+              </span>
+              <span className={styles.menuLabel}>Add book</span>
+            </Link>
+          ) : null}
           <nav className={styles.menuList} aria-label="Account shortcuts">
             {bottomItems.map((item) => (
               <Fragment key={item.id}>{renderBottomLink(item, 'desktop')}</Fragment>
