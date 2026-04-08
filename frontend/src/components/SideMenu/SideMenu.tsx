@@ -382,7 +382,7 @@ export default function SideMenu() {
           {user ? (
             <Link
               href={addBookHref}
-              className={`${styles.addBookDesktop} ${pathname.startsWith('/inventory') ? styles.menuItemActive : ''}`.trim()}
+              className={`${styles.menuItem} ${styles.addBookDesktop} ${pathname.startsWith('/inventory') ? styles.menuItemActive : ''}`.trim()}
               aria-label="Add a book"
             >
               <span className={styles.menuIcon} aria-hidden>

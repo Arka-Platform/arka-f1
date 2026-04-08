@@ -503,13 +503,33 @@ button.mobileNavItem {
 
 /* Desktop add-book row */
 .addBookDesktop {
-  margin: 0 var(--menu-pad);
+  margin: 0 var(--menu-pad) 6px;
   border-radius: 16px;
-  background: color-mix(in srgb, var(--app-text) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--app-border) 75%, transparent);
+  background: color-mix(in srgb, var(--app-text) 4%, var(--app-surface));
+  border: 1px solid color-mix(in srgb, var(--app-border) 78%, transparent);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
 }
 
 .addBookDesktop:hover {
-  background: color-mix(in srgb, var(--app-text) 9%, transparent);
+  background: color-mix(in srgb, var(--app-text) 7%, var(--app-surface));
+}
+
+/* When sidebar is expanded, make Add feel primary */
+.sidebarExpanded .addBookDesktop {
+  background: var(--theme-accent-gradient);
+  border-color: color-mix(in srgb, var(--app-border) 65%, transparent);
+  color: var(--theme-text-inverse, #fff);
+}
+
+.sidebarExpanded .addBookDesktop .menuIcon {
+  color: #ffffff;
+}
+
+.sidebarExpanded .addBookDesktop .menuIcon svg {
+  stroke: #ffffff;
+}
+
+.sidebarExpanded .addBookDesktop .menuLabel {
+  color: #ffffff;
 }
 
