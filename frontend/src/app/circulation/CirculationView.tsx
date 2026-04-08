@@ -609,18 +609,11 @@ export default function CirculationView() {
     return (
       <div className={styles.page}>
         <div className={styles.pageInner}>
-          <header className={styles.header}>
-            <div className={styles.headerLeft}>
-              <h1 className={styles.h1}>Circulation</h1>
-              <p className={styles.subtitle}>
-                Browse what’s trending in the community. Pick what you want, pass what you don’t.
-              </p>
-            </div>
-          </header>
-
           <div className={styles.heroSection} aria-label="Search books">
             <div className={styles.heroContent}>
               <div className={styles.heroHeader}>
+                <h1 className={styles.heroH1}>Circulation</h1>
+                <p className={styles.heroSubhead}>Browse what’s trending in the community. Pick what you want, pass what you don’t.</p>
                 <h2 className={styles.heroTitle}>Keep Reading, Keep Passing.</h2>
                 <p className={styles.heroSubtitle}>Search any title and explore what’s circulating right now.</p>
               </div>
@@ -686,22 +679,22 @@ export default function CirculationView() {
   return (
     <div className={styles.page}>
       <div className={styles.pageInner}>
-        <header className={styles.header}>
-          <div className={styles.headerLeft}>
-            <h1 className={styles.h1}>Circulation</h1>
-            <p className={styles.subtitle}>
-              Browse what’s trending in the community. Pick what you want, pass what you don’t.
-            </p>
-          </div>
-          <div className={styles.sectionMeta} aria-label="Section filters">
-            <span className={styles.pill}>{metaLabel}</span>
-            <span className={styles.metaCount}>{n}</span>
-          </div>
-        </header>
-
         <div className={styles.heroSection} aria-label="Search books">
           <div className={styles.heroContent}>
             <div className={styles.heroHeader}>
+              <div className={styles.heroTopRow}>
+                <div className={styles.heroTopText}>
+                  <h1 className={styles.heroH1}>Circulation</h1>
+                  <p className={styles.heroSubhead}>
+                    Browse what’s trending in the community. Pick what you want, pass what you don’t.
+                  </p>
+                </div>
+                <div className={styles.heroMeta} aria-label="Section filters">
+                  <span className={styles.pill}>{metaLabel}</span>
+                  <span className={styles.metaCount}>{n}</span>
+                </div>
+              </div>
+
               <h2 className={styles.heroTitle}>Keep Reading, Keep Passing.</h2>
               <p className={styles.heroSubtitle}>Search any title and explore what’s circulating right now.</p>
             </div>

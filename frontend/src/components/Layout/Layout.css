@@ -14,8 +14,8 @@
   display: flex;
   flex: 1;
   width: 100%;
-  gap: 14px;
-  padding: 14px 14px 18px;
+  gap: 10px;
+  padding: 10px 10px 14px;
   /* Theme-aligned surface behind menu + pages (varies by data-theme). */
   background: var(--theme-surface-soft);
   align-items: flex-start;
