@@ -103,6 +103,13 @@
   padding: 0.5rem;
 }
 
+/* Filters inside hero: keep readable on gradient */
+.heroSection .controls {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+}
+
 .heroSearchBar :global(input) {
   font-size: 1.05rem;
   padding: 1rem 1.25rem;
@@ -979,9 +986,9 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(6px);
-  z-index: 80;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(10px);
+  z-index: 520; /* above mobile nav + FAB */
   display: grid;
   place-items: center;
   padding: 18px;
@@ -992,21 +999,38 @@
   max-height: min(86vh, 760px);
   overflow: hidden;
   border-radius: 18px;
-  border: 1px solid color-mix(in srgb, var(--app-border) 70%, transparent);
-  background: var(--app-surface);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.32);
+  border: 1px solid color-mix(in srgb, var(--app-border) 78%, transparent);
+  background: color-mix(in srgb, var(--app-surface) 92%, transparent);
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.34);
   display: grid;
   grid-template-rows: auto 1fr;
+  transform: translateY(6px);
+  animation: circModalIn 180ms ease-out forwards;
+}
+
+@keyframes circModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modalHeader {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 14px 10px;
-  border-bottom: 1px solid var(--app-border);
-  background: color-mix(in srgb, var(--app-surface) 88%, transparent);
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--app-border) 70%, transparent);
+  background: color-mix(in srgb, var(--app-surface) 86%, transparent);
+  backdrop-filter: blur(10px);
 }
 
 .modalHeaderText {
@@ -1017,9 +1041,9 @@
 
 .modalTitle {
   font-family: var(--font-serif);
-  font-weight: 650;
-  font-size: 16px;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.015em;
   color: var(--app-text);
   white-space: nowrap;
   overflow: hidden;
@@ -1028,7 +1052,7 @@
 
 .modalSubtitle {
   font-size: 12px;
-  color: rgba(15, 23, 42, 0.62);
+  color: rgba(15, 23, 42, 0.66);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1039,8 +1063,8 @@
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  border: 1px solid var(--app-border);
-  background: var(--app-surface);
+  border: 1px solid color-mix(in srgb, var(--app-border) 75%, transparent);
+  background: color-mix(in srgb, var(--app-surface) 92%, transparent);
   color: rgba(15, 23, 42, 0.72);
   display: grid;
   place-items: center;
@@ -1048,7 +1072,7 @@
 }
 
 .modalClose:hover {
-  background: color-mix(in srgb, var(--app-text) 5%, var(--app-surface));
+  background: color-mix(in srgb, var(--app-text) 6%, var(--app-surface));
 }
 
 .modalClose:focus-visible {
@@ -1058,7 +1082,7 @@
 
 .modalBody {
   overflow: auto;
-  padding: 12px 14px 16px;
+  padding: 14px 14px 18px;
 }
 
 .modalActionsRow {
@@ -1093,15 +1117,23 @@
 
 .giverCard {
   border-radius: 16px;
-  border: 1px solid var(--app-border);
-  background: color-mix(in srgb, var(--app-surface) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--app-border) 75%, transparent);
+  background: var(--app-surface);
   padding: 12px;
   display: grid;
   gap: 10px;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
 .giverCard[data-passed='true'] {
   opacity: 0.7;
+}
+
+.giverCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 56px rgba(15, 23, 42, 0.12);
+  border-color: color-mix(in srgb, var(--app-text) 14%, var(--app-border));
 }
 
 .giverTop {
@@ -1126,6 +1158,7 @@
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
 }
 
 .giverText {
@@ -1135,7 +1168,7 @@
 }
 
 .giverName {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 13px;
   color: var(--app-text);
   white-space: nowrap;
@@ -1168,7 +1201,7 @@
   height: 34px;
   padding: 0 12px;
   border-radius: 999px;
-  border: 1px solid var(--app-border);
+  border: 1px solid color-mix(in srgb, var(--app-border) 80%, transparent);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -1178,7 +1211,8 @@
 .giverPick {
   background: var(--app-text);
   color: var(--app-surface);
-  border-color: color-mix(in srgb, var(--app-text) 36%, var(--app-border));
+  border-color: color-mix(in srgb, var(--app-text) 40%, var(--app-border));
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.18);
 }
 
 .giverPass {
@@ -1189,6 +1223,7 @@
 .giverPick:disabled {
   opacity: 0.65;
   cursor: default;
+  box-shadow: none;
 }
 
 .giverPick:focus-visible,
@@ -1211,8 +1246,8 @@
 
 .detailBlock {
   border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--app-border) 75%, transparent);
-  background: var(--app-surface);
+  border: 1px solid color-mix(in srgb, var(--app-border) 78%, transparent);
+  background: color-mix(in srgb, var(--app-surface) 92%, transparent);
   padding: 10px;
   display: grid;
   gap: 8px;
@@ -1221,7 +1256,7 @@
 .detailBlockTitle {
   font-size: 12px;
   font-weight: 800;
-  color: rgba(15, 23, 42, 0.72);
+  color: rgba(15, 23, 42, 0.74);
   letter-spacing: -0.01em;
 }
 
@@ -1256,6 +1291,6 @@
   height: 120px;
   object-fit: cover;
   border-radius: 10px;
-  border: 1px solid var(--app-border);
+  border: 1px solid color-mix(in srgb, var(--app-border) 82%, transparent);
   background: #eee;
 }

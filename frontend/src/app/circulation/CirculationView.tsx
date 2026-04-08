@@ -9,7 +9,6 @@ import { useToast } from '../../contexts/ToastContext'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import type { CirculationDragPayload } from '../../components/Layout/CirculationDndContext'
 import { useCirculationActivePayload, useCirculationDndRegistration, useCirculationQuickActions } from '../../components/Layout/CirculationDndContext'
-import Input from '../../components/shared/Input/Input'
 import Select from '../../components/shared/Select/Select'
 import Button from '../../components/shared/Button/Button'
 import BookSearchInput from '../../components/shared/BookSearchInput/BookSearchInput'
@@ -640,14 +639,6 @@ export default function CirculationView() {
 
               <div className={styles.controls} aria-label="Sort and filter">
                 <div className={styles.filtersRow}>
-                  <Input
-                    type="text"
-                    placeholder="Search by title or author…"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    className={styles.searchControl}
-                  />
-
                   <Select value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)} className={styles.genreControl}>
                     <option value="">All genres</option>
                     {genreOptions.map((g) => (
@@ -729,14 +720,6 @@ export default function CirculationView() {
 
             <div className={styles.controls} aria-label="Sort and filter">
               <div className={styles.filtersRow}>
-                <Input
-                  type="text"
-                  placeholder="Search by title or author…"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className={styles.searchControl}
-                />
-
                 <Select value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)} className={styles.genreControl}>
                   <option value="">All genres</option>
                   {genreOptions.map((g) => (
