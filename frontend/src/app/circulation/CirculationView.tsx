@@ -584,7 +584,12 @@ export default function CirculationView() {
       <div className={styles.page}>
         <div className={styles.pageInner}>
           <header className={styles.header}>
-            <h1 className={styles.h1}>Circulation</h1>
+            <div className={styles.headerLeft}>
+              <h1 className={styles.h1}>Circulation</h1>
+              <p className={styles.subtitle}>
+                Browse what’s trending in the community. Pick what you want, pass what you don’t.
+              </p>
+            </div>
           </header>
           <div className={styles.controls} aria-label="Sort and filter">
             <div className={styles.controlsRow}>
@@ -660,7 +665,12 @@ export default function CirculationView() {
           </p>
         )}
         <header className={styles.header}>
-          <h1 className={styles.h1}>Circulation</h1>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.h1}>Circulation</h1>
+            <p className={styles.subtitle}>
+              Browse what’s trending in the community. Pick what you want, pass what you don’t.
+            </p>
+          </div>
           <div className={styles.sectionMeta} aria-label="Section filters">
             <span className={styles.pill}>{metaLabel}</span>
             <span className={styles.metaCount}>{n}</span>

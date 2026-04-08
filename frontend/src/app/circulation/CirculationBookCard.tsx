@@ -86,12 +86,18 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
       data-circ-card="true"
       onClick={onSelect}
     >
-      <div className={styles.requestsRow}>
-        <Flame size={isFeature ? 15 : 13} strokeWidth={1.75} className={styles.flameIcon} fill="currentColor" aria-hidden />
-        <span>
-          {props.requestCount} {props.requestCount === 1 ? 'request' : 'requests'}
-        </span>
-      </div>
+      {props.requestCount > 1 ? (
+        <div className={styles.requestsRow}>
+          <Flame
+            size={isFeature ? 15 : 13}
+            strokeWidth={1.75}
+            className={styles.flameIcon}
+            fill="currentColor"
+            aria-hidden
+          />
+          <span>{props.requestCount} requests</span>
+        </div>
+      ) : null}
 
       <div className={styles.imageWrap}>
         <Image
@@ -117,9 +123,9 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
         <div className={styles.starRow}>
           <Star size={starSize} strokeWidth={1.5} className={styles.starIcon} fill="currentColor" aria-hidden />
           <span>{props.ratingDisplay}</span>
-          <span className={styles.circulations}>
-            {props.circulationCount} {props.circulationCount === 1 ? 'circulation' : 'circulations'}
-          </span>
+          {props.circulationCount > 1 ? (
+            <span className={styles.circulations}>{props.circulationCount} circulations</span>
+          ) : null}
         </div>
       </div>
 
