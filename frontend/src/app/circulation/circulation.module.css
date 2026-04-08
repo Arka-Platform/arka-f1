@@ -970,3 +970,291 @@
   width: 16px;
   background: rgba(0, 0, 0, 0.48);
 }
+
+/* -------------------------------------------------------------------------- */
+/* Details modal (givers / copies)                                             */
+/* -------------------------------------------------------------------------- */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(6px);
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.modal {
+  width: min(980px, 100%);
+  max-height: min(86vh, 760px);
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--app-border) 70%, transparent);
+  background: var(--app-surface);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.32);
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--app-border);
+  background: color-mix(in srgb, var(--app-surface) 88%, transparent);
+}
+
+.modalHeaderText {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.modalTitle {
+  font-family: var(--font-serif);
+  font-weight: 650;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modalSubtitle {
+  font-size: 12px;
+  color: rgba(15, 23, 42, 0.62);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modalClose {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: rgba(15, 23, 42, 0.72);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.modalClose:hover {
+  background: color-mix(in srgb, var(--app-text) 5%, var(--app-surface));
+}
+
+.modalClose:focus-visible {
+  outline: 2px solid var(--app-text);
+  outline-offset: 2px;
+}
+
+.modalBody {
+  overflow: auto;
+  padding: 12px 14px 16px;
+}
+
+.modalActionsRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.modalOpenLink {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+
+.modalOpenLink:focus-visible {
+  outline: 2px solid var(--app-text);
+  outline-offset: 2px;
+}
+
+.giversSection {
+  display: grid;
+  gap: 12px;
+}
+
+.giverCard {
+  border-radius: 16px;
+  border: 1px solid var(--app-border);
+  background: color-mix(in srgb, var(--app-surface) 92%, transparent);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.giverCard[data-passed='true'] {
+  opacity: 0.7;
+}
+
+.giverTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.giverIdentity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 260px;
+  flex: 1 1 auto;
+}
+
+.giverAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+.giverText {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.giverName {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.giverMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(15, 23, 42, 0.62);
+}
+
+.giverMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.giverButtons {
+  display: flex;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.giverPick,
+.giverPass {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--app-border);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.giverPick {
+  background: var(--app-text);
+  color: var(--app-surface);
+  border-color: color-mix(in srgb, var(--app-text) 36%, var(--app-border));
+}
+
+.giverPass {
+  background: var(--app-surface);
+  color: var(--app-text);
+}
+
+.giverPick:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.giverPick:focus-visible,
+.giverPass:focus-visible {
+  outline: 2px solid var(--app-text);
+  outline-offset: 2px;
+}
+
+.giverDetailsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 920px) {
+  .giverDetailsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detailBlock {
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--app-border) 75%, transparent);
+  background: var(--app-surface);
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.detailBlockTitle {
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(15, 23, 42, 0.72);
+  letter-spacing: -0.01em;
+}
+
+.detailLine {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.detailK {
+  color: rgba(15, 23, 42, 0.58);
+  font-weight: 600;
+}
+
+.detailV {
+  color: rgba(15, 23, 42, 0.86);
+  font-weight: 650;
+  text-align: right;
+}
+
+.copyImageRow {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.copyThumb {
+  width: 90px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--app-border);
+  background: #eee;
+}

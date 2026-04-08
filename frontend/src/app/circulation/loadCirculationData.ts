@@ -12,6 +12,7 @@ import {
   type BookResponse,
   type ListingResponse,
   type SwapRequestCounts,
+  type TrustScoreResponse,
 } from '../../utils/api'
 import {
   avatarUrlForUserId,
@@ -26,6 +27,10 @@ export type CirculationOwner = {
   firstName: string
   avatarUrl: string
   ratingDisplay: string
+  /** Raw trust score (0–100). */
+  trustScore: number
+  /** Trust breakdown for details UI. */
+  trust: TrustScoreResponse | null
 }
 
 const CATALOG_OWNER_KEY = '__catalog__'
@@ -60,6 +65,8 @@ async function enrichOwners(ownerIds: string[]): Promise<Record<string, Circulat
           firstName,
           avatarUrl: avatarUrlForUserId(oid),
           ratingDisplay,
+          trustScore,
+          trust,
         }
         return [oid, enrichment] as const
       } catch {
@@ -68,6 +75,8 @@ async function enrichOwners(ownerIds: string[]): Promise<Record<string, Circulat
           firstName: 'Reader',
           avatarUrl: avatarUrlForUserId(oid),
           ratingDisplay: '4.0',
+          trustScore: 0,
+          trust: null,
         }
         return [oid, fallback] as const
       }
@@ -104,6 +113,8 @@ export async function loadCirculationFromSupabase(): Promise<CirculationPayload>
     firstName: 'Community',
     avatarUrl: avatarUrlForUserId('catalog-community'),
     ratingDisplay: '4.0',
+    trustScore: 0,
+    trust: null,
   }
 
   return {

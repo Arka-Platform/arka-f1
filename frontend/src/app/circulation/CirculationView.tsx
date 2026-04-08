@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import Link from 'next/link'
 import type { BookResponse, ListingResponse, SwapRequestCounts } from '../../utils/api'
 import { bookshelfApi, wishlistApi } from '../../utils/api'
 import { useAuth } from '../../contexts/AuthContext'
@@ -15,6 +14,7 @@ import Select from '../../components/shared/Select/Select'
 import Button from '../../components/shared/Button/Button'
 import BookSearchInput from '../../components/shared/BookSearchInput/BookSearchInput'
 import CirculationBookCard from './CirculationBookCard'
+import CirculationDetailsModal from './CirculationDetailsModal'
 import { CirculationDraggableWrap } from './CirculationDraggableWrap'
 import { loadCirculationFromSupabase, ownerKeyForBook, type CirculationOwner } from './loadCirculationData'
 import { avatarUrlForUserId, mediaCountForBook, mediaCountForListing } from './circulationData'
@@ -22,10 +22,7 @@ import styles from './circulation.module.css'
 
 type LoadKind = 'listings' | 'catalog'
 
-type SelectedKey =
-  | { kind: 'listing'; id: string }
-  | { kind: 'catalog'; id: string }
-  | null
+type SelectedKey = { kind: 'book'; bookId: string } | null
 
 type SortKey = 'recommended' | 'title_asc' | 'price_asc' | 'price_desc' | 'newest' | 'requests_desc'
 
@@ -261,7 +258,22 @@ export default function CirculationView() {
         if (arr) arr.push(l)
         else map.set(label, [l])
       }
-      const out = Array.from(map.entries()).map(([label, items]) => ({ key: `genre:${label}`, label, items }))
+      // One card per unique bookId (each book can have multiple active listings/copies).
+      const out = Array.from(map.entries()).map(([label, items]) => {
+        const byBook = new Map<string, ListingResponse[]>()
+        for (const l of items) {
+          const arr = byBook.get(l.bookId)
+          if (arr) arr.push(l)
+          else byBook.set(l.bookId, [l])
+        }
+        const groups = Array.from(byBook.entries()).map(([bookId, listings]) => ({
+          bookId,
+          listings,
+          // Representative listing used for cover/title/author; per-copy selection happens in details modal.
+          rep: listings[0]!,
+        }))
+        return { key: `genre:${label}`, label, items: groups }
+      })
       out.sort((a, b) => a.label.localeCompare(b.label))
       return {
         kind: 'listings' as const,
@@ -290,7 +302,8 @@ export default function CirculationView() {
     const row = sections.rows.find((r: any) => r.key === rowKey) ?? sections.rows[0]
     if (!row) return null
     if (sections.kind === 'listings') {
-      const l = (row.items as ListingResponse[])[idx]
+      const g = (row.items as Array<{ bookId: string; listings: ListingResponse[]; rep: ListingResponse }>)[idx]
+      const l = g?.rep
       return l ? payloadFromListing(l) : null
     }
     if (sections.kind === 'catalog') {
@@ -305,23 +318,36 @@ export default function CirculationView() {
   }, [activePayload, setActivePayload])
 
   const cardPropsListing = useCallback(
-    (listing: ListingResponse, variant: 'feature' | 'side', priority: boolean) => {
-      const c = counts[listing.listingId] ?? { requestCount: 0, circulationCount: 0 }
-      const o = owners[listing.ownerId] ?? {
-        displayName: 'Reader',
-        firstName: 'Reader',
-        avatarUrl: avatarUrlForUserId(listing.ownerId),
-        ratingDisplay: '4.0',
-      }
+    (
+      group: { bookId: string; listings: ListingResponse[]; rep: ListingResponse },
+      variant: 'feature' | 'side',
+      priority: boolean,
+    ) => {
+      const rep = group.rep
+      const totals = group.listings.reduce(
+        (acc, l) => {
+          const c = counts[l.listingId] ?? { requestCount: 0, circulationCount: 0 }
+          acc.requestCount += c.requestCount
+          acc.circulationCount += c.circulationCount
+          return acc
+        },
+        { requestCount: 0, circulationCount: 0 },
+      )
+      const firstOwner = owners[rep.ownerId]
+      const extra = group.listings.length - 1
+      const ownerLabel = firstOwner?.firstName ?? 'Reader'
+      const ownerFirstName = extra > 0 ? `${ownerLabel} +${extra}` : ownerLabel
+      const ownerAvatarUrl = firstOwner?.avatarUrl ?? avatarUrlForUserId(rep.ownerId)
+      const ratingDisplay = firstOwner?.ratingDisplay ?? '4.0'
       return {
         kind: 'listing' as const,
-        listing,
-        requestCount: c.requestCount,
-        circulationCount: c.circulationCount,
-        ownerFirstName: o.firstName,
-        ownerAvatarUrl: o.avatarUrl,
-        ratingDisplay: o.ratingDisplay,
-        trustScore: mediaCountForListing(listing),
+        listing: rep,
+        requestCount: totals.requestCount,
+        circulationCount: totals.circulationCount,
+        ownerFirstName,
+        ownerAvatarUrl,
+        ratingDisplay,
+        trustScore: mediaCountForListing(rep),
         variant,
         priority,
       }
@@ -380,32 +406,33 @@ export default function CirculationView() {
 
   const selectedDetail = useMemo(() => {
     if (!selected) return null
-    if (selected.kind === 'listing') {
-      const l = listings.find((x) => x.listingId === selected.id)
-      if (!l) return null
+    if (kind === 'listings') {
+      const groupListings = listings.filter((l) => l.bookId === selected.bookId)
+      const rep = groupListings[0]
+      if (!rep) return null
       return {
-        kind: 'listing' as const,
-        id: l.listingId,
-        title: l.title,
-        author: l.author,
-        href: `/exchange?search=${encodeURIComponent(l.title)}`,
+        bookId: selected.bookId,
+        title: rep.title,
+        author: rep.author,
+        href: `/exchange?search=${encodeURIComponent(rep.title)}`,
+        listings: groupListings,
       }
     }
-    const b = books.find((x) => x.id === selected.id)
+    const b = books.find((x) => x.id === selected.bookId)
     if (!b) return null
     return {
-      kind: 'catalog' as const,
-      id: b.id,
+      bookId: b.id,
       title: b.title,
       author: b.author,
       href: `/exchange?search=${encodeURIComponent(b.title)}`,
+      listings: [],
     }
-  }, [selected, listings, books])
+  }, [selected, kind, listings, books])
 
   const handleSelect = useCallback((next: SelectedKey) => {
     setSelected((cur) => {
       if (!next) return null
-      if (cur && cur.kind === next.kind && cur.id === next.id) return null
+      if (cur && cur.bookId === next.bookId) return null
       return next
     })
   }, [])
@@ -770,19 +797,25 @@ export default function CirculationView() {
                 }}
               >
                 {sections.kind === 'listings' &&
-                  (row.items as ListingResponse[]).map((listing, idx) =>
+                  (row.items as Array<{ bookId: string; listings: ListingResponse[]; rep: ListingResponse }>).map((group, idx) =>
                     wrapCard(
                       <CirculationBookCard
-                        {...cardPropsListing(listing, 'side', idx < 3)}
-                        selected={selected?.kind === 'listing' && selected.id === listing.listingId}
-                        onSelect={() => handleSelect({ kind: 'listing', id: listing.listingId })}
-                        passed={passedIds.has(listing.listingId)}
+                        {...cardPropsListing(group, 'side', idx < 3)}
+                        selected={selected?.kind === 'book' && selected.bookId === group.bookId}
+                        onSelect={() => handleSelect({ kind: 'book', bookId: group.bookId })}
+                        passed={group.listings.every((l) => passedIds.has(l.listingId))}
                         active={isMobile && activeRowKey === row.key && (activeIndexByRow[row.key] ?? 0) === idx}
-                        onPick={() => handlePickPayload(payloadFromListing(listing))}
-                        onPass={() => handlePassId(listing.listingId)}
+                        onPick={() => {
+                          if (group.listings.length <= 1) handlePickPayload(payloadFromListing(group.rep))
+                          else handleSelect({ kind: 'book', bookId: group.bookId })
+                        }}
+                        onPass={() => {
+                          if (group.listings.length <= 1) handlePassId(group.rep.listingId)
+                          else handleSelect({ kind: 'book', bookId: group.bookId })
+                        }}
                       />,
-                      `circ-drag-${listing.listingId}`,
-                      payloadFromListing(listing),
+                      `circ-drag-${group.rep.listingId}`,
+                      payloadFromListing(group.rep),
                     ),
                   )}
                 {sections.kind === 'catalog' &&
@@ -790,8 +823,8 @@ export default function CirculationView() {
                     wrapCard(
                       <CirculationBookCard
                         {...cardPropsCatalog(book, 'side', idx < 3)}
-                        selected={selected?.kind === 'catalog' && selected.id === book.id}
-                        onSelect={() => handleSelect({ kind: 'catalog', id: book.id })}
+                        selected={selected?.kind === 'book' && selected.bookId === book.id}
+                        onSelect={() => handleSelect({ kind: 'book', bookId: book.id })}
                         passed={passedIds.has(book.id)}
                         active={isMobile && activeRowKey === row.key && (activeIndexByRow[row.key] ?? 0) === idx}
                         onPick={() => handlePickPayload(payloadFromBook(book))}
@@ -806,24 +839,22 @@ export default function CirculationView() {
           ))}
         </section>
 
-        <section className={styles.detailPanel} aria-label="Book details" data-open={selectedDetail ? 'true' : 'false'}>
-          {selectedDetail && (
-            <div className={styles.detailInner}>
-              <div className={styles.detailText}>
-                <div className={styles.detailTitle}>{selectedDetail.title}</div>
-                <div className={styles.detailAuthor}>{selectedDetail.author}</div>
-              </div>
-              <div className={styles.detailActions}>
-                <Link href={selectedDetail.href} className={styles.detailLink}>
-                  Open
-                </Link>
-                <button type="button" className={styles.detailClose} onClick={() => setSelected(null)}>
-                  Close
-                </button>
-              </div>
-            </div>
-          )}
-        </section>
+        <CirculationDetailsModal
+          open={!!selectedDetail && kind === 'listings'}
+          title={selectedDetail?.title ?? ''}
+          author={selectedDetail?.author ?? ''}
+          bookHref={selectedDetail?.href ?? '#'}
+          listings={selectedDetail?.listings ?? []}
+          owners={owners}
+          countsByListingId={counts}
+          passedListingIds={passedIds}
+          onClose={() => setSelected(null)}
+          onPickListing={(listing) => {
+            handlePickPayload(payloadFromListing(listing))
+            setSelected(null)
+          }}
+          onPassListing={(listingId) => handlePassId(listingId)}
+        />
 
         <div className={styles.bottomSpace} aria-hidden="true" />
       </div>
