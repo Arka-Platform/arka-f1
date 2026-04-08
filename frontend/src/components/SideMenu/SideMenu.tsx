@@ -28,10 +28,9 @@ function initials(firstName?: string, lastName?: string, email?: string | null) 
   return 'A'
 }
 
-const DROP_IDS: Record<string, 'circulation-drop-shelf' | 'circulation-drop-wishlist' | 'circulation-drop-cart'> = {
+const DROP_IDS: Record<string, 'circulation-drop-shelf' | 'circulation-drop-wishlist'> = {
   shelf: 'circulation-drop-shelf',
   wishlist: 'circulation-drop-wishlist',
-  pick: 'circulation-drop-cart',
 }
 
 function DroppableBottomSlot({
@@ -64,7 +63,7 @@ export default function SideMenu() {
   const pathname = usePathname()
   const { user } = useAuth()
   const { getItemCount } = useCart()
-  const { triggerDrop, triggerPass, getActivePayload } = useCirculationQuickActions()
+  const { triggerDrop, getActivePayload } = useCirculationQuickActions()
   const [expanded, setExpanded] = useState(true)
   const [wishlistCount, setWishlistCount] = useState(0)
   const isMobile = useMediaQuery('(max-width: 767px)')
@@ -179,28 +178,6 @@ export default function SideMenu() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            </svg>
-          ),
-        },
-        {
-          id: 'pass',
-          label: 'Pass',
-          href: '/circulation',
-          icon: (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18" />
-              <path d="M6 6l12 12" />
-            </svg>
-          ),
-        },
-        {
-          id: 'pick',
-          label: 'Pick',
-          href: '/cart',
-          badge: cartCount > 0 ? cartCount : undefined,
-          icon: (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 6L9 17l-5-5" />
             </svg>
           ),
         },
@@ -321,7 +298,7 @@ export default function SideMenu() {
     const isCirculationMobileActions = variant === 'mobile' && isCirculationRoute && isMobile && !!user
 
     const maybeActionButton =
-      isCirculationMobileActions && (item.id === 'shelf' || item.id === 'wishlist' || item.id === 'pick' || item.id === 'pass')
+      isCirculationMobileActions && (item.id === 'shelf' || item.id === 'wishlist')
         ? (
             <button
               type="button"
@@ -329,14 +306,9 @@ export default function SideMenu() {
               onClick={(e) => {
                 e.preventDefault()
                 const payload = getActivePayload()
-                if (!payload?.bookId && item.id !== 'pass') return
-                if (item.id === 'pass') {
-                  triggerPass()
-                  return
-                }
+                if (!payload?.bookId) return
                 if (item.id === 'shelf') triggerDrop('shelf')
                 else if (item.id === 'wishlist') triggerDrop('wishlist')
-                else if (item.id === 'pick') triggerDrop('cart')
               }}
               aria-label={item.label}
             >
