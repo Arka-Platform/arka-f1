@@ -71,7 +71,7 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
   const [tagA, tagB] = props.kind === 'listing' ? buildTagPair(props.listing) : buildTagPairFromBook(props.book)
   const detailHref =
     props.kind === 'listing'
-      ? `/three/listings/${props.listing.listingId}`
+      ? `/exchange?search=${encodeURIComponent(props.listing.title)}`
       : `/exchange?search=${encodeURIComponent(props.book.title)}`
 
   return (

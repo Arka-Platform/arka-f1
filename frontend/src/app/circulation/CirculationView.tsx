@@ -23,6 +23,8 @@ type SelectedKey =
   | { kind: 'catalog'; id: string }
   | null
 
+type SortKey = 'recommended' | 'title_asc' | 'price_asc' | 'price_desc' | 'newest' | 'requests_desc'
+
 function normalizeLabel(v: string | null | undefined): string | null {
   const s = (v ?? '').trim()
   return s.length ? s : null
@@ -88,6 +90,11 @@ export default function CirculationView() {
   const [activeRowKey, setActiveRowKey] = useState<string>('__all__')
   const [activeIndexByRow, setActiveIndexByRow] = useState<Record<string, number>>({})
   const [passedIds, setPassedIds] = useState<Set<string>>(() => new Set())
+
+  const [query, setQuery] = useState<string>('')
+  const [genreFilter, setGenreFilter] = useState<string>('')
+  const [sortKey, setSortKey] = useState<SortKey>('recommended')
+  const [hidePassed, setHidePassed] = useState<boolean>(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -187,12 +194,67 @@ export default function CirculationView() {
     return () => registerDrop(null)
   }, [registerDrop, handleDrop])
 
-  const n = kind === 'listings' ? listings.length : kind === 'catalog' ? books.length : 0
+  const genreOptions = useMemo(() => {
+    const labels =
+      kind === 'listings'
+        ? listings.map(sectionLabelForListing)
+        : kind === 'catalog'
+          ? books.map(sectionLabelForBook)
+          : []
+    return Array.from(new Set(labels)).sort((a, b) => a.localeCompare(b))
+  }, [kind, listings, books])
+
+  const filteredListings = useMemo(() => {
+    if (kind !== 'listings') return []
+    const q = query.trim().toLowerCase()
+    return listings
+      .filter((l) => (hidePassed ? !passedIds.has(l.listingId) : true))
+      .filter((l) => (genreFilter ? sectionLabelForListing(l) === genreFilter : true))
+      .filter((l) => {
+        if (!q) return true
+        return `${l.title} ${l.author}`.toLowerCase().includes(q)
+      })
+      .sort((a, b) => {
+        if (sortKey === 'recommended') return 0 // already sorted by demand at load time
+        if (sortKey === 'title_asc') return a.title.localeCompare(b.title)
+        if (sortKey === 'price_asc') return (a.price ?? 0) - (b.price ?? 0)
+        if (sortKey === 'price_desc') return (b.price ?? 0) - (a.price ?? 0)
+        if (sortKey === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        if (sortKey === 'requests_desc') {
+          const ca = counts[a.listingId]?.requestCount ?? 0
+          const cb = counts[b.listingId]?.requestCount ?? 0
+          return cb - ca
+        }
+        return 0
+      })
+  }, [kind, listings, query, genreFilter, sortKey, hidePassed, passedIds, counts])
+
+  const filteredBooks = useMemo(() => {
+    if (kind !== 'catalog') return []
+    const q = query.trim().toLowerCase()
+    return books
+      .filter((b) => (hidePassed ? !passedIds.has(b.id) : true))
+      .filter((b) => (genreFilter ? sectionLabelForBook(b) === genreFilter : true))
+      .filter((b) => {
+        if (!q) return true
+        return `${b.title} ${b.author}`.toLowerCase().includes(q)
+      })
+      .sort((a, b) => {
+        if (sortKey === 'recommended') return 0
+        if (sortKey === 'title_asc') return a.title.localeCompare(b.title)
+        if (sortKey === 'price_asc') return (a.price ?? 0) - (b.price ?? 0)
+        if (sortKey === 'price_desc') return (b.price ?? 0) - (a.price ?? 0)
+        if (sortKey === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        return 0
+      })
+  }, [kind, books, query, genreFilter, sortKey, hidePassed, passedIds])
+
+  const n = kind === 'listings' ? filteredListings.length : kind === 'catalog' ? filteredBooks.length : 0
 
   const sections = useMemo(() => {
     if (kind === 'listings') {
       const map = new Map<string, ListingResponse[]>()
-      for (const l of listings) {
+      for (const l of filteredListings) {
         const label = sectionLabelForListing(l)
         const arr = map.get(label)
         if (arr) arr.push(l)
@@ -207,7 +269,7 @@ export default function CirculationView() {
     }
     if (kind === 'catalog') {
       const map = new Map<string, BookResponse[]>()
-      for (const b of books) {
+      for (const b of filteredBooks) {
         const label = sectionLabelForBook(b)
         const arr = map.get(label)
         if (arr) arr.push(b)
@@ -218,7 +280,7 @@ export default function CirculationView() {
       return { kind: 'catalog' as const, rows: out }
     }
     return { kind: null, rows: [] as any[] }
-  }, [kind, listings, books])
+  }, [kind, filteredListings, filteredBooks])
 
   const activePayload = useMemo(() => {
     if (n <= 0 || kind === null) return null
@@ -309,6 +371,13 @@ export default function CirculationView() {
     return 'Books'
   }, [kind])
 
+  const clearFilters = useCallback(() => {
+    setQuery('')
+    setGenreFilter('')
+    setSortKey('recommended')
+    setHidePassed(false)
+  }, [])
+
   const selectedDetail = useMemo(() => {
     if (!selected) return null
     if (selected.kind === 'listing') {
@@ -319,7 +388,7 @@ export default function CirculationView() {
         id: l.listingId,
         title: l.title,
         author: l.author,
-        href: `/three/listings/${l.listingId}`,
+        href: `/exchange?search=${encodeURIComponent(l.title)}`,
       }
     }
     const b = books.find((x) => x.id === selected.id)
@@ -472,6 +541,59 @@ export default function CirculationView() {
           <header className={styles.header}>
             <h1 className={styles.h1}>Circulation</h1>
           </header>
+          <div className={styles.controls} aria-label="Sort and filter">
+            <div className={styles.controlsRow}>
+              <div className={styles.searchWrap}>
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search by title or author"
+                  className={styles.searchInput}
+                  aria-label="Search books"
+                />
+              </div>
+
+              <div className={styles.selects}>
+                <label className={styles.selectLabel}>
+                  <span className={styles.selectText}>Genre</span>
+                  <select value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)} className={styles.select} aria-label="Filter by genre">
+                    <option value="">All</option>
+                    {genreOptions.map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className={styles.selectLabel}>
+                  <span className={styles.selectText}>Sort</span>
+                  <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className={styles.select} aria-label="Sort results">
+                    <option value="recommended">Recommended</option>
+                    {kind === 'listings' ? <option value="requests_desc">Most requested</option> : null}
+                    <option value="newest">Newest</option>
+                    <option value="title_asc">Title: A–Z</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                  </select>
+                </label>
+              </div>
+
+              <label className={styles.checkbox}>
+                <input type="checkbox" checked={hidePassed} onChange={(e) => setHidePassed(e.target.checked)} />
+                Hide passed
+              </label>
+
+              <button
+                type="button"
+                className={styles.clearBtn}
+                onClick={clearFilters}
+                disabled={!query && !genreFilter && sortKey === 'recommended' && !hidePassed}
+              >
+                Clear
+              </button>
+            </div>
+          </div>
           <p className={styles.emptyText}>
             No books in circulation yet. List a book on Exchange or check back when the catalog is seeded.
           </p>
@@ -499,6 +621,60 @@ export default function CirculationView() {
             <span className={styles.metaCount}>{n}</span>
           </div>
         </header>
+
+        <div className={styles.controls} aria-label="Sort and filter">
+          <div className={styles.controlsRow}>
+            <div className={styles.searchWrap}>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search by title or author"
+                className={styles.searchInput}
+                aria-label="Search books"
+              />
+            </div>
+
+            <div className={styles.selects}>
+              <label className={styles.selectLabel}>
+                <span className={styles.selectText}>Genre</span>
+                <select value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)} className={styles.select} aria-label="Filter by genre">
+                  <option value="">All</option>
+                  {genreOptions.map((g) => (
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={styles.selectLabel}>
+                <span className={styles.selectText}>Sort</span>
+                <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className={styles.select} aria-label="Sort results">
+                  <option value="recommended">Recommended</option>
+                  {kind === 'listings' ? <option value="requests_desc">Most requested</option> : null}
+                  <option value="newest">Newest</option>
+                  <option value="title_asc">Title: A–Z</option>
+                  <option value="price_asc">Price: Low to High</option>
+                  <option value="price_desc">Price: High to Low</option>
+                </select>
+              </label>
+            </div>
+
+            <label className={styles.checkbox}>
+              <input type="checkbox" checked={hidePassed} onChange={(e) => setHidePassed(e.target.checked)} />
+              Hide passed
+            </label>
+
+            <button
+              type="button"
+              className={styles.clearBtn}
+              onClick={clearFilters}
+              disabled={!query && !genreFilter && sortKey === 'recommended' && !hidePassed}
+            >
+              Clear
+            </button>
+          </div>
+        </div>
 
         <section aria-label="Books" className={styles.genreSections}>
           {sections.rows.map((row: any) => (

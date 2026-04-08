@@ -110,6 +110,127 @@
   flex-shrink: 0;
 }
 
+.controls {
+  margin: 8px 0 16px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--app-border);
+  background: color-mix(in srgb, var(--app-surface) 84%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.searchWrap {
+  flex: 1 1 260px;
+  min-width: 220px;
+}
+
+.searchInput {
+  width: 100%;
+  height: 38px;
+  border-radius: 999px;
+  padding: 0 14px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text);
+  font-size: 13px;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+.searchInput:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--app-text) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.selects {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.selectLabel {
+  display: grid;
+  gap: 4px;
+}
+
+.selectText {
+  font-size: 11px;
+  color: rgba(15, 23, 42, 0.6);
+  font-weight: 600;
+  padding-left: 10px;
+}
+
+.select {
+  height: 38px;
+  border-radius: 999px;
+  padding: 0 14px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text);
+  font-size: 13px;
+}
+
+.select:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--app-text) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: rgba(15, 23, 42, 0.86);
+  font-size: 12px;
+  font-weight: 600;
+  user-select: none;
+}
+
+.checkbox input {
+  accent-color: color-mix(in srgb, var(--app-text) 70%, transparent);
+}
+
+.clearBtn {
+  height: 38px;
+  border-radius: 999px;
+  padding: 0 14px;
+  border: 1px solid var(--app-border);
+  background: transparent;
+  color: var(--app-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.clearBtn:hover {
+  background: color-mix(in srgb, var(--app-text) 4%, transparent);
+}
+
+.clearBtn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.clearBtn:focus-visible {
+  outline: 2px solid var(--app-text);
+  outline-offset: 2px;
+}
+
 .pill {
   display: inline-flex;
   align-items: center;

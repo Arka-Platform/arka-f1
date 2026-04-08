@@ -175,7 +175,7 @@ export default function ListingActionOverlay({ activeListing, layoutId, onSelect
 
   const handleShare = useCallback(async () => {
     if (!activeListing) return
-    const url = `${window.location.origin}/three/listings/${activeListing.listingId}`
+    const url = `${window.location.origin}/exchange?search=${encodeURIComponent(activeListing.title)}`
     if (navigator.share) {
       await navigator.share({ url, title: activeListing.title })
       return
