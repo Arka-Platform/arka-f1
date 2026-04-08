@@ -323,11 +323,29 @@
   z-index: 200;
   display: flex;
   align-items: stretch;
+  overflow: visible;
   padding: 10px calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom))
     calc(10px + env(safe-area-inset-left));
   background: var(--app-surface);
   border-top: 1px solid var(--app-border);
   box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+}
+
+.mobileBottomBar[data-has-fab='true']::before {
+  /* Center notch background (semi-circle) */
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -18px;
+  width: 76px;
+  height: 38px;
+  transform: translateX(-50%);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-bottom: none;
+  border-top-left-radius: 999px;
+  border-top-right-radius: 999px;
+  box-shadow: 0 -6px 18px rgba(15, 23, 42, 0.08);
 }
 
 .mobileBottomScroll {
@@ -337,6 +355,44 @@
   min-width: 0;
   align-items: stretch;
   gap: 6px;
+}
+
+/* Integrated center FAB */
+.mobileCenterFab {
+  position: absolute;
+  left: 50%;
+  top: -28px;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+  border-radius: 999px;
+  background: var(--theme-accent-gradient);
+  color: var(--theme-text-inverse, #fff);
+  border: 1px solid color-mix(in srgb, var(--app-border) 65%, transparent);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.22);
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  z-index: 210;
+}
+
+.mobileCenterFabPlus {
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 900;
+  transform: translateY(-1px);
+}
+
+.mobileCenterFab:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 3px;
+}
+
+@media (min-width: 768px) {
+  .mobileCenterFab,
+  .mobileBottomBar[data-has-fab='true']::before {
+    display: none;
+  }
 }
 
 .mobileNavItem {
@@ -445,49 +501,15 @@ button.mobileNavItem {
   background: color-mix(in srgb, var(--color-primary, #667eea) 12%, transparent);
 }
 
-/* -------------------------------------------------------------------------- */
-/* Add-book FAB (single entry point)                                          */
-/* -------------------------------------------------------------------------- */
-
-.addBookFab {
-  position: fixed;
-  right: calc(14px + env(safe-area-inset-right));
-  bottom: calc(96px + env(safe-area-inset-bottom)); /* sits above bottom bar */
-  width: 54px;
-  height: 54px;
-  border-radius: 999px;
-  background: var(--theme-accent-gradient);
-  color: var(--theme-text-inverse, #fff);
-  border: 1px solid color-mix(in srgb, var(--app-border) 65%, transparent);
-  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.22);
-  display: grid;
-  place-items: center;
-  text-decoration: none;
-  z-index: 260;
+/* Desktop add-book row */
+.addBookDesktop {
+  margin: 0 var(--menu-pad);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--app-text) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--app-border) 75%, transparent);
 }
 
-.addBookFabPlus {
-  font-size: 30px;
-  line-height: 1;
-  font-weight: 900;
-  transform: translateY(-1px);
+.addBookDesktop:hover {
+  background: color-mix(in srgb, var(--app-text) 9%, transparent);
 }
-
-.addBookFab:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.9);
-  outline-offset: 3px;
-}
-
-.addBookFab:hover {
-  filter: saturate(1.08);
-  transform: translateY(-1px);
-}
-
-@media (min-width: 768px) {
-  .addBookFab {
-    bottom: 18px;
-    right: 18px;
-  }
-}
-
 
