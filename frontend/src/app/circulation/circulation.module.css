@@ -766,7 +766,6 @@
   flex-shrink: 0;
 }
 
-.pickBtn,
 .passBtn {
   height: 38px;
   border-radius: 999px;
@@ -784,22 +783,6 @@
   width: 100%;
 }
 
-.passBtnFull {
-  width: 100%;
-}
-
-.pickBtn {
-  background: var(--app-text);
-  color: var(--app-surface);
-  border-color: color-mix(in srgb, var(--app-text) 36%, var(--app-border));
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
-}
-
-.pickBtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.2);
-}
-
 .passBtn {
   background: var(--app-surface);
   color: var(--app-text);
@@ -810,7 +793,6 @@
   transform: translateY(-1px);
 }
 
-.pickBtn:disabled,
 .passBtn:disabled {
   opacity: 0.6;
   cursor: default;
@@ -818,7 +800,6 @@
   box-shadow: none;
 }
 
-.pickBtn:focus-visible,
 .passBtn:focus-visible {
   outline: 2px solid var(--app-text);
   outline-offset: 2px;
@@ -889,6 +870,13 @@
   padding: 4px;
   margin: -4px;
   border-radius: 8px;
+  gap: 6px;
+}
+
+.detailsLabel {
+  font-size: 12px;
+  font-weight: 750;
+  color: rgba(15, 23, 42, 0.62);
 }
 
 .listingLink:focus-visible {

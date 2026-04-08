@@ -1,6 +1,5 @@
 import Image from 'next/image'
-import Link from 'next/link'
-import { Flame, Star, ChevronRight, ArrowUpToLine, Repeat } from 'lucide-react'
+import { Flame, ArrowUpToLine } from 'lucide-react'
 import type { BookResponse, ListingResponse } from '../../utils/api'
 import { buildTagPairFromBook } from './circulationData'
 import styles from './circulation.module.css'
@@ -14,7 +13,6 @@ type BaseCardProps = {
   onSelect?: () => void
   passed?: boolean
   active?: boolean
-  onPick?: () => void
   onPass?: () => void
 }
 
@@ -51,15 +49,12 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
     onSelect,
     passed,
     active,
-    onPick,
     onPass,
   } = props
 
   const isFeature = variant === 'feature'
   const cardClass = isFeature ? `${styles.card} ${styles.cardFeature}` : `${styles.card} ${styles.cardSide}`
   const tagClass = `${styles.tag} ${styles.tagLight}`
-  const starSize = isFeature ? 15 : 13
-  const chevronSize = isFeature ? 18 : 16
 
   const title = props.kind === 'listing' ? props.listing.title : props.book.title
   const author = props.kind === 'listing' ? props.listing.author : props.book.author
@@ -72,13 +67,7 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
     props.kind === 'listing'
       ? [props.listing.genre?.trim() || props.listing.tags?.[0]?.trim() || 'General', 'Available']
       : buildTagPairFromBook(props.book)
-  const detailHref =
-    props.kind === 'listing'
-      ? `/exchange?search=${encodeURIComponent(props.listing.title)}`
-      : `/exchange?search=${encodeURIComponent(props.book.title)}`
   const actionSize = isFeature ? 16 : 15
-  const avatarSrc = props.ownerAvatarUrl?.trim() || PLACEHOLDER
-  const avatarUnoptimized = avatarSrc.startsWith('http') && !avatarSrc.includes('localhost')
 
   return (
     <article
@@ -123,32 +112,12 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
           <span className={tagClass}>{tagA}</span>
           <span className={tagClass}>{tagB}</span>
         </div>
-
-        <div className={styles.starRow}>
-          <Star size={starSize} strokeWidth={1.5} className={styles.starIcon} fill="currentColor" aria-hidden />
-          <span>{props.ratingDisplay}</span>
-          {props.circulationCount > 0 ? (
-            <span className={styles.circulations} title="circulations">
-              <Repeat size={isFeature ? 14 : 13} strokeWidth={1.8} className={styles.iconMuted} aria-hidden />
-              {props.circulationCount}
-            </span>
-          ) : null}
-        </div>
       </div>
 
       <div className={styles.primaryActions} onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
-          className={`${styles.pickBtn}`}
-          onClick={onPick}
-          disabled={!onPick}
-          aria-label={`Pick ${title}`}
-        >
-          Pick
-        </button>
-        <button
-          type="button"
-          className={`${styles.passBtn} ${styles.passBtnFull}`}
+          className={styles.passBtn}
           onClick={onPass}
           disabled={!onPass}
           aria-label={`Pass ${title}`}
@@ -156,27 +125,6 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
           <ArrowUpToLine size={actionSize} strokeWidth={1.9} aria-hidden />
           Pass
         </button>
-      </div>
-
-      <div className={styles.footerRow}>
-        <div className={styles.footerLeft} onClick={(e) => e.stopPropagation()}>
-          <Image
-            src={avatarSrc}
-            alt={props.ownerFirstName}
-            width={32}
-            height={32}
-            className={styles.avatar}
-            unoptimized={avatarUnoptimized}
-          />
-          <p className={styles.offeredStrong}>
-            Offered by <strong>{props.ownerFirstName}</strong>
-          </p>
-        </div>
-        <div className={styles.footerMeta} onClick={(e) => e.stopPropagation()}>
-          <Link href={detailHref} className={styles.listingLink} aria-label={`Open ${title}`}>
-            <ChevronRight size={chevronSize} strokeWidth={1.5} className={styles.chevronRight} aria-hidden />
-          </Link>
-        </div>
       </div>
     </article>
   )

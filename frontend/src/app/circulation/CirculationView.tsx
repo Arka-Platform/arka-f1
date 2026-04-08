@@ -783,10 +783,6 @@ export default function CirculationView() {
                         onSelect={() => handleSelect({ kind: 'book', bookId: group.bookId })}
                         passed={group.listings.every((l) => passedIds.has(l.listingId))}
                         active={isMobile && activeRowKey === row.key && (activeIndexByRow[row.key] ?? 0) === idx}
-                        onPick={() => {
-                          if (group.listings.length <= 1) handlePickPayload(payloadFromListing(group.rep))
-                          else handleSelect({ kind: 'book', bookId: group.bookId })
-                        }}
                         onPass={() => {
                           if (group.listings.length <= 1) handlePassId(group.rep.listingId)
                           else handleSelect({ kind: 'book', bookId: group.bookId })
@@ -805,7 +801,6 @@ export default function CirculationView() {
                         onSelect={() => handleSelect({ kind: 'book', bookId: book.id })}
                         passed={passedIds.has(book.id)}
                         active={isMobile && activeRowKey === row.key && (activeIndexByRow[row.key] ?? 0) === idx}
-                        onPick={() => handlePickPayload(payloadFromBook(book))}
                         onPass={() => handlePassId(book.id)}
                       />,
                       `circ-drag-book-${book.id}`,
