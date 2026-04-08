@@ -748,7 +748,7 @@ export default function CirculationView() {
 
         {dndActive && (
           <p className={styles.dndHint} role="note">
-            Drag a card to the bottom bar: My Shelf, Wishlist, or Cart.
+            Drag a card to the bottom bar: My Shelf or Wishlist.
           </p>
         )}
 

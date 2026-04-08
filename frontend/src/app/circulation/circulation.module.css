@@ -37,9 +37,9 @@
 }
 
 .pageInner {
-  max-width: 1120px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 1rem;
 }
 
 /* Requests-inspired hero search section */
@@ -68,8 +68,8 @@
 }
 
 .heroContent {
-  max-width: 1120px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   position: relative;
   z-index: 1;
 }
@@ -132,7 +132,7 @@
 }
 
 .heroSearchBar {
-  max-width: 820px;
+  max-width: 980px;
   margin: 0 auto;
   background: var(--theme-surface-strong);
   border-radius: 16px;

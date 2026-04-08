@@ -51,6 +51,7 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
     onSelect,
     passed,
     active,
+    onPick,
     onPass,
   } = props
 
@@ -76,6 +77,8 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
       ? `/exchange?search=${encodeURIComponent(props.listing.title)}`
       : `/exchange?search=${encodeURIComponent(props.book.title)}`
   const actionSize = isFeature ? 16 : 15
+  const avatarSrc = props.ownerAvatarUrl?.trim() || PLACEHOLDER
+  const avatarUnoptimized = avatarSrc.startsWith('http') && !avatarSrc.includes('localhost')
 
   return (
     <article
@@ -136,7 +139,16 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
       <div className={styles.primaryActions} onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
-          className={styles.passBtnFull}
+          className={`${styles.pickBtn}`}
+          onClick={onPick}
+          disabled={!onPick}
+          aria-label={`Pick ${title}`}
+        >
+          Pick
+        </button>
+        <button
+          type="button"
+          className={`${styles.passBtn} ${styles.passBtnFull}`}
           onClick={onPass}
           disabled={!onPass}
           aria-label={`Pass ${title}`}
@@ -147,7 +159,19 @@ export default function CirculationBookCard(props: CirculationBookCardProps) {
       </div>
 
       <div className={styles.footerRow}>
-        <div className={styles.footerLeft} />
+        <div className={styles.footerLeft} onClick={(e) => e.stopPropagation()}>
+          <Image
+            src={avatarSrc}
+            alt={props.ownerFirstName}
+            width={32}
+            height={32}
+            className={styles.avatar}
+            unoptimized={avatarUnoptimized}
+          />
+          <p className={styles.offeredStrong}>
+            Offered by <strong>{props.ownerFirstName}</strong>
+          </p>
+        </div>
         <div className={styles.footerMeta} onClick={(e) => e.stopPropagation()}>
           <Link href={detailHref} className={styles.listingLink} aria-label={`Open ${title}`}>
             <ChevronRight size={chevronSize} strokeWidth={1.5} className={styles.chevronRight} aria-hidden />
