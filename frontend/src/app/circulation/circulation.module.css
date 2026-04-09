@@ -28,12 +28,9 @@
 }
 
 .page {
-  --font-serif: var(--font-circ-serif), 'Playfair Display', Georgia, serif;
-  --font-sans: var(--font-circ-sans), 'Inter', system-ui, sans-serif;
-  font-family: var(--font-sans);
   width: 100%;
-  padding: 2.75rem 0 4rem;
-  background: transparent;
+  background-color: transparent;
+  min-height: 100vh;
 }
 
 .pageInner {
@@ -76,27 +73,22 @@
 }
 
 .heroHeader {
+  padding: 3rem 4rem 2rem;
+  background: var(--theme-accent-gradient);
+  color: var(--theme-text-inverse);
   text-align: center;
-  margin-bottom: 1.25rem;
 }
 
 .heroH1 {
-  margin: 0 0 6px 0;
-  font-family: var(--font-serif);
-  font-weight: 650;
-  font-size: 26px;
-  letter-spacing: -0.02em;
-  color: var(--theme-text-inverse);
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
 }
 
 .heroSubhead {
+  font-size: 1.125rem;
   margin: 0;
-  font-size: 13px;
-  line-height: 1.4;
-  color: color-mix(in srgb, var(--theme-text-inverse) 92%, transparent);
-  max-width: 72ch;
-  margin-left: auto;
-  margin-right: auto;
+  opacity: 0.95;
 }
 
 .heroMetaCenter {
@@ -107,11 +99,9 @@
 }
 
 .heroKicker {
-  margin: 12px 0 0;
-  font-size: 13px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  color: color-mix(in srgb, var(--theme-text-inverse) 92%, transparent);
+  font-size: 1.125rem;
+  margin: 0;
+  opacity: 0.95;
 }
 
 .heroTitle {

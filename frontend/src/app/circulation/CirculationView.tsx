@@ -677,16 +677,13 @@ export default function CirculationView() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.pageInner}>
-        <div className={styles.heroSection} aria-label="Search books">
-          <div className={styles.heroContent}>
-            <div className={styles.heroHeader}>
-              <h1 className={styles.heroH1}>Circulation</h1>
-              <p className={styles.heroSubhead}>
-                Browse what’s trending in the community. Pick what you want, pass what you don’t.
-              </p>
-              <div className={styles.heroMetaCenter} aria-label="Section filters">
-                <span className={styles.pill}>{metaLabel}</span>
+      <div className={styles.heroHeader}>
+        <h1 className={styles.heroH1}>Circulation</h1>
+          <p className={styles.heroSubhead}>
+            Browse what’s trending in the community. Pick what you want, pass what you don’t.
+          </p>
+          <div className={styles.heroMetaCenter} aria-label="Section filters">
+            <span className={styles.pill}>{metaLabel}</span>
                 <span className={styles.metaCount}>{n}</span>
               </div>
               <p className={styles.heroKicker}>Keep Reading, Keep Passing.</p>
